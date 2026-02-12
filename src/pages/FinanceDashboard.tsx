@@ -155,7 +155,7 @@ const formatDate = (dateString: string) =>
 // ==========================================
 
 const PageHeader = () => (
-  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 animate-fade-in">
+  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
     <div>
       <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
         Budget Planner
@@ -190,7 +190,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
 
   return (
     <div
-      className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8 animate-fade-in"
+      className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8"
       style={{ animationDelay: "0.1s" }}
     >
       {/* Main budget card */}
@@ -266,7 +266,7 @@ interface CategoryCardsProps {
 
 const CategoryCards: React.FC<CategoryCardsProps> = ({ categorySummaries }) => (
   <div
-    className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8 animate-fade-in"
+    className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8"
     style={{ animationDelay: "0.2s" }}
   >
     {categorySummaries.map((summary) => {
@@ -323,10 +323,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
   }, [items, searchTerm, filterCategory]);
 
   return (
-    <div
-      className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden animate-fade-in"
-      style={{ animationDelay: "0.3s" }}
-    >
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
       {/* Header */}
       <div className="p-5 border-b border-border">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
