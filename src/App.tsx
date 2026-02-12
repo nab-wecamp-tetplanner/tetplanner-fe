@@ -1,7 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { FinanceDashboard, Transaction } from "./pages";
 
-import './App.css'
+import "./App.css";
+
 const queryClient = new QueryClient();
 
 export default function App() {
@@ -9,10 +11,28 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<div>Hello World</div>} />
+          <Route
+            path="/"
+            element={
+              <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <h1 className="text-4xl font-bold text-gray-900">
+                  Welcome to NY Planner
+                </h1>
+              </div>
+            }
+          />
+          <Route path="/finance" element={<FinanceDashboard />} />
+          <Route path="/transaction" element={<Transaction />} />
+          <Route
+            path="*"
+            element={
+              <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <h1 className="text-2xl text-gray-600">Page not found</h1>
+              </div>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
-  )
-};    
+  );
+}
