@@ -8,11 +8,24 @@ interface TaskColumnProps {
     label: string;
     status: TaskStatus;
     tasks: Task[];
+    onMoveTask: (taskId: string, newStatus: TaskStatus) => void;
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ label, tasks }) => {
+const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask }) => {
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        const taskId = e.dataTransfer.getData('taskId');
+        if(taskId) {
+            onMoveTask(taskId, status);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+    };
   return (
-    <div className="column-header">
+    <div className="column-header" onDrop={handleDrop} onDragOver={handleDragOver}>
         <div className="header-top">
             <h2 className="column-title">{label}</h2>
             <span className="task-count">{tasks.length}</span>

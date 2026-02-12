@@ -9,13 +9,22 @@ const TaskManagement: React.FC = () => {
 
     console.log('Mock tasks:', MOCK_TASKS);
     
-    const [tasks] = React.useState<Task[]>(MOCK_TASKS);
+    const [tasks, setTasks] = React.useState<Task[]>(MOCK_TASKS);
 
     const columns: { id: TaskStatus; label: string} [] = [
         { id: 'todo', label: 'To Do' },
         { id: 'in-progress', label: 'In Progress' },
         { id: 'done', label: 'Done' },
     ];
+
+    const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
+        setTasks((prevTasks) =>
+            prevTasks.map((task) =>
+                task.id === taskId ? { ...task, status: newStatus } : task
+            )
+        );
+    }
+
 
   return (
     <div className="task-page">
@@ -44,6 +53,7 @@ const TaskManagement: React.FC = () => {
                     label={column.label}
                     status={column.id}
                     tasks={tasks.filter((task) => task.status === column.id)} 
+                    onMoveTask={handleMoveTask}
                 />
             ))}
         </div>

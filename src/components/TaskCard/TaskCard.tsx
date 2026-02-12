@@ -22,7 +22,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
     const { text: progressText, percent: progressWidth } = getProgress();
 
     return (
-        <div className="task-card">
+        <div className="task-card" draggable="true" onDragStart={(e) => {
+            e.dataTransfer.setData('taskId', task.id);
+        }}>
             <div className="card-header">
                 <span className={`priority-tag ${task.priority.toLowerCase()}`}>
                     {task.priority}
