@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import './App.css'
 import Header from './components/Header/Header';
+import TaskManagement from './pages/TaskManagement/TaskManagement';
 const queryClient = new QueryClient();
 
 export default function App() {
@@ -12,7 +13,7 @@ export default function App() {
       <Header />
             <Routes>
               <Route path="/" element={<div>Trang Overview</div>} />
-              <Route path="/task" element={<div>Trang Task Management</div>} />
+              <Route path="/task" element={<TaskManagement />} />
               <Route path="/calendar" element={<div>Trang Calendar</div>} />
               <Route path="/finance" element={<div>Trang Finance</div>} />
               <Route path="/transaction" element={<div>Trang Transactions</div>} />
