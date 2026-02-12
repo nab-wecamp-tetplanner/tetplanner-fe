@@ -1,410 +1,538 @@
-import { Header } from "../components";
-import React from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-
-type CardProps = {
-  children: React.ReactNode;
-  className?: string;
-};
-type BadgeProps = {
-  text: string;
-  isPositive: boolean;
-};
-
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    name: string;
-    value: number;
-    payload: (typeof expenseCategories)[number];
-  }>;
-}
-
-const Card = ({ children, className = "" }: CardProps) => (
-  <div
-    className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-4 ${className}`}
-  >
-    {children}
-  </div>
-);
-
-const Badge = ({ text, isPositive }: BadgeProps) => (
-  <span
-    className={`px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1
-    ${isPositive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
-  >
-    {isPositive ? "↑" : "↓"} {text}
-  </span>
-);
+import { Header } from "../components/Header";
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  ShoppingCart,
+  Gift,
+  Sparkles,
+  Package,
+  Plus,
+  Search,
+  Calendar,
+  Edit2,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  TrendingUp,
+} from "lucide-react";
+import { ProgressRing } from "../components/ProgressRing";
+import type {
+  ShoppingItem,
+  ShoppingCategory,
+  Budget,
+  CategorySummary,
+} from "../types/shopping.types";
 
 // ==========================================
-// 2. SPECIFIC COMPONENTS (Thành phần chi tiết)
+// CONSTANTS
 // ==========================================
 
-const PageHeader = () => (
-  <div className="flex flex-col md:flex-row md:items-center justify-between mt-2 mb-2">
-    <h1 className="text-xl font-bold text-gray-900 mb-4 md:mb-0">
-      Hello, Mark!
-    </h1>
-
-    <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-gray-200 text-sm font-medium text-gray-500">
-      <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg">
-        This month
-      </button>
-    </div>
-  </div>
-);
-
-const SummarySection = () => {
-  const data = [
-    {
-      title: "Balance",
-      amount: "$5,502.45",
-      trend: "12,5%",
-      isPositive: true,
-      amountColor: "text-blue-600",
-    },
-    {
-      title: "Incomes",
-      amount: "$9,450.00",
-      trend: "27%",
-      isPositive: true,
-      amountColor: "text-gray-900",
-    },
-    {
-      title: "Expenses",
-      amount: "$3,945.55",
-      trend: "15%",
-      isPositive: false,
-      amountColor: "text-gray-900",
-    },
-  ];
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-      {data.map((item, index) => (
-        <Card key={index} className="flex flex-col gap-1">
-          <span className="text-gray-500 text-sm font-medium">
-            {item.title}
-          </span>
-          <div className="flex items-end justify-between">
-            <span className={`text-xl font-bold ${item.amountColor}`}>
-              {item.amount}
-            </span>
-            <Badge text={item.trend} isPositive={item.isPositive} />
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
+const CATEGORY_CONFIG: Record<
+  ShoppingCategory,
+  {
+    icon: React.ElementType;
+    tokenColor: string;
+    tokenBg: string;
+    tokenBorder: string;
+    iconBg: string;
+  }
+> = {
+  Food: {
+    icon: ShoppingCart,
+    tokenColor: "text-planner-blue",
+    tokenBg: "bg-planner-blue-light",
+    tokenBorder: "border-planner-blue/20",
+    iconBg: "bg-planner-blue",
+  },
+  Gift: {
+    icon: Gift,
+    tokenColor: "text-planner-pink",
+    tokenBg: "bg-planner-pink-light",
+    tokenBorder: "border-planner-pink/20",
+    iconBg: "bg-planner-pink",
+  },
+  Decoration: {
+    icon: Sparkles,
+    tokenColor: "text-planner-purple",
+    tokenBg: "bg-planner-purple-light",
+    tokenBorder: "border-planner-purple/20",
+    iconBg: "bg-planner-purple",
+  },
+  Other: {
+    icon: Package,
+    tokenColor: "text-planner-green",
+    tokenBg: "bg-planner-green-light",
+    tokenBorder: "border-planner-green/20",
+    iconBg: "bg-planner-green",
+  },
 };
 
-const GoalsSection = () => {
-  const goals = [
-    {
-      amount: "10.000.000 VND",
-      date: "12/20/20",
-      icon: "🌴",
-      title: "Holidays",
-    },
-    {
-      amount: "20.000.000 VND",
-      date: "12/20/20",
-      icon: "🧱",
-      title: "Renovation",
-    },
-    { amount: "5.000.000 VND", date: "12/20/20", icon: "🎮", title: "Xbox" },
-  ];
+const INITIAL_BUDGET: Budget = { total: 5000000, used: 0 };
 
-  return (
-    <div className="mb-1 mt-2">
-      <div className="flex items-center gap-3 mb-1">
-        <h3 className="text-lg font-bold text-gray-900">Goals</h3>
-        <button className="w-6 h-6 bg-yellow-400 text-white rounded-full flex items-center justify-center text-sm hover:bg-yellow-500">
-          +
-        </button>
-      </div>
-      <div className="grid grid-cols-5 gap-6 overflow-x-auto pb-2">
-        {goals.map((goal, index) => (
-          <Card
-            key={index}
-            className="min-w-[200px] flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex flex-row items-center text-sm">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mr-2">
-                  {goal.icon}
-                </div>
-                <div className="text-gray-400 font-semibold">{goal.title}</div>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-gray-900 font-medium">{goal.amount}</h3>
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Dữ liệu mẫu kết hợp cho cả biểu đồ và phần chú thích (Legend)
-const expenseCategories = [
+const MOCK_ITEMS: ShoppingItem[] = [
   {
-    name: "House",
-    value: 41.35,
-    color: "#A855F7",
-    bgClass: "bg-purple-500",
-    icon: "🏠",
+    id: "1",
+    name: "Bánh chưng",
+    category: "Food",
+    price: 150000,
+    quantity: 4,
+    dueDate: "2026-02-15",
+    status: "pending",
+    notes: "Cần đặt trước",
   },
   {
-    name: "Credit card",
-    value: 21.51,
-    color: "#EF4444",
-    bgClass: "bg-red-500",
-    icon: "💳",
+    id: "2",
+    name: "Mứt tết",
+    category: "Food",
+    price: 200000,
+    quantity: 2,
+    dueDate: "2026-02-14",
+    status: "pending",
   },
   {
-    name: "Transportation",
-    value: 13.47,
-    color: "#3B82F6",
-    bgClass: "bg-blue-500",
-    icon: "🚌",
+    id: "3",
+    name: "Hoa mai",
+    category: "Decoration",
+    price: 500000,
+    quantity: 1,
+    dueDate: "2026-02-10",
+    status: "purchased",
   },
   {
-    name: "Groceries",
-    value: 9.97,
-    color: "#10B981",
-    bgClass: "bg-emerald-500",
-    icon: "🛒",
+    id: "4",
+    name: "Lì xì đỏ",
+    category: "Gift",
+    price: 50000,
+    quantity: 10,
+    dueDate: "2026-02-16",
+    status: "pending",
   },
   {
-    name: "Shopping",
-    value: 3.35,
-    color: "#6366F1",
-    bgClass: "bg-indigo-500",
-    icon: "🛍️",
+    id: "5",
+    name: "Bánh kẹo",
+    category: "Food",
+    price: 300000,
+    quantity: 3,
+    dueDate: "2026-02-13",
+    status: "pending",
+  },
+  {
+    id: "6",
+    name: "Giỏ quà",
+    category: "Gift",
+    price: 400000,
+    quantity: 2,
+    dueDate: "2026-02-12",
+    status: "pending",
+  },
+  {
+    id: "7",
+    name: "Câu đối",
+    category: "Decoration",
+    price: 100000,
+    quantity: 3,
+    dueDate: "2026-02-11",
+    status: "purchased",
   },
 ];
 
-// Custom Tooltip khi hover vào biểu đồ
-const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white px-4 py-2 rounded-xl shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] border border-slate-50 text-sm">
-        <p className="font-semibold text-slate-800">{payload[0].name}</p>
-        <p className="text-slate-500">{payload[0].value}%</p>
-      </div>
-    );
-  }
-  return null;
-};
+// ==========================================
+// UTILITIES
+// ==========================================
 
-const ExpenseChartWidget = () => {
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    amount,
+  );
+
+const formatDate = (dateString: string) =>
+  new Date(dateString).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+
+// ==========================================
+// SUB-COMPONENTS
+// ==========================================
+
+const PageHeader = () => (
+  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 animate-fade-in">
+    <div>
+      <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
+        Budget Planner
+      </p>
+      <h1 className="text-4xl font-serif text-foreground mb-1">
+        Shopping Manager
+      </h1>
+      <p className="text-muted-foreground text-sm">
+        Theo dõi chi tiêu và quản lý ngân sách mua sắm Tết
+      </p>
+    </div>
+    <button className="mt-4 md:mt-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm">
+      <Plus className="w-4 h-4" />
+      Thêm mục
+    </button>
+  </div>
+);
+
+interface BudgetOverviewProps {
+  budget: Budget;
+  itemCount: number;
+  purchasedCount: number;
+}
+
+const BudgetOverview: React.FC<BudgetOverviewProps> = ({
+  budget,
+  itemCount,
+  purchasedCount,
+}) => {
+  const percentage = (budget.used / budget.total) * 100;
+  const remaining = budget.total - budget.used;
+
   return (
-    <Card className="flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="font-bold text-slate-800 text-[16px]">
-          Expenses by category
-        </h2>
-        <button className="text-slate-400 hover:text-slate-600 text-xl font-light">
-          ⋮
-        </button>
-      </div>
-
-      {/* Khu vực vẽ biểu đồ Recharts */}
-      <div className="h-[220px] w-full mb-6 relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={expenseCategories}
-              cx="50%"
-              cy="50%"
-              innerRadius={40}
-              outerRadius={95}
-              paddingAngle={0}
-              dataKey="value"
-              stroke="none"
-            >
-              {expenseCategories.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-
-        {/* Nội dung nằm chính giữa Donut Chart */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">
-            Total
-          </span>
-          <span className="text-slate-800 text-lg font-bold">100%</span>
+    <div
+      className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8 animate-fade-in"
+      style={{ animationDelay: "0.1s" }}
+    >
+      {/* Main budget card */}
+      <div className="lg:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
+        <div className="flex items-start gap-6">
+          <ProgressRing percentage={percentage} />
+          <div className="flex-1 min-w-0">
+            <h2 className="font-serif text-xl text-foreground mb-4">
+              Tổng quan ngân sách
+            </h2>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium mb-1">
+                  Tổng ngân sách
+                </p>
+                <p className="text-lg font-bold text-foreground">
+                  {formatCurrency(budget.total)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium mb-1">
+                  Đã dùng
+                </p>
+                <p className="text-lg font-bold text-primary">
+                  {formatCurrency(budget.used)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground font-medium mb-1">
+                  Còn lại
+                </p>
+                <p className="text-lg font-bold text-accent">
+                  {formatCurrency(remaining)}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Danh sách chú thích (Legend) */}
-      <div className="flex flex-col gap-4 mt-auto">
-        {expenseCategories.map((cat, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between text-[14px] group cursor-pointer hover:bg-slate-50 -mx-2 px-2 py-1.5 rounded-lg transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${cat.bgClass} shadow-sm group-hover:scale-110 transition-transform`}
-              >
-                <span className="text-[14px]">{cat.icon}</span>
-              </div>
-              <span className="font-medium text-slate-700">{cat.name}</span>
-            </div>
-            <span className="text-slate-400 font-medium">{cat.value}%</span>
+      {/* Quick stats */}
+      <div className="flex flex-col gap-4">
+        <div className="flex-1 bg-card rounded-2xl border border-border p-5 shadow-sm flex items-center gap-4">
+          <div className="h-11 w-11 rounded-xl bg-planner-amber-light flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-planner-amber" />
           </div>
-        ))}
+          <div>
+            <p className="text-xs text-muted-foreground font-medium">
+              Tổng mục
+            </p>
+            <p className="text-2xl font-bold text-foreground">{itemCount}</p>
+          </div>
+        </div>
+        <div className="flex-1 bg-card rounded-2xl border border-border p-5 shadow-sm flex items-center gap-4">
+          <div className="h-11 w-11 rounded-xl bg-planner-green-light flex items-center justify-center">
+            <CheckCircle2 className="w-5 h-5 text-planner-green" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground font-medium">Đã mua</p>
+            <p className="text-2xl font-bold text-foreground">
+              {purchasedCount}/{itemCount}
+            </p>
+          </div>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 };
 
-const LastTransactions = () => {
-  const transactions = [
-    {
-      icon: "OR",
-      iconBg: "bg-gray-100",
-      name: "Orlando Rodrigues",
-      method: "Bank account",
-      date: "2024/04/01",
-      amount: "+$750.00",
-      isIncome: true,
-    },
-    {
-      icon: "N",
-      iconBg: "bg-red-100 text-red-600 font-bold",
-      name: "Netflix",
-      method: "Credit card",
-      date: "2024/03/29",
-      amount: "-$9.90",
-      isIncome: false,
-    },
-    {
-      icon: "S",
-      iconBg: "bg-green-100 text-green-600 font-bold",
-      name: "Spotify",
-      method: "Credit card",
-      date: "2024/03/29",
-      amount: "-$19.90",
-      isIncome: false,
-    },
-    {
-      icon: "CA",
-      iconBg: "bg-gray-100",
-      name: "Carl Andrew",
-      method: "Bank account",
-      date: "2024/03/27",
-      amount: "+$400.00",
-      isIncome: true,
-    },
-    {
-      icon: "CM",
-      iconBg: "bg-gray-100",
-      name: "Carrefour Market",
-      method: "Credit card",
-      date: "2024/03/26",
-      amount: "-$64.33",
-      isIncome: false,
-    },
-    {
-      icon: "A",
-      iconBg: "bg-gray-800 text-white font-bold",
-      name: "Amazon",
-      method: "Credit card",
-      date: "2024/03/24",
-      amount: "-$147.90",
-      isIncome: false,
-    },
-    {
-      icon: "Sh",
-      iconBg: "bg-green-50 text-green-700 font-bold",
-      name: "Shopify",
-      method: "Credit card",
-      date: "2024/03/21",
-      amount: "-$57.98",
-      isIncome: false,
-    },
-  ];
+interface CategoryCardsProps {
+  categorySummaries: CategorySummary[];
+}
+
+const CategoryCards: React.FC<CategoryCardsProps> = ({ categorySummaries }) => (
+  <div
+    className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8 animate-fade-in"
+    style={{ animationDelay: "0.2s" }}
+  >
+    {categorySummaries.map((summary) => {
+      const config = CATEGORY_CONFIG[summary.category];
+      const Icon = config.icon;
+      return (
+        <div
+          key={summary.category}
+          className="group bg-card rounded-2xl border border-border p-5 hover:shadow-md transition-all duration-200 cursor-pointer"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div
+              className={`h-10 w-10 rounded-xl ${config.iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}
+            >
+              <Icon className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${config.tokenBg} ${config.tokenColor} border ${config.tokenBorder}`}
+            >
+              {summary.itemCount}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground font-medium mb-0.5">
+            {summary.category}
+          </p>
+          <p className={`text-xl font-bold ${config.tokenColor}`}>
+            {formatCurrency(summary.total)}
+          </p>
+        </div>
+      );
+    })}
+  </div>
+);
+
+interface ShoppingListProps {
+  items: ShoppingItem[];
+}
+
+const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState<
+    ShoppingCategory | "All"
+  >("All");
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      const matchesSearch = item.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        filterCategory === "All" || item.category === filterCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [items, searchTerm, filterCategory]);
 
   return (
-    <Card className="h-full">
-      <div className="mb-6">
-        <h3 className="font-bold text-gray-900">Last transactions</h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Check your last transactions
-        </p>
+    <div
+      className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden animate-fade-in"
+      style={{ animationDelay: "0.3s" }}
+    >
+      {/* Header */}
+      <div className="p-5 border-b border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-xl text-foreground">
+              Danh sách mua sắm
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {filteredItems.length} mục
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 w-44"
+              />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
+            </div>
+            <select
+              value={filterCategory}
+              onChange={(e) =>
+                setFilterCategory(e.target.value as ShoppingCategory | "All")
+              }
+              className="px-3 py-2 border border-border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring/30"
+            >
+              <option value="All">Tất cả</option>
+              <option value="Food">Thực phẩm</option>
+              <option value="Gift">Quà tặng</option>
+              <option value="Decoration">Trang trí</option>
+              <option value="Other">Khác</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div className="w-full overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-gray-400 border-b border-gray-100">
-              <th className="font-normal pb-3 w-1/3">Description</th>
-              <th className="font-normal pb-3 w-1/4">Method</th>
-              <th className="font-normal pb-3 w-1/4">Date</th>
-              <th className="font-normal pb-3">Amount</th>
-              <th className="font-normal pb-3 w-8"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((txn, index) => (
-              <tr
-                key={index}
-                className="border-b border-gray-50 hover:bg-gray-50"
+      {/* Items */}
+      <div className="divide-y divide-border">
+        {filteredItems.map((item) => {
+          const config = CATEGORY_CONFIG[item.category];
+          const Icon = config.icon;
+          const total = item.price * item.quantity;
+          const isPurchased = item.status === "purchased";
+
+          return (
+            <div
+              key={item.id}
+              className={`flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors ${isPurchased ? "opacity-70" : ""}`}
+            >
+              {/* Status indicator */}
+              <button
+                className={`flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${isPurchased ? "bg-accent border-accent" : "border-border hover:border-primary"}`}
               >
-                <td className="py-4 flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${txn.iconBg}`}
+                {isPurchased && (
+                  <CheckCircle2 className="w-3 h-3 text-accent-foreground" />
+                )}
+              </button>
+
+              {/* Category icon */}
+              <div
+                className={`flex-shrink-0 h-9 w-9 rounded-lg ${config.tokenBg} flex items-center justify-center`}
+              >
+                <Icon className={`w-4 h-4 ${config.tokenColor}`} />
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`font-medium text-foreground text-sm ${isPurchased ? "line-through" : ""}`}
                   >
-                    {txn.icon}
-                  </div>
-                  <span className="font-bold text-gray-800">{txn.name}</span>
-                </td>
-                <td className="py-4 text-gray-500">{txn.method}</td>
-                <td className="py-4 text-gray-500">{txn.date}</td>
-                <td
-                  className={`py-4 font-bold ${txn.isIncome ? "text-green-500" : "text-gray-800"}`}
-                >
-                  {txn.amount}
-                </td>
-                <td className="py-4 text-gray-400 cursor-pointer hover:text-gray-600">
-                  ⋮
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    {item.name}
+                  </span>
+                  <span
+                    className={`text-xs px-1.5 py-0.5 rounded ${config.tokenBg} ${config.tokenColor} font-medium`}
+                  >
+                    {item.category}
+                  </span>
+                </div>
+                {item.notes && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {item.notes}
+                  </p>
+                )}
+              </div>
+
+              {/* Quantity */}
+              <span className="text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded-lg flex-shrink-0">
+                x{item.quantity}
+              </span>
+
+              {/* Due date */}
+              <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                <Calendar className="w-3.5 h-3.5" />
+                {formatDate(item.dueDate)}
+              </div>
+
+              {/* Status badge */}
+              <div className="hidden md:block flex-shrink-0">
+                {isPurchased ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-accent bg-planner-green-light px-2 py-1 rounded-lg">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Đã mua
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-planner-amber bg-planner-amber-light px-2 py-1 rounded-lg">
+                    <Clock className="w-3 h-3" />
+                    Chờ mua
+                  </span>
+                )}
+              </div>
+
+              {/* Total */}
+              <span className="font-bold text-sm text-foreground flex-shrink-0 w-28 text-right">
+                {formatCurrency(total)}
+              </span>
+
+              {/* Actions */}
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+                  <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+                <button className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors">
+                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredItems.length === 0 && (
+          <div className="text-center py-16">
+            <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-foreground font-medium mb-1">
+              Không tìm thấy mục nào
+            </p>
+            <p className="text-muted-foreground text-sm">Thử thay đổi bộ lọc</p>
+          </div>
+        )}
       </div>
-    </Card>
+    </div>
   );
 };
 
 // ==========================================
-// 3. MAIN LAYOUT (Khung sườn chính)
+// MAIN
 // ==========================================
 
 export default function FinanceDashboard() {
+  const [items] = useState<ShoppingItem[]>(MOCK_ITEMS);
+  const [budget, setBudget] = useState<Budget>(INITIAL_BUDGET);
+
+  const budgetUsed = useMemo(
+    () => items.reduce((total, item) => total + item.price * item.quantity, 0),
+    [items],
+  );
+
+  useEffect(() => {
+    setBudget((prev) => ({ ...prev, used: budgetUsed }));
+  }, [budgetUsed]);
+
+  const purchasedCount = useMemo(
+    () => items.filter((i) => i.status === "purchased").length,
+    [items],
+  );
+
+  const categorySummaries = useMemo<CategorySummary[]>(() => {
+    const categories: ShoppingCategory[] = [
+      "Food",
+      "Gift",
+      "Decoration",
+      "Other",
+    ];
+    return categories.map((category) => {
+      const categoryItems = items.filter((item) => item.category === category);
+      const total = categoryItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      const config = CATEGORY_CONFIG[category];
+      return {
+        category,
+        total,
+        itemCount: categoryItems.length,
+        icon: config.icon,
+        color: config.tokenColor,
+        bgColor: config.tokenBg,
+      };
+    });
+  }, [items]);
+
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-background">
       <Header />
-
-      <main className="max-w-7xl mx-auto px-4 md:px-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <PageHeader />
-        <SummarySection />
-        <GoalsSection />
-
-        {/* Lưới 2 cột cho phần Bottom Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-6">
-          <ExpenseChartWidget />
-          <LastTransactions />
-        </div>
+        <BudgetOverview
+          budget={budget}
+          itemCount={items.length}
+          purchasedCount={purchasedCount}
+        />
+        <CategoryCards categorySummaries={categorySummaries} />
+        <ShoppingList items={items} />
       </main>
     </div>
   );
