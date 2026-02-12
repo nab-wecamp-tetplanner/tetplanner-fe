@@ -21,10 +21,12 @@ export default function App() {
           <Route path="/transaction" element={<Transaction />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route
-            path="*"
+            path="/"
             element={
               <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <h1 className="text-2xl text-gray-600">Page not found</h1>
+                <h1 className="text-4xl font-bold text-gray-900">
+                  Welcome to NY Planner
+                </h1>
               </div>
             }
           />
