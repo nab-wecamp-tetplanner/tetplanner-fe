@@ -1,0 +1,72 @@
+.task-card {
+  background-color: white;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.05);
+  position: relative;
+  cursor: grab;
+  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+}
+
+.task-card:active {
+  cursor: grabbing;
+}
+
+.task-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.task-actions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: white;
+  padding-left: 0.5rem;
+}
+
+.task-card:hover .task-actions {
+  opacity: 1;
+}
+
+.subtask-list {
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #f3f4f6;
+  margin-bottom: 1.25rem;
+}
+
+.due-date {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  margin-top: 5%;
+}
+
+.comments-attachments {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.75rem;
+}
+
+.comments-count,
+.attachments-count {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.comments-count svg,
+.attachments-count svg {
+  width: 14px;
+  height: 14px;
+}

@@ -1,9 +1,9 @@
 import React from 'react'
 import type { Task, TaskStatus} from '../../types/task'
 import { MOCK_TASKS } from '../../data/mockTasks'
-
 import './TaskManagement.css'
 import { LayoutGrid, Plus, MoreHorizontal } from 'lucide-react';
+import TaskCard from '../../components/TaskCard/TaskCard';
 
 const TaskManagement: React.FC = () => {
 
@@ -49,56 +49,9 @@ const TaskManagement: React.FC = () => {
                     </div>
 
                     <div className="task-list">
-                        {tasks.filter(task => task.status === column.id).map((task) => (
-                            <div key={task.id} className="task-card">
-
-                                <div className="card-header">
-                                <span className={`priority-tag ${task.priority.toLowerCase()}`}>
-                                    {task.priority}
-                                </span>
-                                <MoreHorizontal size={16} className="more-icon" />
-                                </div>
-
-                                <h4 className="task-title">{task.title}</h4>
-                                <div className="task-meta">
-                                    <span className="project-name">{task.project}</span>
-                                    <span className="dot"></span>
-                                    <span className="category-name">{task.category}</span>
-                                </div>
-
-                                <div className="progress-section">
-                                    <div className="progress-info">
-                                        <span>Progress</span>
-                                        <span className="progress-count">
-                                            {task.status === 'done' ? '10/10' : task.status === 'in-progress' ? '5/10' : '0/10'}
-                                        </span>
-                                    </div>
-                                    <div className="progress-bar">
-                                        <div 
-                                            className={`progress-fill ${task.status}`}
-                                            style={{ width: task.status === 'done' ? '100%' : task.status === 'in-progress' ? '50%' : '0%' }}
-                                        ></div>
-                                    </div>
-                                </div>
-
-                                <div className="card-footer">
-                                    <span className="due-date">
-                                        {task.dueDate}
-                                    </span>
-                                    <div className="footer-right">
-                                        <div className="avatar-group">
-                                            {task.avatars.map((avatarUrl, index) => (
-                                                <img key={index} src={avatarUrl} alt={`Avatar ${index + 1}`} className="avatar" />
-                                            ))}
-                                        </div>
-                                        <div className="comments-attachments">
-                                            <span className="comments-count">💬 {task.commentsCount}</span>
-                                            <span className="attachments-count">📎 {task.attachmentsCount}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                        {tasks
+                            .filter(task => task.status === column.id)
+                            .map((task) => (<TaskCard key={task.id} task={task} />))}
                     </div>
                 </div>
             ))}
