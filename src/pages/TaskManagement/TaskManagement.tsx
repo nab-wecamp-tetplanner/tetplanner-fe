@@ -3,7 +3,7 @@ import type { Task, TaskStatus} from '../../types/task'
 import { MOCK_TASKS } from '../../data/mockTasks'
 import './TaskManagement.css'
 import { LayoutGrid, Plus, MoreHorizontal } from 'lucide-react';
-import TaskCard from '../../components/TaskCard/TaskCard';
+import TaskColumn from '../../components/TaskColumn/TaskColumn';
 
 const TaskManagement: React.FC = () => {
 
@@ -39,21 +39,12 @@ const TaskManagement: React.FC = () => {
 
         <div className="kanban-board">
             {columns.map((column) => (
-                <div key={column.id} className="kanban-column">
-                    <div className="column-info">
-                        <h2>{column.label}</h2>
-                        <span className="task-count">
-                            {tasks.filter(task => task.status === column.id).length}
-                        </span>
-                        <button className='add-task-btn'><Plus size={14} /> Add new task </button>
-                    </div>
-
-                    <div className="task-list">
-                        {tasks
-                            .filter(task => task.status === column.id)
-                            .map((task) => (<TaskCard key={task.id} task={task} />))}
-                    </div>
-                </div>
+                <TaskColumn 
+                    key={column.id} 
+                    label={column.label}
+                    status={column.id}
+                    tasks={tasks.filter((task) => task.status === column.id)} 
+                />
             ))}
         </div>
     </div>)

@@ -1,0 +1,90 @@
+/* Container của cả cột */
+.kanban-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 350px; /* Độ rộng tối thiểu của cột */
+  background-color: transparent; /* Hoặc màu nền nhẹ nếu muốn */
+  height: 100%;
+}
+
+/* Phần Header (Tiêu đề + Số lượng + Nút Add) */
+.column-header {
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.column-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1b1e;
+  margin: 0;
+}
+
+.task-count {
+  background-color: #f1f3f5;
+  color: #868e96;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.add-task-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: transparent;
+  border: 1px dashed #ced4da;
+  border-radius: 8px;
+  color: #868e96;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-task-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+/* Phần danh sách chứa các Card */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Khoảng cách giữa các thẻ TaskCard */
+  overflow-y: auto; /* Cho phép cuộn nếu danh sách quá dài */
+  padding-bottom: 20px;
+  flex: 1; /* Chiếm hết chiều cao còn lại */
+}
+
+/* Scrollbar ẩn cho đẹp (Optional) */
+.task-list::-webkit-scrollbar {
+  width: 4px;
+}
+.task-list::-webkit-scrollbar-thumb {
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+.empty-column-placeholder {
+    height: 100px;
+    border: 2px dashed #f1f3f5;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+    font-size: 14px;
+}
