@@ -1,392 +1,430 @@
-import React, { useState } from "react";
-import { Header } from "@/components";
+import React, { useState, useMemo } from "react";
+import { Header } from "../components/Header";
+import {
+  Plus,
+  Minus,
+  ArrowLeftRight,
+  Search,
+  X,
+  Calendar,
+  MoreVertical,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 
 // ==========================================
-// 1. TYPES & INTERFACES
+// TYPES
 // ==========================================
 
 interface ActionCardType {
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: React.ElementType;
+  tokenColor: string;
+  tokenBg: string;
   iconBg: string;
-  iconColor: string;
 }
 
 interface TransactionType {
   id: string;
-  isDateGroupRow?: boolean; // Dùng cho các dòng "Date 10/2/2026"
+  isDateGroupRow?: boolean;
   iconText?: string;
-  iconBgClass?: string;
+  iconBg?: string;
+  iconColor?: string;
   name: string;
   category?: string;
   date?: string;
-  amount: string;
+  amount: number;
   isIncome: boolean;
 }
 
 // ==========================================
-// 2. MOCK DATA
+// CONSTANTS
 // ==========================================
 
-const actionCardsData: ActionCardType[] = [
+const ACTION_CARDS: ActionCardType[] = [
   {
     title: "Add income",
     description: "Create an income manually",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 4v16m8-8H4"
-        />
-      </svg>
-    ),
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
+    icon: Plus,
+    tokenColor: "text-planner-green",
+    tokenBg: "bg-planner-green-light",
+    iconBg: "bg-planner-green",
   },
   {
     title: "Add expense",
     description: "Create an expense manually",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M20 12H4"
-        />
-      </svg>
-    ),
-    iconBg: "bg-red-100",
-    iconColor: "text-red-600",
+    icon: Minus,
+    tokenColor: "text-planner-pink",
+    tokenBg: "bg-planner-pink-light",
+    iconBg: "bg-planner-pink",
   },
   {
     title: "Transfer money",
     description: "Select the amount and make a transfer",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-        />
-      </svg>
-    ),
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-600",
+    icon: ArrowLeftRight,
+    tokenColor: "text-planner-blue",
+    tokenBg: "bg-planner-blue-light",
+    iconBg: "bg-planner-blue",
   },
 ];
 
-const transactionsData: TransactionType[] = [
+const TRANSACTIONS: TransactionType[] = [
   {
-    id: "1",
+    id: "g1",
     isDateGroupRow: true,
-    name: "Date 10/2/2026",
-    amount: "+$750.00",
+    name: "10/02/2026",
+    amount: 0,
     isIncome: true,
   },
   {
     id: "2",
     iconText: "OR",
-    iconBgClass: "bg-gray-100 text-gray-600",
+    iconBg: "bg-planner-purple-light",
+    iconColor: "text-planner-purple",
     name: "Orlando Rodrigues",
     category: "Housing",
-    date: "2024/04/01",
-    amount: "+$750.00",
+    date: "10/02/2026",
+    amount: 750000,
     isIncome: true,
   },
   {
     id: "3",
     iconText: "OR",
-    iconBgClass: "bg-gray-100 text-gray-600",
+    iconBg: "bg-planner-purple-light",
+    iconColor: "text-planner-purple",
     name: "Orlando Rodrigues",
     category: "Housing",
-    date: "2024/04/01",
-    amount: "+$750.00",
+    date: "10/02/2026",
+    amount: 750000,
     isIncome: true,
   },
   {
     id: "4",
     iconText: "N",
-    iconBgClass: "bg-red-100 text-red-600 font-bold",
+    iconBg: "bg-planner-pink-light",
+    iconColor: "text-planner-pink",
     name: "Netflix",
     category: "Entertainment",
-    date: "2024/03/29",
-    amount: "-$9.90",
+    date: "09/02/2026",
+    amount: 99000,
     isIncome: false,
   },
   {
     id: "5",
     iconText: "S",
-    iconBgClass: "bg-green-100 text-green-600 font-bold",
+    iconBg: "bg-planner-green-light",
+    iconColor: "text-planner-green",
     name: "Spotify",
     category: "Entertainment",
-    date: "2024/03/29",
-    amount: "-$19.90",
+    date: "09/02/2026",
+    amount: 199000,
     isIncome: false,
   },
   {
-    id: "6",
+    id: "g2",
     isDateGroupRow: true,
-    name: "Date 10/2/2026",
-    amount: "+$750.00",
+    name: "08/02/2026",
+    amount: 0,
     isIncome: true,
   },
   {
     id: "7",
     iconText: "CA",
-    iconBgClass: "bg-gray-100 text-gray-600",
+    iconBg: "bg-planner-blue-light",
+    iconColor: "text-planner-blue",
     name: "Carl Andrew",
     category: "Education",
-    date: "2024/03/27",
-    amount: "+$400.00",
+    date: "08/02/2026",
+    amount: 400000,
     isIncome: true,
   },
   {
     id: "8",
     iconText: "CM",
-    iconBgClass: "bg-gray-100 text-gray-600",
+    iconBg: "bg-planner-amber-light",
+    iconColor: "text-planner-amber",
     name: "Carrefour Market",
-    category: "Education",
-    date: "2024/03/26",
-    amount: "-$64.33",
+    category: "Food",
+    date: "07/02/2026",
+    amount: 643300,
     isIncome: false,
   },
   {
     id: "9",
-    iconText: "a",
-    iconBgClass: "bg-gray-800 text-white font-bold",
+    iconText: "A",
+    iconBg: "bg-muted",
+    iconColor: "text-foreground",
     name: "Amazon",
     category: "Shopping",
-    date: "2024/03/24",
-    amount: "-$147.90",
+    date: "06/02/2026",
+    amount: 1479000,
     isIncome: false,
   },
   {
     id: "10",
     iconText: "Sh",
-    iconBgClass: "bg-green-100 text-green-700 font-bold",
+    iconBg: "bg-planner-green-light",
+    iconColor: "text-planner-green",
     name: "Shopify",
     category: "Shopping",
-    date: "2024/03/21",
-    amount: "-$57.98",
+    date: "05/02/2026",
+    amount: 579800,
     isIncome: false,
   },
 ];
 
 // ==========================================
-// 3. UI COMPONENTS
+// UTILITIES
 // ==========================================
 
-const PageTitle: React.FC = () => (
-  <div className="flex flex-col md:flex-row md:items-center justify-between mt-8 mb-6">
-    <h1 className="text-3xl font-bold text-gray-900 mb-4 md:mb-0">
-      Hello, Mark!
-    </h1>
-    <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-gray-200 text-sm font-medium text-gray-500">
-      <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg">
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    amount,
+  );
+
+// ==========================================
+// SUB-COMPONENTS
+// ==========================================
+
+const PageHeader = () => (
+  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
+    <div>
+      <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
+        Transactions
+      </p>
+      <h1 className="text-4xl font-serif text-foreground mb-1">Transactions</h1>
+      <p className="text-muted-foreground text-sm">
+        Track income and expenses and manage transactions
+      </p>
+    </div>
+    <div className="mt-4 md:mt-0 flex items-center gap-1 bg-card p-1 rounded-xl border border-border text-sm font-medium text-muted-foreground">
+      <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold">
         This month
       </button>
-      <button className="px-4 py-2 hover:bg-gray-50 rounded-lg">
+      <button className="px-3 py-1.5 hover:bg-muted rounded-lg text-xs">
         Last month
       </button>
-      <button className="px-4 py-2 hover:bg-gray-50 rounded-lg">
+      <button className="px-3 py-1.5 hover:bg-muted rounded-lg text-xs">
         This year
       </button>
-      <button className="px-4 py-2 hover:bg-gray-50 rounded-lg">
-        Last 12 months
-      </button>
-      <div className="w-px h-6 bg-gray-200 mx-2"></div>
-      <button className="px-4 py-2 flex items-center gap-2 hover:bg-gray-50 rounded-lg">
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-        Select period
+      <button className="px-3 py-1.5 hover:bg-muted rounded-lg text-xs flex items-center gap-1">
+        <Calendar className="w-3.5 h-3.5" />
+        Custom
       </button>
     </div>
   </div>
 );
 
-const ActionCards: React.FC = () => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    {actionCardsData.map((action, index) => (
-      <div
-        key={index}
-        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md cursor-pointer transition-shadow"
-      >
+const ActionCards = () => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+    {ACTION_CARDS.map((action) => {
+      const Icon = action.icon;
+      return (
         <div
-          className={`w-12 h-12 rounded-xl flex items-center justify-center ${action.iconBg} ${action.iconColor}`}
+          key={action.title}
+          className="group bg-card rounded-2xl border border-border p-5 flex items-center gap-4 hover:shadow-md cursor-pointer transition-all duration-200"
         >
-          {action.icon}
+          <div
+            className={`h-11 w-11 rounded-xl ${action.iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}
+          >
+            <Icon className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-foreground text-sm">
+              {action.title}
+            </h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {action.description}
+            </p>
+          </div>
         </div>
-        <div>
-          <h4 className="font-bold text-gray-900">{action.title}</h4>
-          <p className="text-xs text-gray-500 mt-0.5">{action.description}</p>
-        </div>
-      </div>
-    ))}
+      );
+    })}
   </div>
 );
 
-const SearchBar: React.FC = () => {
-  const [searchValue, setSearchValue] = useState("Londo");
+const QuickStats = () => {
+  const income = TRANSACTIONS.filter(
+    (t) => !t.isDateGroupRow && t.isIncome,
+  ).reduce((s, t) => s + t.amount, 0);
+  const expense = TRANSACTIONS.filter(
+    (t) => !t.isDateGroupRow && !t.isIncome,
+  ).reduce((s, t) => s + t.amount, 0);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-teal-500 p-2 mb-6 flex items-center focus-within:ring-1 focus-within:ring-teal-500 transition-all">
-      <input
-        type="text"
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
-        className="flex-1 outline-none px-4 text-gray-700"
-      />
-      {searchValue && (
-        <button
-          onClick={() => setSearchValue("")}
-          className="p-2 text-gray-400 hover:text-gray-600"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      )}
-      <button className="bg-teal-500 hover:bg-teal-600 transition-colors text-white p-2 rounded-lg ml-2">
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-      </button>
+    <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
+        <div className="h-11 w-11 rounded-xl bg-planner-green-light flex items-center justify-center">
+          <TrendingUp className="w-5 h-5 text-planner-green" />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground font-medium">
+            Total income
+          </p>
+          <p className="text-xl font-bold text-planner-green">
+            {formatCurrency(income)}
+          </p>
+        </div>
+      </div>
+      <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
+        <div className="h-11 w-11 rounded-xl bg-planner-pink-light flex items-center justify-center">
+          <TrendingDown className="w-5 h-5 text-planner-pink" />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground font-medium">
+            Total expense
+          </p>
+          <p className="text-xl font-bold text-planner-pink">
+            {formatCurrency(expense)}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
 
-const TransactionTable: React.FC = () => (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <table className="w-full text-left text-sm whitespace-nowrap">
-      <thead>
-        <tr className="text-gray-500 border-b border-gray-100">
-          <th className="font-medium px-6 py-4 w-2/5">Description</th>
-          <th className="font-medium px-6 py-4 w-1/5">Category</th>
-          <th className="font-medium px-6 py-4 w-1/5">Date</th>
-          <th className="font-medium px-6 py-4">Amount</th>
-          <th className="font-medium px-6 py-4 w-10"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {transactionsData.map((txn) => (
-          <tr
-            key={txn.id}
-            className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
-          >
-            {/* Description Column */}
-            <td className="px-6 py-4 flex items-center gap-4">
-              {txn.isDateGroupRow ? (
-                <div className="w-8 h-8 rounded-full border-2 border-gray-100 flex-shrink-0"></div>
-              ) : (
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs flex-shrink-0 ${txn.iconBgClass}`}
-                >
-                  {txn.iconText}
-                </div>
-              )}
-              <span
-                className={`text-gray-900 ${txn.isDateGroupRow ? "font-bold" : "font-semibold"}`}
+const TransactionList = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!searchTerm) return TRANSACTIONS;
+    const q = searchTerm.toLowerCase();
+    return TRANSACTIONS.filter(
+      (t) =>
+        t.isDateGroupRow ||
+        t.name.toLowerCase().includes(q) ||
+        t.category?.toLowerCase().includes(q),
+    );
+  }, [searchTerm]);
+
+  return (
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="p-5 border-b border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="font-serif text-xl text-foreground">
+              Transaction history
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {filtered.filter((t) => !t.isDateGroupRow).length} transactions
+            </p>
+          </div>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-8 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 w-52"
+            />
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2.5 top-2.5"
               >
-                {txn.name}
-              </span>
-            </td>
-
-            {/* Category Column */}
-            <td className="px-6 py-4 text-gray-500">{txn.category || ""}</td>
-
-            {/* Date Column */}
-            <td className="px-6 py-4 text-gray-500">{txn.date || ""}</td>
-
-            {/* Amount Column */}
-            <td
-              className={`px-6 py-4 font-bold ${txn.isIncome ? "text-green-500" : "text-gray-900"}`}
-            >
-              {txn.amount}
-            </td>
-
-            {/* Actions Column */}
-            <td className="px-6 py-4 text-gray-400">
-              <button className="hover:text-gray-700">
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                </svg>
+                <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
               </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="divide-y divide-border">
+        {filtered.map((txn) => {
+          if (txn.isDateGroupRow) {
+            return (
+              <div key={txn.id} className="px-5 py-3 bg-muted/40">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    {txn.name}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={txn.id}
+              className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
+            >
+              {/* Icon */}
+              <div
+                className={`flex-shrink-0 h-9 w-9 rounded-lg ${txn.iconBg} flex items-center justify-center`}
+              >
+                <span className={`text-xs font-bold ${txn.iconColor}`}>
+                  {txn.iconText}
+                </span>
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-foreground text-sm">
+                  {txn.name}
+                </span>
+                {txn.category && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {txn.category}
+                  </p>
+                )}
+              </div>
+
+              {/* Date */}
+              <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                <Calendar className="w-3.5 h-3.5" />
+                {txn.date}
+              </div>
+
+              {/* Amount */}
+              <span
+                className={`font-bold text-sm flex-shrink-0 w-28 text-right ${txn.isIncome ? "text-planner-green" : "text-foreground"}`}
+              >
+                {txn.isIncome ? "+" : "-"}
+                {formatCurrency(txn.amount)}
+              </span>
+
+              {/* Actions */}
+              <button className="p-1.5 hover:bg-muted rounded-lg transition-colors flex-shrink-0">
+                <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            </div>
+          );
+        })}
+
+        {filtered.filter((t) => !t.isDateGroupRow).length === 0 && (
+          <div className="text-center py-16">
+            <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-foreground font-medium mb-1">
+              No transactions found
+            </p>
+            <p className="text-muted-foreground text-sm">
+              Try changing your search keywords
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // ==========================================
-// 4. MAIN PAGE LAYOUT
+// MAIN
 // ==========================================
 
 export default function Transaction() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans pb-12">
+    <div className="min-h-screen bg-background">
       <Header />
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageTitle />
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <PageHeader />
         <ActionCards />
-        <SearchBar />
-        <TransactionTable />
+        <QuickStats />
+        <TransactionList />
       </main>
     </div>
   );
