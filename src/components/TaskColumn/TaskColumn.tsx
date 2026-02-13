@@ -30,7 +30,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
         setIsOver(true);
     };
 
-    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    const handleDragLeave = () => {
         setIsOver(false);
     };
   return (
