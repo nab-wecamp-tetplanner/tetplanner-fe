@@ -18,8 +18,10 @@ const TaskManagement: React.FC = () => {
     ];
 
     const handleDeleteTask = (taskId: string) => {
-        
-        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+        if(window.confirm('Are you sure you want to delete this task?')) {
+            console.log(`Deleting task with id: ${taskId}`);
+            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+        }
     }
 
     const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
@@ -59,6 +61,7 @@ const TaskManagement: React.FC = () => {
                     status={column.id}
                     tasks={tasks.filter((task) => task.status === column.id)} 
                     onMoveTask={handleMoveTask}
+                    onDeleteTask={handleDeleteTask}
                 />
             ))}
         </div>

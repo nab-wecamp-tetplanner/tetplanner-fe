@@ -5,10 +5,11 @@ import './TaskCard.css'
 
 interface TaskCardProps {
     task: Task;
+    onDeleteTask?: (taskId: string) => void;
 }
 
 
-const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask }) => {
     const getProgress = () => {
         switch(task.status) {
             case 'in-progress':
@@ -29,7 +30,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
                 <span className={`priority-tag ${task.priority.toLowerCase()}`}>
                     {task.priority}
                 </span>
-                <MoreHorizontal size={16} className="more-icon" />  
+                <MoreHorizontal size={16} className="more-icon" onClick={() => onDeleteTask && onDeleteTask(task.id)} />
             </div>
 
             <h4 className="task-title">{task.title}</h4>
