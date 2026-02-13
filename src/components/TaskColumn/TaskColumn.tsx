@@ -10,9 +10,10 @@ interface TaskColumnProps {
     tasks: Task[];
     onMoveTask: (taskId: string, newStatus: TaskStatus) => void;
     onDeleteTask: (taskId: string) => void;
+    onAddTask: () => void;
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask, onDeleteTask }) => {
+const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask, onDeleteTask, onAddTask }) => {
 
     const [isOver, setIsOver] = React.useState(false);
 
@@ -44,7 +45,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
             <span className="task-count">{tasks.length}</span>
         </div>
         <div className="header-bottom">
-            <button className='add-task-btn'><Plus size={16} /> Add new task </button>
+            <button className='add-task-btn' onClick={onAddTask}><Plus size={16} /> Add new task </button>
         </div>
         <div className="task-list">
             {tasks.length > 0 ? (tasks.map((task) => (<TaskCard key={task.id} task={task} onDeleteTask={onDeleteTask} />))) : (<p className="empty-column-placeholder">Drop tasks here</p>)}

@@ -1,0 +1,228 @@
+/* Lớp phủ mờ phía sau */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  /* Hộp nội dung Modal */
+  .modal-content {
+    background-color: white;
+    padding: 32px; /* Tăng padding cho thoáng */
+    border-radius: 20px; /* Bo tròn nhiều hơn */
+    width: 95%;
+    max-width: 480px; /* Tăng chiều rộng tối đa */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Khoảng cách giữa các phần chính */
+  }
+  
+  /* Header */
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-title {
+    margin: 0;
+    font-size: 1.5rem; /* Font to hơn */
+    font-weight: 800; /* Font đậm hơn */
+    color: #111827;
+  }
+  
+  .btn-close {
+    background: white; /* Nền trắng */
+    border: 1px solid #e5e7eb; /* Viền mỏng */
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 8px; /* Padding lớn hơn */
+    border-radius: 12px; /* Bo tròn */
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn-close:hover {
+    background-color: #f9fafb;
+    color: #ef4444;
+  }
+  
+  /* Form Styles */
+  .modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Khoảng cách giữa các trường lớn hơn */
+  }
+  
+  .form-row {
+      display: flex;
+      gap: 16px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Khoảng cách label và input */
+    flex: 1;
+  }
+  
+  .form-label {
+    font-size: 0.75rem; /* Font nhỏ hơn */
+    font-weight: 700; /* Font đậm */
+    color: #9ca3af; /* Màu xám nhạt */
+    text-transform: uppercase; /* Chữ in hoa */
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 12px 16px; /* Padding lớn hơn */
+    border-radius: 12px; /* Bo tròn nhiều hơn */
+    border: 1px solid #e5e7eb; /* Viền màu rất nhạt */
+    font-size: 0.95rem;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: #f9fafb; /* Nền xám rất nhạt */
+  }
+  
+  .form-input::placeholder {
+      color: #9ca3af;
+  }
+  
+  .form-input:focus {
+    border-color: #d1d5db;
+    background-color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Subtasks Section */
+  .subtask-input-group {
+      display: flex;
+      gap: 8px;
+  }
+  
+  .btn-add-subtask {
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background-color: #f3f4f6;
+      color: #4b5563;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+  }
+  
+  .btn-add-subtask:hover {
+      background-color: #e5e7eb;
+      color: #1f2937;
+  }
+  
+  .subtask-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+  }
+  
+  .subtask-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background-color: #f9fafb;
+      border: 1px solid #f3f4f6;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: #4b5563;
+  }
+  
+  .btn-remove-subtask {
+      background: transparent;
+      border: none;
+      color: #f87171;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+  }
+  
+  .btn-remove-subtask:hover {
+      background-color: #fef2f2;
+      color: #ef4444;
+  }
+  
+  /* Footer Actions */
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end; /* Căn phải */
+    gap: 16px; /* Khoảng cách lớn hơn */
+    margin-top: 8px;
+  }
+  
+  .btn {
+    padding: 12px 24px; /* Padding lớn hơn */
+    border-radius: 12px; /* Bo tròn nhiều hơn */
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .btn-cancel {
+    background-color: transparent;
+    border: none;
+    color: #6b7280;
+    font-weight: 600;
+  }
+  
+  .btn-cancel:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+  }
+  
+  .btn-submit {
+    background-color: #1f2937; /* Màu đen đậm như thiết kế */
+    border: 1px solid transparent;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .btn-submit:hover {
+    background-color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }

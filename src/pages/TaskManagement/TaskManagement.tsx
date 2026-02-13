@@ -1,9 +1,10 @@
 import React from 'react'
-import type { Task, TaskStatus} from '../../types/task'
+import type { Task, TaskPriority, TaskStatus} from '../../types/task'
 import { MOCK_TASKS } from '../../data/mockTasks'
 import './TaskManagement.css'
 import { LayoutGrid, Plus, MoreHorizontal } from 'lucide-react';
 import TaskColumn from '../../components/TaskColumn/TaskColumn';
+import AddTaskModal from '../../components/AddTaskModal/AddTaskModal';
 
 const TaskManagement: React.FC = () => {
 
@@ -11,11 +12,16 @@ const TaskManagement: React.FC = () => {
     
     const [tasks, setTasks] = React.useState<Task[]>(MOCK_TASKS);
 
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('todo');
+
     const columns: { id: TaskStatus; label: string} [] = [
         { id: 'todo', label: 'To Do' },
         { id: 'in-progress', label: 'In Progress' },
         { id: 'done', label: 'Done' },
     ];
+
+    
 
     const handleDeleteTask = (taskId: string) => {
         if(window.confirm('Are you sure you want to delete this task?')) {
@@ -32,6 +38,27 @@ const TaskManagement: React.FC = () => {
         );
     }
 
+    const handleAddTask = (title: string, priority: TaskPriority, category: string) => {
+        const newTask: Task = {
+        id: Date.now().toString(), // Tạo ID ngẫu nhiên
+        title: title,
+        status: activeColumn,      // Status lấy từ cột đang active
+        priority: priority,
+        category: category,
+        project: "New Project",    // Default value
+        dueDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        commentsCount: 0,
+        attachmentsCount: 0,
+        avatars: ["https://api.dicebear.com/7.x/avataaars/svg?seed=" + Date.now()] // Random avatar
+        }
+        setTasks((prevTasks) => [...prevTasks, newTask]);
+        console.log('Added new task:', newTask);
+    }
+
+    const handleOpenModal = (columnId: TaskStatus) => {
+        setActiveColumn(columnId);
+        setIsModalOpen(true);
+    }
 
   return (
     <div className="task-page">
@@ -62,9 +89,16 @@ const TaskManagement: React.FC = () => {
                     tasks={tasks.filter((task) => task.status === column.id)} 
                     onMoveTask={handleMoveTask}
                     onDeleteTask={handleDeleteTask}
+                    onAddTask={() => handleOpenModal(column.id)}
                 />
             ))}
         </div>
+
+        <AddTaskModal 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} 
+            onSave={handleAddTask}
+        />
     </div>)
 }
 
