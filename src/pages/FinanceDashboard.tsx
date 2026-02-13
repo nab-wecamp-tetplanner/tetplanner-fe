@@ -71,17 +71,17 @@ const INITIAL_BUDGET: Budget = { total: 5000000, used: 0 };
 const MOCK_ITEMS: ShoppingItem[] = [
   {
     id: "1",
-    name: "Bánh chưng",
+    name: "Sticky rice cake",
     category: "Food",
     price: 150000,
     quantity: 4,
     dueDate: "2026-02-15",
     status: "pending",
-    notes: "Cần đặt trước",
+    notes: "Need to pre-order",
   },
   {
     id: "2",
-    name: "Mứt tết",
+    name: "Candied fruit",
     category: "Food",
     price: 200000,
     quantity: 2,
@@ -90,7 +90,7 @@ const MOCK_ITEMS: ShoppingItem[] = [
   },
   {
     id: "3",
-    name: "Hoa mai",
+    name: "Apricot blossom",
     category: "Decoration",
     price: 500000,
     quantity: 1,
@@ -99,7 +99,7 @@ const MOCK_ITEMS: ShoppingItem[] = [
   },
   {
     id: "4",
-    name: "Lì xì đỏ",
+    name: "Red envelopes",
     category: "Gift",
     price: 50000,
     quantity: 10,
@@ -108,7 +108,7 @@ const MOCK_ITEMS: ShoppingItem[] = [
   },
   {
     id: "5",
-    name: "Bánh kẹo",
+    name: "Cookies & candies",
     category: "Food",
     price: 300000,
     quantity: 3,
@@ -117,7 +117,7 @@ const MOCK_ITEMS: ShoppingItem[] = [
   },
   {
     id: "6",
-    name: "Giỏ quà",
+    name: "Gift basket",
     category: "Gift",
     price: 400000,
     quantity: 2,
@@ -126,7 +126,7 @@ const MOCK_ITEMS: ShoppingItem[] = [
   },
   {
     id: "7",
-    name: "Câu đối",
+    name: "Couplets",
     category: "Decoration",
     price: 100000,
     quantity: 3,
@@ -164,12 +164,12 @@ const PageHeader = () => (
         Shopping Manager
       </h1>
       <p className="text-muted-foreground text-sm">
-        Theo dõi chi tiêu và quản lý ngân sách mua sắm Tết
+        Track expenses and manage Tet shopping budget
       </p>
     </div>
     <button className="mt-4 md:mt-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm">
       <Plus className="w-4 h-4" />
-      Thêm mục
+      Add item
     </button>
   </div>
 );
@@ -199,12 +199,12 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
           <ProgressRing percentage={percentage} />
           <div className="flex-1 min-w-0">
             <h2 className="font-serif text-xl text-foreground mb-4">
-              Tổng quan ngân sách
+              Budget overview
             </h2>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground font-medium mb-1">
-                  Tổng ngân sách
+                  Total budget
                 </p>
                 <p className="text-lg font-bold text-foreground">
                   {formatCurrency(budget.total)}
@@ -212,7 +212,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
               </div>
               <div>
                 <p className="text-xs text-muted-foreground font-medium mb-1">
-                  Đã dùng
+                  Spent
                 </p>
                 <p className="text-lg font-bold text-primary">
                   {formatCurrency(budget.used)}
@@ -220,7 +220,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
               </div>
               <div>
                 <p className="text-xs text-muted-foreground font-medium mb-1">
-                  Còn lại
+                  Remaining
                 </p>
                 <p className="text-lg font-bold text-accent">
                   {formatCurrency(remaining)}
@@ -239,7 +239,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-medium">
-              Tổng mục
+              Total items
             </p>
             <p className="text-2xl font-bold text-foreground">{itemCount}</p>
           </div>
@@ -249,7 +249,7 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
             <CheckCircle2 className="w-5 h-5 text-planner-green" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Đã mua</p>
+            <p className="text-xs text-muted-foreground font-medium">Purchased</p>
             <p className="text-2xl font-bold text-foreground">
               {purchasedCount}/{itemCount}
             </p>
@@ -329,17 +329,17 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="font-serif text-xl text-foreground">
-              Danh sách mua sắm
+              Shopping list
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {filteredItems.length} mục
+              {filteredItems.length} items
             </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Tìm kiếm..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9 pr-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 w-44"
@@ -353,11 +353,11 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
               }
               className="px-3 py-2 border border-border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring/30"
             >
-              <option value="All">Tất cả</option>
-              <option value="Food">Thực phẩm</option>
-              <option value="Gift">Quà tặng</option>
-              <option value="Decoration">Trang trí</option>
-              <option value="Other">Khác</option>
+              <option value="All">All</option>
+              <option value="Food">Food</option>
+              <option value="Gift">Gifts</option>
+              <option value="Decoration">Decoration</option>
+              <option value="Other">Other</option>
             </select>
           </div>
         </div>
@@ -429,12 +429,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
                 {isPurchased ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-accent bg-planner-green-light px-2 py-1 rounded-lg">
                     <CheckCircle2 className="w-3 h-3" />
-                    Đã mua
+                    Purchased
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-planner-amber bg-planner-amber-light px-2 py-1 rounded-lg">
                     <Clock className="w-3 h-3" />
-                    Chờ mua
+                    Pending
                   </span>
                 )}
               </div>
@@ -461,9 +461,9 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
           <div className="text-center py-16">
             <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
             <p className="text-foreground font-medium mb-1">
-              Không tìm thấy mục nào
+              No items found
             </p>
-            <p className="text-muted-foreground text-sm">Thử thay đổi bộ lọc</p>
+            <p className="text-muted-foreground text-sm">Try changing your filter</p>
           </div>
         )}
       </div>
