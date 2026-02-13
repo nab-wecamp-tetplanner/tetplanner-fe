@@ -17,6 +17,11 @@ const TaskManagement: React.FC = () => {
         { id: 'done', label: 'Done' },
     ];
 
+    const handleDeleteTask = (taskId: string) => {
+        
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    }
+
     const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
         setTasks((prevTasks) =>
             prevTasks.map((task) =>

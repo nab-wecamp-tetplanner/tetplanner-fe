@@ -13,8 +13,11 @@ interface TaskColumnProps {
 
 const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask }) => {
 
+    const [isOver, setIsOver] = React.useState(false);
+
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        setIsOver(false);
         const taskId = e.dataTransfer.getData('taskId');
         if(taskId) {
             onMoveTask(taskId, status);
@@ -23,9 +26,18 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        setIsOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        setIsOver(false);
     };
   return (
-    <div className="column-header" onDrop={handleDrop} onDragOver={handleDragOver}>
+    <div className={`column-header ${isOver ? 'drag-over' : ''}`} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}
+    style={{ 
+         backgroundColor: isOver ? '#f0f9ff' : 'transparent',
+         transition: 'background-color 0.2s'
+      }}>
         <div className="header-top">
             <h2 className="column-title">{label}</h2>
             <span className="task-count">{tasks.length}</span>
