@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { FinanceDashboard, Transaction } from "./pages";
+import { FinanceDashboard, Transaction, Dashboard } from "./pages";
 
 import "./App.css";
 
@@ -23,6 +23,7 @@ export default function App() {
           />
           <Route path="/finance" element={<FinanceDashboard />} />
           <Route path="/transaction" element={<Transaction />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route
             path="*"
             element={
