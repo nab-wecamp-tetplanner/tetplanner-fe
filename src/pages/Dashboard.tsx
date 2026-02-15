@@ -4,25 +4,15 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from "recharts";
-
-import {
-  // Plus,
-  // Minus,
-  // ArrowLeftRight,
-  // Search,
-  // X,
-  Calendar,
-  // MoreVertical,
-  Banknote,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react";
+import { Calendar, Banknote, TrendingUp, TrendingDown } from "lucide-react";
 
 // ==========================================
 // 1. TYPES & MOCK DATA
@@ -349,73 +339,150 @@ const ChartsSection = () => {
   });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      {/* PIE / DONUT CHART */}
-      <Card className="flex flex-col h-full">
-        <h3 className="font-bold text-slate-800 text-[16px] mb-6 text-left">
-          Expenses by category
-        </h3>
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* PIE / DONUT CHART */}
+        <Card className="flex flex-col h-full">
+          <h3 className="font-serif text-md text-foreground font-bold">
+            Expenses by category
+          </h3>
 
-        <div className="flex flex-col md:flex-row items-center gap-8 flex-1">
-          {/* Vùng vẽ biểu đồ */}
-          <div className="w-full md:w-1/2 h-50 relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartParsedData} // Truyền dữ liệu đã parse
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={90}
-                  paddingAngle={0}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {chartParsedData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.hexColor} />
-                  ))}
-                </Pie>
-                <RechartsTooltip content={CustomDonutTooltip} cursor={false} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Chú thích (Legend) - Dùng categoryData gốc */}
-          <div className="w-full md:w-1/2 flex flex-col gap-3">
-            {categoryData.map((cat) => (
-              <div
-                key={cat.id}
-                className="flex justify-between items-center text-[13px] hover:bg-slate-50 p-1.5 -mx-1.5 rounded-lg transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[12px] shadow-sm ${cat.bgClass}`}
+          <div className="flex flex-col md:flex-row items-center gap-8 flex-1">
+            {/* Vùng vẽ biểu đồ */}
+            <div className="w-full md:w-1/2 h-50 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartParsedData} // Truyền dữ liệu đã parse
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={90}
+                    paddingAngle={0}
+                    dataKey="value"
+                    stroke="none"
                   >
-                    {cat.icon}
+                    {chartParsedData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.hexColor} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    content={CustomDonutTooltip}
+                    cursor={false}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Chú thích (Legend) - Dùng categoryData gốc */}
+            <div className="w-full md:w-1/2 flex flex-col gap-3">
+              {categoryData.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="flex justify-between items-center text-[13px] hover:bg-slate-50 p-1.5 -mx-1.5 rounded-lg transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[12px] shadow-sm ${cat.bgClass}`}
+                    >
+                      {cat.icon}
+                    </div>
+                    <span className="font-medium text-slate-700">
+                      {cat.name}
+                    </span>
                   </div>
-                  <span className="font-medium text-slate-700">{cat.name}</span>
+                  <span className="text-slate-500 font-medium">
+                    {cat.percent}
+                  </span>
                 </div>
-                <span className="text-slate-500 font-medium">
-                  {cat.percent}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        <Card className="flex flex-col h-full">
+          <h3 className="font-serif text-md text-foreground font-bold">
+            Expenses by category
+          </h3>
+
+          <div className="flex flex-col md:flex-row items-center gap-8 flex-1">
+            {/* Vùng vẽ biểu đồ */}
+            <div className="w-full md:w-1/2 h-50 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartParsedData} // Truyền dữ liệu đã parse
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={90}
+                    paddingAngle={0}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {chartParsedData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.hexColor} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    content={CustomDonutTooltip}
+                    cursor={false}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Chú thích (Legend) - Dùng categoryData gốc */}
+            <div className="w-full md:w-1/2 flex flex-col gap-3">
+              {categoryData.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="flex justify-between items-center text-[13px] hover:bg-slate-50 p-1.5 -mx-1.5 rounded-lg transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[12px] shadow-sm ${cat.bgClass}`}
+                    >
+                      {cat.icon}
+                    </div>
+                    <span className="font-medium text-slate-700">
+                      {cat.name}
+                    </span>
+                  </div>
+                  <span className="text-slate-500 font-medium">
+                    {cat.percent}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      </div>
 
       {/* BAR CHART */}
-      <Card className="flex flex-col h-full">
-        <h3 className="font-bold text-slate-800 text-[16px] mb-6 text-left">
-          Cash Flow
+      <Card className="flex flex-col h-100 mb-8">
+        <h3 className="font-serif text-md text-foreground font-bold mb-4">
+          Income & Expense
         </h3>
 
         <div className="flex-1 w-full h-50">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <LineChart
               data={dailyData}
               margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
             >
+              <CartesianGrid
+                stroke="#e5e7eb"
+                strokeDasharray="3 3"
+                vertical={false}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 500 }}
+                width={40}
+                domain={[0, "dataMax + 500"]}
+              />
               <XAxis
                 dataKey="day"
                 axisLine={false}
@@ -432,36 +499,38 @@ const ChartsSection = () => {
               />
               <RechartsTooltip
                 content={CustomBarTooltip}
-                cursor={{ fill: "#f8fafc" }}
+                cursor={{ stroke: "#f8fafc", strokeWidth: 2 }}
               />
-              <Bar
+              <Line
+                type="monotone"
                 dataKey="income"
-                fill="#bfdbfe"
-                radius={[4, 4, 0, 0]}
-                barSize={10}
-                animationDuration={800}
+                stroke="#38bdf8"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{ r: 6 }}
               />
-              <Bar
+              <Line
+                type="monotone"
                 dataKey="expense"
-                fill="#f87171"
-                radius={[4, 4, 0, 0]}
-                barSize={10}
-                animationDuration={800}
+                stroke="#f87171"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{ r: 6 }}
               />
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-slate-100">
           <div className="flex items-center gap-2 text-[13px] font-medium text-slate-500">
-            <div className="w-3 h-3 bg-[#bfdbfe] rounded-[3px]"></div> Income
+            <div className="w-3 h-3 bg-[#38bdf8] rounded-[3px]"></div> Income
           </div>
           <div className="flex items-center gap-2 text-[13px] font-medium text-slate-500">
             <div className="w-3 h-3 bg-[#f87171] rounded-[3px]"></div> Expense
           </div>
         </div>
       </Card>
-    </div>
+    </>
   );
 };
 
@@ -479,7 +548,7 @@ const GroupedTransactions = () => {
 
   return (
     <Card className="mb-12">
-      <h3 className="font-bold text-gray-900 mb-6 text-xl">
+      <h3 className="font-serif text-lg text-foreground font-bold mb-6">
         Detailed Transactions by Category
       </h3>
       <div className="flex flex-col gap-2">
@@ -501,7 +570,7 @@ const GroupedTransactions = () => {
                   >
                     {category.icon}
                   </div>
-                  <span className="font-bold text-gray-800 text-base">
+                  <span className="font-bold text-gray-800 text-base font-serif">
                     {category.name}
                   </span>
                 </div>
@@ -564,7 +633,6 @@ export default function Dashboard() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <PageHeader />
         <QuickStats />
-        {/* <SummaryCards /> */}
         <ChartsSection />
         <GroupedTransactions />
       </main>
