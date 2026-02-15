@@ -49,7 +49,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         category,
         priority,
         dueDate: deadline || 'No Deadline', 
-        subTasks,
+        subTasks: subTasks,
         status: status || 'todo',
         commentsCount: 0,
         attachmentsCount: 0,

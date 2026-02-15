@@ -22,4 +22,5 @@ export interface Task {
     attachmentsCount: number;
     icon?: ReactNode;
     iconColor?: string;
+    subTasks?: SubTask[];
 }

@@ -5,6 +5,7 @@ import './TaskManagement.css'
 import { LayoutGrid, Plus, MoreHorizontal } from 'lucide-react';
 import TaskColumn from '../../components/TaskColumn/TaskColumn';
 import AddTaskModal from '../../components/AddTaskModal/AddTaskModal';
+import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal';
 
 const TaskManagement: React.FC = () => {
 
@@ -13,6 +14,7 @@ const TaskManagement: React.FC = () => {
     const [tasks, setTasks] = React.useState<Task[]>(MOCK_TASKS);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('todo');
+    const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
 
     const columns: { id: TaskStatus; label: string} [] = [
         { id: 'todo', label: 'To Do' },
@@ -46,6 +48,7 @@ const TaskManagement: React.FC = () => {
         dueDate: taskData.dueDate,
         commentsCount: taskData.commentsCount,
         attachmentsCount: taskData.attachmentsCount,
+        subTasks: taskData.subTasks,
         avatars: ["https://api.dicebear.com/7.x/avataaars/svg?seed=" + Date.now()] // Random avatar
         }
         setTasks((prevTasks) => [...prevTasks, newTask]);
@@ -55,6 +58,20 @@ const TaskManagement: React.FC = () => {
     const handleOpenModal = (columnId: TaskStatus) => {
         setActiveColumn(columnId);
         setIsModalOpen(true);
+    }
+
+    const handleOpenTaskDetail = (task: Task) => {
+        setSelectedTask(task);
+        //setIsModalOpen(true);
+    }
+
+    const handleUpdateTask = (updatedTask: Task) => {
+        setTasks((prevTasks) =>
+            prevTasks.map((task) =>
+                task.id === updatedTask.id ? updatedTask : task
+            )
+        );
+        setSelectedTask(updatedTask); 
     }
 
   return (
@@ -87,6 +104,7 @@ const TaskManagement: React.FC = () => {
                     onMoveTask={handleMoveTask}
                     onDeleteTask={handleDeleteTask}
                     onAddTask={() => handleOpenModal(column.id)}
+                    onTaskClick={handleOpenTaskDetail}
                 />
             ))}
         </div>
@@ -96,6 +114,13 @@ const TaskManagement: React.FC = () => {
             onClose={() => setIsModalOpen(false)}
             status={activeColumn}
             onSave={handleAddTask}
+        />
+
+        <TaskDetailModal 
+            task={selectedTask}
+            isOpen={!!selectedTask}
+            onClose={() => setSelectedTask(null)}
+            onUpdateTask={handleUpdateTask}
         />
     </div>
     )

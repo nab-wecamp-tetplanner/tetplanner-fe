@@ -6,10 +6,11 @@ import './TaskCard.css'
 interface TaskCardProps {
     task: Task;
     onDeleteTask?: (taskId: string) => void;
+    onClick?: () => void;
 }
 
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick }) => {
     const getProgress = () => {
         switch(task.status) {
             case 'in-progress':
@@ -25,7 +26,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask }) => {
     return (
         <div className="task-card" draggable="true" onDragStart={(e) => {
             e.dataTransfer.setData('taskId', task.id);
-        }}>
+        }} onClick={onClick}>
             <div className="card-header">
                 <span className={`priority-tag ${task.priority.toLowerCase()}`}>
                     {task.priority}
