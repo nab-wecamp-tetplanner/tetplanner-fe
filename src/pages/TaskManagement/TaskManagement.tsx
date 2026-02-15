@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Task, TaskPriority, TaskStatus} from '../../types/task'
+import type { Task, TaskStatus} from '../../types/task'
 import { MOCK_TASKS } from '../../data/mockTasks'
 import './TaskManagement.css'
 import { LayoutGrid, Plus, MoreHorizontal } from 'lucide-react';
@@ -11,7 +11,6 @@ const TaskManagement: React.FC = () => {
     console.log('Mock tasks:', MOCK_TASKS);
     
     const [tasks, setTasks] = React.useState<Task[]>(MOCK_TASKS);
-
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('todo');
 
@@ -20,8 +19,6 @@ const TaskManagement: React.FC = () => {
         { id: 'in-progress', label: 'In Progress' },
         { id: 'done', label: 'Done' },
     ];
-
-    
 
     const handleDeleteTask = (taskId: string) => {
         if(window.confirm('Are you sure you want to delete this task?')) {
@@ -38,17 +35,17 @@ const TaskManagement: React.FC = () => {
         );
     }
 
-    const handleAddTask = (title: string, priority: TaskPriority, category: string) => {
+    const handleAddTask = (taskData: Omit<Task, "id" | "progressColor" | "dateColor" | "avatars">) => {
         const newTask: Task = {
         id: Date.now().toString(), // Tạo ID ngẫu nhiên
-        title: title,
+        title: taskData.title,
         status: activeColumn,      // Status lấy từ cột đang active
-        priority: priority,
-        category: category,
-        project: "New Project",    // Default value
-        dueDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        commentsCount: 0,
-        attachmentsCount: 0,
+        priority: taskData.priority,
+        category: taskData.category,
+        project: taskData.project,
+        dueDate: taskData.dueDate,
+        commentsCount: taskData.commentsCount,
+        attachmentsCount: taskData.attachmentsCount,
         avatars: ["https://api.dicebear.com/7.x/avataaars/svg?seed=" + Date.now()] // Random avatar
         }
         setTasks((prevTasks) => [...prevTasks, newTask]);
@@ -96,10 +93,12 @@ const TaskManagement: React.FC = () => {
 
         <AddTaskModal 
             isOpen={isModalOpen} 
-            onClose={() => setIsModalOpen(false)} 
+            onClose={() => setIsModalOpen(false)}
+            status={activeColumn}
             onSave={handleAddTask}
         />
-    </div>)
+    </div>
+    )
 }
 
 export default TaskManagement

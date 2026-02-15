@@ -67,10 +67,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
     };
 
 
-    const addTask = () => {
-        handleSubmit(new Event('submit') as unknown as React.FormEvent);
-    }
-
   return (
     <div className="modal-overlay" onClick={onClose}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -177,14 +173,15 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     </ul>
                 )}
             </div>
-        </form>
 
             <div className="modal-actions">
                 <button type="button" className="btn btn-cancel" onClick={onClose}>Cancel</button>
-                <button type="submit" className="btn btn-submit" onClick={addTask}>Add Task</button>
+                <button type="submit" className="btn btn-submit">Add Task</button>
             </div>
+        </form>
         </div>
-    </div>  
-    )
+    </div>
+    ) 
 }
+
 export default AddTaskModal
