@@ -1,0 +1,90 @@
+/* Tùy chỉnh thanh Header */
+.custom-calendar-container .fc-toolbar {
+  margin-bottom: 2rem !important;
+}
+
+.custom-calendar-container .fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 900 !important;
+  color: #1e293b;
+  text-transform: capitalize;
+}
+
+.custom-calendar-container .fc-button {
+  background: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  color: #64748b !important;
+  font-weight: bold !important;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.05) !important;
+  text-transform: capitalize !important;
+}
+.fc-button-primary {
+  background-color: #5f3bf0 !important; /* orange-500 */
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+  box-shadow: 0 4px 6px -1px rgba(253, 186, 116, 0.5); /* shadow-orange-200 */
+}
+.custom-calendar-container .fc-button:hover {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.custom-calendar-container .fc-button-active {
+  background: #0f172a !important;
+  color: white !important;
+}
+
+.custom-calendar-container .fc-daygrid-day {
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.custom-calendar-container .fc-daygrid-day:hover {
+  background-color: #f0fdf4 !important;
+}
+
+.custom-calendar-container .fc-day-today {
+  background-color: transparent !important;
+}
+
+.custom-calendar-container .fc-day-today .fc-daygrid-day-number {
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+}
+
+.fc-daygrid-event {
+  background: transparent !important;
+  border: none !important;
+}
+
+.fc .fc-button-primary {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    text-transform: capitalize !important;
+    font-weight: 500 !important;
+    transition: all 0.2s;
+  }
+.fc .fc-button-primary:hover {
+  background-color: #2563eb !important;
+}
+.fc .fc-button-active {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+.fc-daygrid-day.selected-day-active {
+  background-color: rgba(59, 130, 246, 0.05) !important;
+  outline: 2px solid #3b82f6 inset;
+}
+.fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #1e293b;
+}
