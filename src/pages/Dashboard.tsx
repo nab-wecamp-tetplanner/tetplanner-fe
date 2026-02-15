@@ -12,7 +12,13 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Calendar, Banknote, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  Calendar,
+  Banknote,
+  TrendingUp,
+  TrendingDown,
+  MoreVertical,
+} from "lucide-react";
 
 // ==========================================
 // 1. TYPES & MOCK DATA
@@ -26,6 +32,8 @@ type Transaction = {
   amount: string;
   isIncome: boolean;
   iconText: string;
+  iconBg: string;
+  iconColor: string;
 };
 
 type Category = {
@@ -55,6 +63,8 @@ const categoryData: Category[] = [
         date: "2024/04/01",
         amount: "-$150.00",
         isIncome: false,
+        iconBg: "bg-planner-purple-light",
+        iconColor: "text-planner-purple",
       },
       {
         id: "h2",
@@ -64,6 +74,8 @@ const categoryData: Category[] = [
         date: "2024/04/01",
         amount: "-$750.00",
         isIncome: false,
+        iconBg: "bg-planner-purple-light",
+        iconColor: "text-planner-purple",
       },
     ],
   },
@@ -83,6 +95,8 @@ const categoryData: Category[] = [
         date: "2024/04/01",
         amount: "-$50.00",
         isIncome: false,
+        iconBg: "bg-planner-blue-light",
+        iconColor: "text-planner-blue",
       },
       {
         id: "t2",
@@ -92,6 +106,8 @@ const categoryData: Category[] = [
         date: "2024/04/01",
         amount: "-$25.00",
         isIncome: false,
+        iconBg: "bg-planner-blue-light",
+        iconColor: "text-planner-blue",
       },
     ],
   },
@@ -111,6 +127,8 @@ const categoryData: Category[] = [
         date: "2024/03/26",
         amount: "-$64.33",
         isIncome: false,
+        iconBg: "bg-planner-green-light",
+        iconColor: "text-planner-green",
       },
     ],
   },
@@ -139,6 +157,8 @@ const categoryData: Category[] = [
         date: "2024/03/24",
         amount: "-$147.90",
         isIncome: false,
+        iconBg: "bg-planner-purple-light",
+        iconColor: "text-planner-purple",
       },
     ],
   },
@@ -206,35 +226,6 @@ const PageHeader = () => (
     </div>
   </div>
 );
-
-// const SummaryCards = () => (
-//   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-//     <Card className="flex flex-col gap-2">
-//       <span className="text-gray-500 text-sm font-medium">Balance</span>
-//       <div className="flex items-end justify-between">
-//         <span className="text-4xl font-bold text-blue-600">$5,502.45</span>
-//       </div>
-//     </Card>
-//     <Card className="flex flex-col gap-2">
-//       <span className="text-gray-500 text-sm font-medium">Incomes</span>
-//       <div className="flex items-end justify-between">
-//         <span className="text-4xl font-bold text-gray-900">$9,450.00</span>
-//         <span className="px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs font-medium">
-//           ↑ 27%
-//         </span>
-//       </div>
-//     </Card>
-//     <Card className="flex flex-col gap-2">
-//       <span className="text-gray-500 text-sm font-medium">Expenses</span>
-//       <div className="flex items-end justify-between">
-//         <span className="text-4xl font-bold text-gray-900">$3,945.55</span>
-//         <span className="px-2 py-1 bg-red-50 text-red-700 rounded-md text-xs font-medium">
-//           ↓ -15%
-//         </span>
-//       </div>
-//     </Card>
-//   </div>
-// );
 
 // --- Custom Tooltips ---
 import type { TooltipContentProps } from "recharts";
@@ -344,58 +335,62 @@ const ChartsSection = () => {
         {/* PIE / DONUT CHART */}
         <Card className="flex flex-col h-full">
           <h3 className="font-serif text-md text-foreground font-bold">
-            Expenses by category
+            Expense vs Budget
           </h3>
 
           <div className="flex flex-col md:flex-row items-center gap-8 flex-1">
-            {/* Vùng vẽ biểu đồ */}
+            {/* Pie chart for Expense vs Budget */}
             <div className="w-full md:w-1/2 h-50 relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={chartParsedData} // Truyền dữ liệu đã parse
+                    data={[
+                      { name: "Expense", value: 3100000, fill: "#f87171" },
+                      {
+                        name: "Budget",
+                        value: 5000000 - 3100000,
+                        fill: "#38bdf8",
+                      },
+                    ]}
                     cx="50%"
                     cy="50%"
-                    innerRadius={40}
+                    innerRadius={50}
                     outerRadius={90}
-                    paddingAngle={0}
+                    paddingAngle={2}
                     dataKey="value"
                     stroke="none"
-                  >
-                    {chartParsedData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.hexColor} />
-                    ))}
-                  </Pie>
+                  ></Pie>
                   <RechartsTooltip
-                    content={CustomDonutTooltip}
+                    formatter={(value: number, name: string) => [
+                      value.toLocaleString() + " VND",
+                      name,
+                    ]}
                     cursor={false}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Chú thích (Legend) - Dùng categoryData gốc */}
-            <div className="w-full md:w-1/2 flex flex-col gap-3">
-              {categoryData.map((cat) => (
-                <div
-                  key={cat.id}
-                  className="flex justify-between items-center text-[13px] hover:bg-slate-50 p-1.5 -mx-1.5 rounded-lg transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[12px] shadow-sm ${cat.bgClass}`}
-                    >
-                      {cat.icon}
-                    </div>
-                    <span className="font-medium text-slate-700">
-                      {cat.name}
-                    </span>
-                  </div>
-                  <span className="text-slate-500 font-medium">
-                    {cat.percent}
-                  </span>
-                </div>
-              ))}
+            {/* Budget and Expense numbers */}
+            <div className="w-full md:w-1/2 flex flex-col gap-4 items-start justify-center">
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 rounded bg-[#f87171]"></div>
+                <span className="font-medium text-foreground text-sm">
+                  Expense:
+                </span>
+                <span className="text-foreground text-sm font-bold">
+                  3,100,000 VND
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 rounded bg-[#38bdf8]"></div>
+                <span className="font-medium text-foreground text-sm">
+                  Budget:
+                </span>
+                <span className="text-foreground text-sm font-bold">
+                  5,000,000 VND
+                </span>
+              </div>
             </div>
           </div>
         </Card>
@@ -445,11 +440,11 @@ const ChartsSection = () => {
                     >
                       {cat.icon}
                     </div>
-                    <span className="font-medium text-slate-700">
+                    <span className="font-medium text-foreground text-sm">
                       {cat.name}
                     </span>
                   </div>
-                  <span className="text-slate-500 font-medium">
+                  <span className="text-slate-500 font-medium text-sm">
                     {cat.percent}
                   </span>
                 </div>
@@ -549,7 +544,7 @@ const GroupedTransactions = () => {
   return (
     <Card className="mb-12">
       <h3 className="font-serif text-lg text-foreground font-bold mb-6">
-        Detailed Transactions by Category
+        Detailed transactions by category
       </h3>
       <div className="flex flex-col gap-2">
         {categoryData.map((category) => {
@@ -581,29 +576,49 @@ const GroupedTransactions = () => {
               </div>
 
               {isOpen && category.transactions.length > 0 && (
-                <div className="pl-12 pr-4 py-2 flex flex-col gap-1">
+                <div className="pl-12 pr-4 py-2 flex flex-col">
                   {category.transactions.map((txn) => (
                     <div
                       key={txn.id}
-                      className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center py-2 text-sm border-b border-dashed border-gray-100 last:border-0 hover:bg-gray-50 rounded-lg px-2"
+                      className="flex items-center px-5 gap-4 py-4 hover:bg-muted/40 transition-colors border-b border-border first:border-t "
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-medium">
+                      {/* Icon */}
+                      <div
+                        className={`shrink-0 h-9 w-9 rounded-lg ${txn.iconBg} flex items-center justify-center`}
+                      >
+                        <span className={`text-xs font-bold ${txn.iconColor}`}>
                           {txn.iconText}
-                        </div>
-                        <span className="font-semibold text-gray-700">
-                          {txn.name}
                         </span>
                       </div>
-                      <span className="text-gray-400">{txn.method}</span>
-                      <span className="text-gray-400">{txn.date}</span>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-foreground text-sm">
+                          {txn.name}
+                        </span>
+                        {category && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {txn.method}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Date */}
+                      <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foregro">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {txn.date}
+                      </div>
+
+                      {/* Amount */}
                       <span
-                        className={`font-bold text-right pr-4 ${txn.isIncome ? "text-green-500" : "text-gray-800"}`}
+                        className={`font-bold text w-28 text-right ${txn.isIncome ? "text-planner-green" : "text-foreground"}`}
                       >
                         {txn.amount}
                       </span>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        ⋮
+
+                      {/* Actions */}
+                      <button className="p-1.5 hover:bg-muted rounded-lg transition-col">
+                        <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
                     </div>
                   ))}
