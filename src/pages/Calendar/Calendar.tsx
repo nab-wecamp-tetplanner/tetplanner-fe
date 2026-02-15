@@ -76,7 +76,7 @@ export default function CalendarPage() {
 
   // --- FULLCALENDAR CONFIG ---
   // Add and update tasks
-  const handleSaveTask = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveTask = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title") as string;
@@ -208,7 +208,7 @@ export default function CalendarPage() {
   }, [tasks]);
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen w-full">
       <Header />
       <main className="grid grid-cols-12 min-h-[85vh]">
         {/* Calendar (Left column) */}
@@ -315,7 +315,7 @@ export default function CalendarPage() {
             className="bg-white p-6 rounded-2xl w-96 shadow-xl"
           >
             <div className="flex justify-between mb-4">
-              <h3 className="font-bold text-lg">
+              <h3 className="font-bold text-md">
                 {editingTask ? "Edit task" : "Add a new task"}
               </h3>
               <button type="button" onClick={closeModal}>
@@ -326,7 +326,7 @@ export default function CalendarPage() {
               <input
                 name="title"
                 defaultValue={editingTask?.title}
-                placeholder="Tên công việc"
+                placeholder="Task name"
                 className="w-full p-3 border rounded-xl"
                 required
               />
@@ -345,7 +345,7 @@ export default function CalendarPage() {
                 <option value="Normal">Normal</option>
                 <option value="Low">Low</option>
               </select>
-              <button className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold">
+              <button className="w-full py-3 bg-slate-900 text-white rounded-xl font-semibold">
                 Save changes
               </button>
             </div>

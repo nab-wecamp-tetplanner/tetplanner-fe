@@ -7,9 +7,9 @@ import CalendarWidget from "../components/Overview/CalendarWidget/CalendarWidget
 
 export default function Overview() {
   return (
-    <div className="w-11/12 mx-auto mb-4">
+    <div className="mb-4">
       <Header />
-      <div className="mt-4 mx-auto">
+      <div className="mt-4 mx-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Col 1: Buget Cards */}
           <div className="space-y-6">

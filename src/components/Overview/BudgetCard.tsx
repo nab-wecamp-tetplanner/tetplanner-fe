@@ -35,7 +35,7 @@ export default function BudgetCard({
   const isWarning = progress > SAFE_PERCENTAGE;
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex items-center justify-center bg-white shadow-sm border border-slate-100 rounded-md text-md">
