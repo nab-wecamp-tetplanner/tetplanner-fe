@@ -3,8 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FinanceDashboard, Transaction, Dashboard } from "./pages";
 
 import "./App.css";
-
-import './App.css'
 import Overview from './pages/Overview';
 import CalendarPage from './pages/Calendar/Calendar';
 const queryClient = new QueryClient();
