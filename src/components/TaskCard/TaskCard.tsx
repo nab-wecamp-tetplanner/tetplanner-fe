@@ -7,10 +7,11 @@ interface TaskCardProps {
     task: Task;
     onDeleteTask?: (taskId: string) => void;
     onClick?: () => void;
+    isDisssolving?: boolean;
 }
 
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDisssolving }) => {
 
     const getProgress = () => {
         if (task.subTasks && task.subTasks.length > 0) {
@@ -51,7 +52,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick }) => {
 
     return (
         <div 
-            className={`tet-card ${isHighPriority ? 'tet-card--gold' : ''}`}
+            className={`tet-card ${isHighPriority ? 'tet-card--gold' : ''} ${isDisssolving ? 'tet-card--dissolving' : ''}`}
             draggable="true" 
             onDragStart={(e) => e.dataTransfer.setData('taskId', task.id)} 
             onClick={onClick}

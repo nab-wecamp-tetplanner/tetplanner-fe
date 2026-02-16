@@ -6,6 +6,7 @@ import { LayoutGrid, Plus, Search, SlidersHorizontal, ArrowUpDown } from 'lucide
 import TaskColumn from '../../components/TaskColumn/TaskColumn';
 import AddTaskModal from '../../components/AddTaskModal/AddTaskModal';
 import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal';
+import CelebrationParticles from '../../components/CelebrationParticles/CelebrationParticles';
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
@@ -52,11 +53,17 @@ const TaskManagement: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('todo');
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+    const [celebration, setCelebration] = React.useState<{ x: number; y: number } | null>(null);
+
+    const handleCelebrate = (x: number, y: number) => {
+        setCelebration({ x, y });
+    };
 
     const columns: { id: TaskStatus; label: string} [] = [
         { id: 'todo', label: 'To Do' },
         { id: 'in-progress', label: 'In Progress' },
         { id: 'done', label: 'Done' },
+        { id: 'cancelled', label: 'Cancelled' },
     ];
 
     const handleDeleteTask = (taskId: string) => {
@@ -152,6 +159,7 @@ const TaskManagement: React.FC = () => {
                     onDeleteTask={handleDeleteTask}
                     onAddTask={() => handleOpenModal(column.id)}
                     onTaskClick={handleOpenTaskDetail}
+                    onCelebrate={handleCelebrate}
                 />
             ))}
         </div>
@@ -169,6 +177,15 @@ const TaskManagement: React.FC = () => {
             onClose={() => setSelectedTask(null)}
             onUpdateTask={handleUpdateTask}
         />
+
+        {/* Celebration particles when task dropped in Done */}
+        {celebration && (
+            <CelebrationParticles
+                x={celebration.x}
+                y={celebration.y}
+                onComplete={() => setCelebration(null)}
+            />
+        )}
     </div>
     )
 }

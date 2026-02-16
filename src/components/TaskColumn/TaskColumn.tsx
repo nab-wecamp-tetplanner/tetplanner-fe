@@ -12,18 +12,34 @@ interface TaskColumnProps {
     onDeleteTask: (taskId: string) => void;
     onAddTask: () => void;
     onTaskClick?: (task: Task) => void;
+    onCelebrate?: (x: number, y: number) => void;
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask, onDeleteTask, onAddTask, onTaskClick }) => {
+const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask, onDeleteTask, onAddTask, onTaskClick, onCelebrate }) => {
 
     const [isOver, setIsOver] = React.useState(false);
+    const [dissolvingTaskId, setDissolvingTaskId] = React.useState<string | null>(null);
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setIsOver(false);
         const taskId = e.dataTransfer.getData('taskId');
         if(taskId) {
-            onMoveTask(taskId, status);
+            if (status === 'done' && onCelebrate) {
+                /* Trigger celebration at drop location */
+                const rect = e.currentTarget.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = e.clientY;
+                onCelebrate(cx, cy);
+                setDissolvingTaskId(taskId);
+                /* Delay the actual move so the dissolve animation plays */
+                setTimeout(() => {
+                    onMoveTask(taskId, status);
+                    setDissolvingTaskId(null);
+                }, 650);
+            } else {
+                onMoveTask(taskId, status);
+            }
         }
     };
 
@@ -42,6 +58,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
             case 'todo': return 'tet-col--amber';
             case 'in-progress': return 'tet-col--rose';
             case 'done': return 'tet-col--emerald';
+            case 'cancelled': return 'tet-col--slate';
             default: return 'tet-col--amber';
         }
     };
@@ -73,7 +90,8 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
                         key={task.id} 
                         task={task} 
                         onDeleteTask={onDeleteTask} 
-                        onClick={() => onTaskClick && onTaskClick(task)} 
+                        onClick={() => onTaskClick && onTaskClick(task)}
+                        isDisssolving={dissolvingTaskId === task.id}
                     />
                 ))
             ) : (

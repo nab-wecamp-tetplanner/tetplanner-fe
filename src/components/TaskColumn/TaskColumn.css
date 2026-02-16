@@ -56,6 +56,11 @@
   box-shadow: 0 0 6px rgba(5, 150, 105, 0.4);
 }
 
+.tet-col--slate .tet-col__dot {
+  background: #78716c;
+  box-shadow: 0 0 6px rgba(120, 113, 108, 0.4);
+}
+
 .tet-col__title {
   font-size: 13px;
   font-weight: 700;

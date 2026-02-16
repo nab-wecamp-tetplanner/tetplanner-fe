@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type TaskStatus = 'todo' | 'in-progress' | 'done';
+export type TaskStatus = 'todo' | 'in-progress' | 'done' | 'cancelled';
 export type TaskPriority = 'Low' | 'Medium' | 'High';
 
 export interface SubTask {
