@@ -1,14 +1,14 @@
-/* ===== Overlay ===== */
+/* ===== Overlay (Tet Warm) ===== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
+  background: rgba(41, 37, 36, 0.35);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: overlayIn 0.25s ease;
+  animation: overlayIn 0.2s ease;
 }
 
 @keyframes overlayIn {
@@ -18,29 +18,31 @@
 
 /* ===== Modal Card ===== */
 .modal-content {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(214, 211, 209, 0.5);
   width: 520px;
   max-width: 92vw;
   max-height: 85vh;
   overflow-y: auto;
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.18),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+    0 24px 48px rgba(120, 113, 108, 0.12),
+    0 0 0 1px rgba(214, 211, 209, 0.2);
   padding: 28px 32px 32px;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
 .modal-content::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 .modal-content::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: rgba(168, 162, 158, 0.4);
   border-radius: 10px;
 }
 
@@ -53,9 +55,9 @@
 }
 
 .modal-title {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: #78716c;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0;
@@ -67,8 +69,9 @@
   display: grid;
   place-items: center;
   border: none;
-  background: #f1f5f9;
-  color: #64748b;
+  background: rgba(245, 245, 244, 0.8);
+  border: 1px solid rgba(214, 211, 209, 0.5);
+  color: #78716c;
   border-radius: 10px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -77,45 +80,45 @@
 }
 
 .close-button:hover {
-  background: #e2e8f0;
-  color: #334155;
-  transform: scale(1.05);
+  background: rgba(254, 202, 202, 0.4);
+  color: #dc2626;
 }
 
 /* ===== Task Title ===== */
 .task-detail-title {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #292524;
   margin: 8px 0 16px;
   line-height: 1.35;
+  font-family: 'Playfair Display', 'Noto Serif', Georgia, serif;
 }
 
 /* ===== Meta Row ===== */
 .task-meta-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid rgba(214, 211, 209, 0.5);
 }
 
 .task-meta-row span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.82rem;
-  color: #64748b;
-  background: #f8fafc;
+  font-size: 0.8rem;
+  color: #78716c;
+  background: rgba(245, 245, 244, 0.7);
   padding: 5px 12px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(214, 211, 209, 0.5);
 }
 
 .task-meta-row span strong {
-  color: #334155;
+  color: #292524;
   font-weight: 600;
 }
 
@@ -135,25 +138,26 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
-  color: #334155;
+  color: #44403c;
   margin: 0;
 }
 
 .progress-text {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  color: #6366f1;
-  background: #eef2ff;
+  color: #92400e;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.25);
   padding: 3px 10px;
   border-radius: 20px;
 }
 
 /* ===== Progress Bar ===== */
 .detail-progress-bar {
-  height: 6px;
-  background: #e2e8f0;
+  height: 5px;
+  background: rgba(214, 211, 209, 0.4);
   border-radius: 100px;
   overflow: hidden;
   margin-bottom: 18px;
@@ -161,7 +165,7 @@
 
 .detail-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #818cf8, #6366f1);
+  background: linear-gradient(90deg, #d97706, #f59e0b);
   border-radius: 100px;
   transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -170,7 +174,7 @@
 .subtask-list-view {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .subtask-item-row {
@@ -185,8 +189,8 @@
 }
 
 .subtask-item-row:hover {
-  background: #f8fafc;
-  border-color: #e2e8f0;
+  background: rgba(245, 245, 244, 0.6);
+  border-color: rgba(214, 211, 209, 0.4);
 }
 
 .subtask-item-row input[type="checkbox"] {
@@ -195,21 +199,21 @@
   width: 20px;
   height: 20px;
   min-width: 20px;
-  border: 2px solid #cbd5e1;
+  border: 2px solid #d6d3d1;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  background: #fff;
+  background: transparent;
 }
 
 .subtask-item-row input[type="checkbox"]:checked {
-  background: linear-gradient(135deg, #818cf8, #6366f1);
-  border-color: #6366f1;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  border-color: #d97706;
 }
 
 .subtask-item-row input[type="checkbox"]:checked::after {
-  content: "✓";
+  content: "\2713";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -220,25 +224,25 @@
 }
 
 .subtask-item-row span {
-  font-size: 0.88rem;
-  color: #334155;
+  font-size: 0.86rem;
+  color: #44403c;
   line-height: 1.4;
   transition: all 0.2s ease;
 }
 
 .subtask-item-row.completed span {
   text-decoration: line-through;
-  color: #94a3b8;
+  color: #a8a29e;
 }
 
 .subtask-item-row.completed {
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 /* ===== Empty State ===== */
 .empty-text {
   text-align: center;
-  color: #94a3b8;
+  color: #a8a29e;
   font-size: 0.85rem;
   padding: 24px 0;
   font-style: italic;
