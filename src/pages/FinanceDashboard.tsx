@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   Clock,
   TrendingUp,
+  X,
+  FolderPlus,
 } from "lucide-react";
 import { ProgressRing } from "../components/ProgressRing";
 import type {
@@ -20,49 +22,93 @@ import type {
   ShoppingCategory,
   Budget,
   CategorySummary,
+  CustomCategory,
 } from "../types/shopping.types";
 
 // ==========================================
 // CONSTANTS
 // ==========================================
 
-const CATEGORY_CONFIG: Record<
-  ShoppingCategory,
+const DEFAULT_CATEGORIES: CustomCategory[] = [
   {
-    icon: React.ElementType;
+    id: "food",
+    name: "Food",
+    icon: "ShoppingCart",
+    color: "planner-blue",
+    isDefault: true,
+  },
+  {
+    id: "gift",
+    name: "Gift",
+    icon: "Gift",
+    color: "planner-pink",
+    isDefault: true,
+  },
+  {
+    id: "decoration",
+    name: "Decoration",
+    icon: "Sparkles",
+    color: "planner-purple",
+    isDefault: true,
+  },
+  {
+    id: "other",
+    name: "Other",
+    icon: "Package",
+    color: "planner-green",
+    isDefault: true,
+  },
+];
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  ShoppingCart,
+  Gift,
+  Sparkles,
+  Package,
+  TrendingUp,
+  Calendar,
+  CheckCircle2,
+  Clock,
+};
+
+const COLOR_CONFIG: Record<
+  string,
+  {
     tokenColor: string;
     tokenBg: string;
     tokenBorder: string;
     iconBg: string;
   }
 > = {
-  Food: {
-    icon: ShoppingCart,
+  "planner-blue": {
     tokenColor: "text-planner-blue",
     tokenBg: "bg-planner-blue-light",
     tokenBorder: "border-planner-blue/20",
     iconBg: "bg-planner-blue",
   },
-  Gift: {
-    icon: Gift,
+  "planner-pink": {
     tokenColor: "text-planner-pink",
     tokenBg: "bg-planner-pink-light",
     tokenBorder: "border-planner-pink/20",
     iconBg: "bg-planner-pink",
   },
-  Decoration: {
-    icon: Sparkles,
+  "planner-purple": {
     tokenColor: "text-planner-purple",
     tokenBg: "bg-planner-purple-light",
     tokenBorder: "border-planner-purple/20",
     iconBg: "bg-planner-purple",
   },
-  Other: {
-    icon: Package,
+  "planner-green": {
     tokenColor: "text-planner-green",
     tokenBg: "bg-planner-green-light",
     tokenBorder: "border-planner-green/20",
     iconBg: "bg-planner-green",
+  },
+  "planner-amber": {
+    tokenColor: "text-planner-amber",
+    tokenBg: "bg-planner-amber-light",
+    tokenBorder: "border-planner-amber/20",
+    iconBg: "bg-planner-amber",
   },
 };
 
@@ -154,7 +200,11 @@ const formatDate = (dateString: string) =>
 // SUB-COMPONENTS
 // ==========================================
 
-const PageHeader = () => (
+interface PageHeaderProps {
+  onAddCategory: () => void;
+}
+
+const PageHeader: React.FC<PageHeaderProps> = ({ onAddCategory }) => (
   <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
     <div>
       <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
@@ -167,10 +217,19 @@ const PageHeader = () => (
         Track expenses and manage Tet shopping budget
       </p>
     </div>
-    <button className="mt-4 md:mt-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm">
-      <Plus className="w-4 h-4" />
-      Add item
-    </button>
+    <div className="mt-4 md:mt-0 flex items-center gap-2">
+      <button
+        onClick={onAddCategory}
+        className="inline-flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
+      >
+        <FolderPlus className="w-4 h-4" />
+        Add category
+      </button>
+      <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm">
+        <Plus className="w-4 h-4" />
+        Add item
+      </button>
+    </div>
   </div>
 );
 
@@ -249,7 +308,9 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
             <CheckCircle2 className="w-5 h-5 text-planner-green" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Purchased</p>
+            <p className="text-xs text-muted-foreground font-medium">
+              Purchased
+            </p>
             <p className="text-2xl font-bold text-foreground">
               {purchasedCount}/{itemCount}
             </p>
@@ -262,16 +323,24 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({
 
 interface CategoryCardsProps {
   categorySummaries: CategorySummary[];
+  categories: CustomCategory[];
 }
 
-const CategoryCards: React.FC<CategoryCardsProps> = ({ categorySummaries }) => (
+const CategoryCards: React.FC<CategoryCardsProps> = ({
+  categorySummaries,
+  categories,
+}) => (
   <div
     className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8"
     style={{ animationDelay: "0.2s" }}
   >
     {categorySummaries.map((summary) => {
-      const config = CATEGORY_CONFIG[summary.category];
-      const Icon = config.icon;
+      const category = categories.find((c) => c.name === summary.category);
+      if (!category) return null;
+
+      const Icon = ICON_MAP[category.icon] || Package;
+      const config = COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
+
       return (
         <div
           key={summary.category}
@@ -303,9 +372,10 @@ const CategoryCards: React.FC<CategoryCardsProps> = ({ categorySummaries }) => (
 
 interface ShoppingListProps {
   items: ShoppingItem[];
+  categories: CustomCategory[];
 }
 
-const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
+const ShoppingList: React.FC<ShoppingListProps> = ({ items, categories }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<
     ShoppingCategory | "All"
@@ -354,10 +424,11 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
               className="px-3 py-2 border border-border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring/30"
             >
               <option value="All">All</option>
-              <option value="Food">Food</option>
-              <option value="Gift">Gifts</option>
-              <option value="Decoration">Decoration</option>
-              <option value="Other">Other</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -366,8 +437,11 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
       {/* Items */}
       <div className="divide-y divide-border">
         {filteredItems.map((item) => {
-          const config = CATEGORY_CONFIG[item.category];
-          const Icon = config.icon;
+          const category = categories.find((c) => c.name === item.category);
+          const Icon = category ? ICON_MAP[category.icon] || Package : Package;
+          const config = category
+            ? COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"]
+            : COLOR_CONFIG["planner-green"];
           const total = item.price * item.quantity;
           const isPurchased = item.status === "purchased";
 
@@ -460,12 +534,198 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
         {filteredItems.length === 0 && (
           <div className="text-center py-16">
             <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-foreground font-medium mb-1">
-              No items found
+            <p className="text-foreground font-medium mb-1">No items found</p>
+            <p className="text-muted-foreground text-sm">
+              Try changing your filter
             </p>
-            <p className="text-muted-foreground text-sm">Try changing your filter</p>
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// ADD CATEGORY MODAL
+// ==========================================
+
+interface AddCategoryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (category: Omit<CustomCategory, "id" | "isDefault">) => void;
+}
+
+const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
+  isOpen,
+  onClose,
+  onAdd,
+}) => {
+  const [name, setName] = useState("");
+  const [selectedIcon, setSelectedIcon] = useState("Package");
+  const [selectedColor, setSelectedColor] = useState("planner-blue");
+
+  const availableIcons = [
+    { name: "ShoppingCart", icon: ShoppingCart },
+    { name: "Gift", icon: Gift },
+    { name: "Sparkles", icon: Sparkles },
+    { name: "Package", icon: Package },
+    { name: "TrendingUp", icon: TrendingUp },
+    { name: "Calendar", icon: Calendar },
+    { name: "CheckCircle2", icon: CheckCircle2 },
+    { name: "Clock", icon: Clock },
+  ];
+
+  const availableColors = [
+    { name: "Blue", value: "planner-blue" },
+    { name: "Pink", value: "planner-pink" },
+    { name: "Purple", value: "planner-purple" },
+    { name: "Green", value: "planner-green" },
+    { name: "Amber", value: "planner-amber" },
+  ];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (name.trim()) {
+      onAdd({
+        name: name.trim(),
+        icon: selectedIcon,
+        color: selectedColor,
+      });
+      setName("");
+      setSelectedIcon("Package");
+      setSelectedColor("planner-blue");
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-2xl border border-border shadow-xl max-w-md w-full">
+        <div className="flex items-center justify-between p-5 border-b border-border">
+          <h2 className="font-serif text-xl text-foreground">
+            Add new category
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-muted rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+          {/* Category Name */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Category name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Electronics, Clothing"
+              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+              autoFocus
+            />
+          </div>
+
+          {/* Icon Selection */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Choose icon
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {availableIcons.map((iconItem) => {
+                const Icon = iconItem.icon;
+                const isSelected = selectedIcon === iconItem.name;
+                const config = COLOR_CONFIG[selectedColor];
+                return (
+                  <button
+                    key={iconItem.name}
+                    type="button"
+                    onClick={() => setSelectedIcon(iconItem.name)}
+                    className={`p-3 rounded-xl border-2 transition-all ${
+                      isSelected
+                        ? `${config.iconBg} border-${selectedColor}`
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <Icon
+                      className={`w-6 h-6 mx-auto ${isSelected ? "text-primary-foreground" : "text-muted-foreground"}`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Color Selection */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Choose color
+            </label>
+            <div className="flex gap-2">
+              {availableColors.map((colorItem) => {
+                const config = COLOR_CONFIG[colorItem.value];
+                const isSelected = selectedColor === colorItem.value;
+                return (
+                  <button
+                    key={colorItem.value}
+                    type="button"
+                    onClick={() => setSelectedColor(colorItem.value)}
+                    className={`flex-1 p-3 rounded-xl border-2 transition-all ${config.tokenBg} ${
+                      isSelected
+                        ? `border-${colorItem.value} ring-2 ring-${colorItem.value}/30`
+                        : "border-transparent"
+                    }`}
+                  >
+                    <div
+                      className={`h-6 w-6 rounded-full ${config.iconBg} mx-auto`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="bg-muted rounded-xl p-4">
+            <p className="text-xs text-muted-foreground mb-2">Preview</p>
+            <div className="flex items-center gap-3">
+              <div
+                className={`h-10 w-10 rounded-xl ${COLOR_CONFIG[selectedColor].iconBg} flex items-center justify-center`}
+              >
+                {React.createElement(
+                  ICON_MAP[selectedIcon] || Package,
+                  { className: "w-5 h-5 text-primary-foreground" }
+                )}
+              </div>
+              <span className="font-medium text-foreground">
+                {name || "Category name"}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim()}
+              className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Add category
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -477,16 +737,26 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items }) => {
 
 export default function FinanceDashboard() {
   const [items] = useState<ShoppingItem[]>(MOCK_ITEMS);
-  const [budget, setBudget] = useState<Budget>(INITIAL_BUDGET);
+  const [categories, setCategories] = useState<CustomCategory[]>(() => {
+    const saved = localStorage.getItem("shopping-categories");
+    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
+  });
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+
+  // Save categories to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("shopping-categories", JSON.stringify(categories));
+  }, [categories]);
 
   const budgetUsed = useMemo(
     () => items.reduce((total, item) => total + item.price * item.quantity, 0),
     [items],
   );
 
-  useEffect(() => {
-    setBudget((prev) => ({ ...prev, used: budgetUsed }));
-  }, [budgetUsed]);
+  const budget: Budget = useMemo(
+    () => ({ total: INITIAL_BUDGET.total, used: budgetUsed }),
+    [budgetUsed],
+  );
 
   const purchasedCount = useMemo(
     () => items.filter((i) => i.status === "purchased").length,
@@ -494,43 +764,52 @@ export default function FinanceDashboard() {
   );
 
   const categorySummaries = useMemo<CategorySummary[]>(() => {
-    const categories: ShoppingCategory[] = [
-      "Food",
-      "Gift",
-      "Decoration",
-      "Other",
-    ];
     return categories.map((category) => {
-      const categoryItems = items.filter((item) => item.category === category);
+      const categoryItems = items.filter((item) => item.category === category.name);
       const total = categoryItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0,
       );
-      const config = CATEGORY_CONFIG[category];
+      const config = COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
       return {
-        category,
+        category: category.name,
         total,
         itemCount: categoryItems.length,
-        icon: config.icon,
+        icon: category.icon,
         color: config.tokenColor,
         bgColor: config.tokenBg,
       };
     });
-  }, [items]);
+  }, [items, categories]);
+
+  const handleAddCategory = (newCategory: Omit<CustomCategory, "id" | "isDefault">) => {
+    const category: CustomCategory = {
+      ...newCategory,
+      id: `custom-${Date.now()}`,
+      isDefault: false,
+    };
+    setCategories((prev) => [...prev, category]);
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <PageHeader />
+        <PageHeader onAddCategory={() => setIsAddCategoryModalOpen(true)} />
         <BudgetOverview
           budget={budget}
           itemCount={items.length}
           purchasedCount={purchasedCount}
         />
-        <CategoryCards categorySummaries={categorySummaries} />
-        <ShoppingList items={items} />
+        <CategoryCards categorySummaries={categorySummaries} categories={categories} />
+        <ShoppingList items={items} categories={categories} />
       </main>
+
+      <AddCategoryModal
+        isOpen={isAddCategoryModalOpen}
+        onClose={() => setIsAddCategoryModalOpen(false)}
+        onAdd={handleAddCategory}
+      />
     </div>
   );
 }
