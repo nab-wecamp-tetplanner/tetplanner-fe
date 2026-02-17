@@ -1,6 +1,14 @@
-export type ShoppingCategory = "Food" | "Gift" | "Decoration" | "Other";
+export type ShoppingCategory = string;
 
 export type ShoppingStatus = "pending" | "purchased";
+
+export interface CustomCategory {
+  id: string;
+  name: string;
+  icon: string; // Lucide icon name
+  color: string; // Tailwind color class like "planner-blue"
+  isDefault: boolean;
+}
 
 export interface ShoppingItem {
   id: string;
