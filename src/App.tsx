@@ -17,13 +17,14 @@ export default function App() {
       <BrowserRouter>
       <Header />
             <Routes>
-              <Route path="/" element={<div>Trang Overview</div>} />
+              <Route path="/" element={<Overview />} />
               <Route path="/task" element={<TaskManagement />} />
-              <Route path="/calendar" element={<div>Trang Calendar</div>} />
-              <Route path="/finance" element={<div>Trang Finance</div>} />
-              <Route path="/transaction" element={<div>Trang Transactions</div>} />
-              <Route path="/dashboard" element={<div>Trang Dashboard</div>} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/finance" element={<FinanceDashboard />} />
+              <Route path="/transaction" element={<Transaction />} />
+              <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
+
       </BrowserRouter>
     </QueryClientProvider>
   );

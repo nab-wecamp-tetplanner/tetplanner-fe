@@ -1,4 +1,3 @@
-import { Header } from "../components/Header/Header";
 import BudgetCard from "../components/Overview/BudgetCard";
 import TransactionsTableWidget from "../components/Overview/RecentTransaction";
 import TaskListWidget from "../components/Overview/TaskWidget";
@@ -8,7 +7,6 @@ import CalendarWidget from "../components/Overview/CalendarWidget/CalendarWidget
 export default function Overview() {
   return (
     <div className="mb-4">
-      <Header />
       <div className="mt-4 mx-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Col 1: Buget Cards */}

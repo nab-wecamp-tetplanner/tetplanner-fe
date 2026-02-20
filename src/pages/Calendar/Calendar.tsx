@@ -12,7 +12,6 @@ import {
 } from "@tanstack/react-table";
 import timeGridPlugin from "@fullcalendar/timegrid"; 
 import listPlugin from "@fullcalendar/list"; 
-import { Header } from "../../components/Header/Header";
 
 const MOCK_TASKS: Task[] = [
   {
@@ -209,7 +208,6 @@ export default function CalendarPage() {
 
   return (
     <div className="bg-white min-h-screen w-full">
-      <Header />
       <main className="grid grid-cols-12 min-h-[85vh]">
         {/* Calendar (Left column) */}
         <div className="col-span-8 p-6 border-r border-slate-100">

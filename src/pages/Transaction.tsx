@@ -183,38 +183,7 @@ const formatCurrency = (amount: number) =>
     amount,
   );
 
-// ==========================================
-// SUB-COMPONENTS
-// ==========================================
 
-const PageHeader = () => (
-  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
-    <div>
-      <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
-        Transactions
-      </p>
-      <h1 className="text-4xl font-serif text-foreground mb-1">Transactions</h1>
-      <p className="text-muted-foreground text-sm">
-        Track income and expenses and manage transactions
-      </p>
-    </div>
-    <div className="mt-4 md:mt-0 flex items-center gap-1 bg-card p-1 rounded-xl border border-border text-sm font-medium text-muted-foreground">
-      <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold">
-        This month
-      </button>
-      <button className="px-3 py-1.5 hover:bg-muted rounded-lg text-xs">
-        Last month
-      </button>
-      <button className="px-3 py-1.5 hover:bg-muted rounded-lg text-xs">
-        This year
-      </button>
-      <button className="px-3 py-1.5 hover:bg-muted rounded-lg text-xs flex items-center gap-1">
-        <Calendar className="w-3.5 h-3.5" />
-        Custom
-      </button>
-    </div>
-  </div>
-);
 
 const ActionCards = () => (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
@@ -300,7 +269,6 @@ const TransactionList = () => {
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-      {/* Header */}
       <div className="p-5 border-b border-border">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -355,7 +323,7 @@ const TransactionList = () => {
             >
               {/* Icon */}
               <div
-                className={`flex-shrink-0 h-9 w-9 rounded-lg ${txn.iconBg} flex items-center justify-center`}
+                className={`shrink-0 h-9 w-9 rounded-lg ${txn.iconBg} flex items-center justify-center`}
               >
                 <span className={`text-xs font-bold ${txn.iconColor}`}>
                   {txn.iconText}
@@ -375,21 +343,21 @@ const TransactionList = () => {
               </div>
 
               {/* Date */}
-              <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+              <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
                 <Calendar className="w-3.5 h-3.5" />
                 {txn.date}
               </div>
 
               {/* Amount */}
               <span
-                className={`font-bold text-sm flex-shrink-0 w-28 text-right ${txn.isIncome ? "text-planner-green" : "text-foreground"}`}
+                className={`font-bold text-sm shrink-0 w-28 text-right ${txn.isIncome ? "text-planner-green" : "text-foreground"}`}
               >
                 {txn.isIncome ? "+" : "-"}
                 {formatCurrency(txn.amount)}
               </span>
 
               {/* Actions */}
-              <button className="p-1.5 hover:bg-muted rounded-lg transition-colors flex-shrink-0">
+              <button className="p-1.5 hover:bg-muted rounded-lg transition-colors shrink-0">
                 <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             </div>
@@ -419,9 +387,7 @@ const TransactionList = () => {
 export default function Transaction() {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <PageHeader />
         <ActionCards />
         <QuickStats />
         <TransactionList />

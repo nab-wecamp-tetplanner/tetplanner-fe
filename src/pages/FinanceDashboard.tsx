@@ -1,11 +1,9 @@
-import { Header } from "../components/Header";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   ShoppingCart,
   Gift,
   Sparkles,
   Package,
-  Plus,
   Search,
   Calendar,
   Edit2,
@@ -14,7 +12,6 @@ import {
   Clock,
   TrendingUp,
   X,
-  FolderPlus,
 } from "lucide-react";
 import { ProgressRing } from "../components/ProgressRing";
 import type {
@@ -200,38 +197,38 @@ const formatDate = (dateString: string) =>
 // SUB-COMPONENTS
 // ==========================================
 
-interface PageHeaderProps {
-  onAddCategory: () => void;
-}
+// interface PageHeaderProps {
+//   onAddCategory: () => void;
+// }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ onAddCategory }) => (
-  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
-    <div>
-      <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
-        Budget Planner
-      </p>
-      <h1 className="text-4xl font-serif text-foreground mb-1">
-        Shopping Manager
-      </h1>
-      <p className="text-muted-foreground text-sm">
-        Track expenses and manage Tet shopping budget
-      </p>
-    </div>
-    <div className="mt-4 md:mt-0 flex items-center gap-2">
-      <button
-        onClick={onAddCategory}
-        className="inline-flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
-      >
-        <FolderPlus className="w-4 h-4" />
-        Add category
-      </button>
-      <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm">
-        <Plus className="w-4 h-4" />
-        Add item
-      </button>
-    </div>
-  </div>
-);
+// const PageHeader: React.FC<PageHeaderProps> = ({ onAddCategory }) => (
+//   <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
+//     <div>
+//       <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
+//         Budget Planner
+//       </p>
+//       <h1 className="text-4xl font-serif text-foreground mb-1">
+//         Shopping Manager
+//       </h1>
+//       <p className="text-muted-foreground text-sm">
+//         Track expenses and manage Tet shopping budget
+//       </p>
+//     </div>
+//     <div className="mt-4 md:mt-0 flex items-center gap-2">
+//       <button
+//         onClick={onAddCategory}
+//         className="inline-flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
+//       >
+//         <FolderPlus className="w-4 h-4" />
+//         Add category
+//       </button>
+//       <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm">
+//         <Plus className="w-4 h-4" />
+//         Add item
+//       </button>
+//     </div>
+//   </div>
+// );
 
 interface BudgetOverviewProps {
   budget: Budget;
@@ -452,7 +449,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, categories }) => {
             >
               {/* Status indicator */}
               <button
-                className={`flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${isPurchased ? "bg-accent border-accent" : "border-border hover:border-primary"}`}
+                className={`shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${isPurchased ? "bg-accent border-accent" : "border-border hover:border-primary"}`}
               >
                 {isPurchased && (
                   <CheckCircle2 className="w-3 h-3 text-accent-foreground" />
@@ -461,7 +458,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, categories }) => {
 
               {/* Category icon */}
               <div
-                className={`flex-shrink-0 h-9 w-9 rounded-lg ${config.tokenBg} flex items-center justify-center`}
+                className={`shrink-0 h-9 w-9 rounded-lg ${config.tokenBg} flex items-center justify-center`}
               >
                 <Icon className={`w-4 h-4 ${config.tokenColor}`} />
               </div>
@@ -488,18 +485,18 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, categories }) => {
               </div>
 
               {/* Quantity */}
-              <span className="text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded-lg flex-shrink-0">
+              <span className="text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded-lg shrink-0">
                 x{item.quantity}
               </span>
 
               {/* Due date */}
-              <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+              <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
                 <Calendar className="w-3.5 h-3.5" />
                 {formatDate(item.dueDate)}
               </div>
 
               {/* Status badge */}
-              <div className="hidden md:block flex-shrink-0">
+              <div className="hidden md:block shrink-0">
                 {isPurchased ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-accent bg-planner-green-light px-2 py-1 rounded-lg">
                     <CheckCircle2 className="w-3 h-3" />
@@ -514,12 +511,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, categories }) => {
               </div>
 
               {/* Total */}
-              <span className="font-bold text-sm text-foreground flex-shrink-0 w-28 text-right">
+              <span className="font-bold text-sm text-foreground shrink-0 w-28 text-right">
                 {formatCurrency(total)}
               </span>
 
               {/* Actions */}
-              <div className="flex items-center gap-0.5 flex-shrink-0">
+              <div className="flex items-center gap-0.5 shrink-0">
                 <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
                   <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
@@ -793,9 +790,7 @@ export default function FinanceDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <PageHeader onAddCategory={() => setIsAddCategoryModalOpen(true)} />
         <BudgetOverview
           budget={budget}
           itemCount={items.length}

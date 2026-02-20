@@ -16,7 +16,7 @@ const navItems: NavItem[] = [
 
 export const Header = () => {
   return (
-    <header className="w-full bg-card border-b border-border shadow-sm sticky top-0 z-50 backdrop-blur-sm bg-card/95">
+    <header className="w-full bg-card border-b border-border shadow-sm sticky top-0 z-50 backdrop-blur-sm">
       <div className="flex items-center justify-between px-6 sm:px-8 lg:px-12 py-4">
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-lg">

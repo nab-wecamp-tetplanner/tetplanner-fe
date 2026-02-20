@@ -361,7 +361,7 @@ const ChartsSection = () => {
                     stroke="none"
                   ></Pie>
                   <RechartsTooltip
-                    formatter={(value: number, name: string) => [
+                    formatter={(value: number = 0, name: string = "") => [
                       value.toLocaleString() + " VND",
                       name,
                     ]}
@@ -644,9 +644,7 @@ const GroupedTransactions = () => {
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <PageHeader />
         <QuickStats />
         <ChartsSection />
         <GroupedTransactions />
