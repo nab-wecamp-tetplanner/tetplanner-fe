@@ -5,6 +5,8 @@ import { FinanceDashboard, Transaction, Dashboard } from "./pages";
 import "./App.css";
 
 import './App.css'
+import Header from './components/Header/Header';
+import TaskManagement from './pages/TaskManagement/TaskManagement';
 import Overview from './pages/Overview';
 import CalendarPage from './pages/Calendar/Calendar';
 const queryClient = new QueryClient();
@@ -13,24 +15,15 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/" element={<Overview />} />
-          <Route path="/finance" element={<FinanceDashboard />} />
-          <Route path="/transaction" element={<Transaction />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route
-            path="/"
-            element={
-              <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <h1 className="text-4xl font-bold text-gray-900">
-                  Welcome to NY Planner
-                </h1>
-              </div>
-            }
-          />
-        </Routes>
+      <Header />
+            <Routes>
+              <Route path="/" element={<div>Trang Overview</div>} />
+              <Route path="/task" element={<TaskManagement />} />
+              <Route path="/calendar" element={<div>Trang Calendar</div>} />
+              <Route path="/finance" element={<div>Trang Finance</div>} />
+              <Route path="/transaction" element={<div>Trang Transactions</div>} />
+              <Route path="/dashboard" element={<div>Trang Dashboard</div>} />
+            </Routes>
       </BrowserRouter>
     </QueryClientProvider>
   );

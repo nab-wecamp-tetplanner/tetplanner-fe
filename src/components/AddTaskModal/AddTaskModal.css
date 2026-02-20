@@ -1,0 +1,252 @@
+/* ===== Modal Overlay (Tet Warm) ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(41, 37, 36, 0.35);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* ===== Modal Content ===== */
+.modal-content {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(214, 211, 209, 0.5);
+  padding: 32px;
+  border-radius: 20px;
+  width: 95%;
+  max-width: 480px;
+  box-shadow:
+    0 24px 48px rgba(120, 113, 108, 0.12),
+    0 0 0 1px rgba(214, 211, 209, 0.2);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 4px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(168, 162, 158, 0.4);
+  border-radius: 10px;
+}
+
+/* ===== Header ===== */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #292524;
+  font-family: 'Playfair Display', 'Noto Serif', Georgia, serif;
+}
+
+.close-button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: rgba(245, 245, 244, 0.8);
+  border: 1px solid rgba(214, 211, 209, 0.5);
+  border-radius: 10px;
+  color: #78716c;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: rgba(254, 202, 202, 0.4);
+  color: #dc2626;
+}
+
+/* ===== Form ===== */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.form-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(214, 211, 209, 0.6);
+  font-size: 0.9rem;
+  color: #292524;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.form-input::placeholder {
+  color: #a8a29e;
+}
+
+.form-input:focus {
+  border-color: rgba(217, 119, 6, 0.4);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+select.form-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2378716c' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+select.form-input option {
+  background: #fdfbf7;
+  color: #292524;
+}
+
+/* ===== Subtask Section ===== */
+.subtask-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-add-subtask {
+  padding: 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(214, 211, 209, 0.5);
+  background: rgba(245, 245, 244, 0.6);
+  color: #78716c;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-add-subtask:hover {
+  background: rgba(251, 191, 36, 0.12);
+  color: #b45309;
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+.subtask-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subtask-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(245, 245, 244, 0.6);
+  border: 1px solid rgba(214, 211, 209, 0.4);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #44403c;
+}
+
+.btn-remove-subtask {
+  background: transparent;
+  border: none;
+  color: #a8a29e;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-remove-subtask:hover {
+  background: rgba(254, 202, 202, 0.3);
+  color: #dc2626;
+}
+
+/* ===== Actions ===== */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn {
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(214, 211, 209, 0.5);
+  color: #78716c;
+}
+
+.btn-cancel:hover {
+  background: rgba(245, 245, 244, 0.6);
+  color: #44403c;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  border: none;
+  color: white;
+  box-shadow: 0 2px 12px rgba(217, 119, 6, 0.2);
+}
+
+.btn-submit:hover {
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}

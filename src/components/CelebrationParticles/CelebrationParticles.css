@@ -1,0 +1,180 @@
+/* ===== Celebration Particle Burst ===== */
+
+.celebration-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* ===== Individual Particle ===== */
+.celebration-particle {
+  position: absolute;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* --- Golden Coin --- */
+.celebration-particle--coin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 35% 30%, #fde68a, #f59e0b 40%, #b45309 100%);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6), inset 0 -2px 4px rgba(180, 83, 9, 0.4);
+  animation: particleBurst var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.celebration-particle--coin::after {
+  content: '¥';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(180, 83, 9, 0.6);
+}
+
+/* --- Red Confetti --- */
+.celebration-particle--confetti {
+  width: 10px;
+  height: 6px;
+  border-radius: 1px;
+  animation: particleBurst var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
+             confettiSpin var(--spin-duration) linear infinite;
+}
+
+.celebration-particle--confetti-red {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  box-shadow: 0 0 4px rgba(220, 38, 38, 0.4);
+}
+
+.celebration-particle--confetti-gold {
+  background: linear-gradient(135deg, #d97706, #fbbf24);
+  box-shadow: 0 0 4px rgba(251, 191, 36, 0.4);
+}
+
+.celebration-particle--confetti-crimson {
+  background: linear-gradient(135deg, #be123c, #f43f5e);
+  box-shadow: 0 0 3px rgba(244, 63, 94, 0.3);
+}
+
+/* --- Firecracker Spark --- */
+.celebration-particle--spark {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fef3c7;
+  box-shadow: 0 0 6px 2px rgba(251, 191, 36, 0.8), 0 0 12px 4px rgba(245, 158, 11, 0.4);
+  animation: sparkBurst var(--duration) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* --- Peach Blossom Petal --- */
+.celebration-particle--petal {
+  width: 14px;
+  height: 10px;
+  border-radius: 50% 0 50% 0;
+  background: linear-gradient(135deg, #fbcfe8, #f9a8d4);
+  opacity: 0.85;
+  box-shadow: 0 0 6px rgba(249, 168, 212, 0.3);
+  animation: petalFloat var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
+             petalSway var(--sway-duration) ease-in-out infinite;
+}
+
+/* ===== Burst Keyframes ===== */
+
+@keyframes particleBurst {
+  0% {
+    transform: translate(0, 0) scale(0.3) rotate(0deg);
+    opacity: 1;
+  }
+  20% {
+    opacity: 1;
+    transform: translate(
+      calc(var(--tx) * 0.4),
+      calc(var(--ty) * 0.4)
+    ) scale(1.1) rotate(calc(var(--rot) * 0.3));
+  }
+  100% {
+    transform: translate(var(--tx), calc(var(--ty) + 60px)) scale(0.2) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+@keyframes sparkBurst {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  30% {
+    opacity: 1;
+    transform: translate(
+      calc(var(--tx) * 0.5),
+      calc(var(--ty) * 0.5)
+    ) scale(1.5);
+  }
+  70% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes petalFloat {
+  0% {
+    transform: translate(0, 0) scale(0.5) rotate(0deg);
+    opacity: 0.9;
+  }
+  30% {
+    opacity: 0.9;
+    transform: translate(
+      calc(var(--tx) * 0.4),
+      calc(var(--ty) * 0.4)
+    ) scale(1) rotate(calc(var(--rot) * 0.3));
+  }
+  100% {
+    transform: translate(var(--tx), calc(var(--ty) + 80px)) scale(0.6) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+@keyframes confettiSpin {
+  0% { transform: rotateX(0deg) rotateY(0deg); }
+  100% { transform: rotateX(360deg) rotateY(180deg); }
+}
+
+@keyframes petalSway {
+  0%, 100% { margin-left: 0; }
+  50% { margin-left: 8px; }
+}
+
+/* ===== Shockwave Ring ===== */
+.celebration-shockwave {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+  animation: shockwaveExpand 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes shockwaveExpand {
+  0% {
+    width: 10px;
+    height: 10px;
+    opacity: 0.8;
+  }
+  100% {
+    width: 250px;
+    height: 250px;
+    opacity: 0;
+    border-color: rgba(220, 38, 38, 0.1);
+  }
+}
