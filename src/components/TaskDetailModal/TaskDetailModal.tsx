@@ -1,4 +1,3 @@
-import React from "react";
 import "./TaskDetailModal.css";
 import type { Task, SubTask } from "../../types/task";
 import { Calendar, CheckSquare } from "lucide-react";
