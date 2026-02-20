@@ -1,90 +1,203 @@
-/* Container của cả cột */
-.kanban-column {
+/* ===== Tet Column ===== */
+.tet-col {
   display: flex;
   flex-direction: column;
-  min-width: 350px; /* Độ rộng tối thiểu của cột */
-  background-color: transparent; /* Hoặc màu nền nhẹ nếu muốn */
-  height: 100%;
+  min-width: 0;
+  border-radius: 16px;
+  padding: 8px;
+  transition: all 0.3s ease;
+  background: transparent;
 }
 
-/* Phần Header (Tiêu đề + Số lượng + Nút Add) */
-.column-header {
-  margin-bottom: 20px;
-  padding: 0 4px;
+.tet-col--drag-over {
+  background: rgba(251, 191, 36, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.2);
+  border-radius: 16px;
 }
 
-.header-top {
+/* ===== Column Header — Frosted Glass ===== */
+.tet-col__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.column-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1b1e;
-  margin: 0;
-}
-
-.task-count {
-  background-color: #f1f3f5;
-  color: #868e96;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 8px;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(214, 211, 209, 0.4);
   border-radius: 12px;
 }
 
-.add-task-btn {
-  width: 100%;
+.tet-col__title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Status dot with per-column color */
+.tet-col__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.tet-col--amber .tet-col__dot {
+  background: #d97706;
+  box-shadow: 0 0 6px rgba(217, 119, 6, 0.4);
+}
+
+.tet-col--rose .tet-col__dot {
+  background: #e11d48;
+  box-shadow: 0 0 6px rgba(225, 29, 72, 0.4);
+}
+
+.tet-col--emerald .tet-col__dot {
+  background: #059669;
+  box-shadow: 0 0 6px rgba(5, 150, 105, 0.4);
+}
+
+.tet-col--slate .tet-col__dot {
+  background: #78716c;
+  box-shadow: 0 0 6px rgba(120, 113, 108, 0.4);
+}
+
+.tet-col__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #44403c;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+  font-family: 'Playfair Display', 'Noto Serif', Georgia, serif;
+}
+
+.tet-col__count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #78716c;
+  background: rgba(245, 245, 244, 0.8);
+  border: 1px solid rgba(214, 211, 209, 0.5);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.tet-col__more-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px;
-  background-color: transparent;
-  border: 1px dashed #ced4da;
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
-  color: #868e96;
-  font-size: 14px;
-  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: #a8a29e;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
-.add-task-btn:hover {
-  background-color: #f8f9fa;
-  border-color: #adb5bd;
-  color: #495057;
+.tet-col__more-btn:hover {
+  background: rgba(245, 245, 244, 0.8);
+  color: #44403c;
 }
 
-/* Phần danh sách chứa các Card */
-.task-list {
+/* ===== Task List ===== */
+.tet-col__tasks {
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Khoảng cách giữa các thẻ TaskCard */
-  overflow-y: auto; /* Cho phép cuộn nếu danh sách quá dài */
-  padding-bottom: 20px;
-  flex: 1; /* Chiếm hết chiều cao còn lại */
+  gap: 12px;
+  min-height: 100px;
+  padding-bottom: 8px;
+  flex: 1;
+  overflow-y: auto;
 }
 
-/* Scrollbar ẩn cho đẹp (Optional) */
-.task-list::-webkit-scrollbar {
+.tet-col__tasks::-webkit-scrollbar {
   width: 4px;
 }
-.task-list::-webkit-scrollbar-thumb {
-  background-color: #e9ecef;
+.tet-col__tasks::-webkit-scrollbar-thumb {
+  background-color: rgba(168, 162, 158, 0.3);
   border-radius: 4px;
 }
 
-.empty-column-placeholder {
-    height: 100px;
-    border: 2px dashed #f1f3f5;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #adb5bd;
-    font-size: 14px;
+/* ===== Empty State ===== */
+.tet-col__empty {
+  height: 100px;
+  border: 2px dashed rgba(214, 211, 209, 0.6);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a8a29e;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.tet-col__empty--active {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(251, 191, 36, 0.06);
+  color: #b45309;
+}
+
+/* ===== Drop Zone Indicator ===== */
+.tet-col__dropzone {
+  height: 80px;
+  width: 100%;
+  border-radius: 14px;
+  border: 2px dashed rgba(217, 119, 6, 0.35);
+  background: rgba(251, 191, 36, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulseGold 2s ease-in-out infinite;
+}
+
+.tet-col__dropzone span {
+  color: #b45309;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@keyframes pulseGold {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ===== Add Task Button ===== */
+.tet-col__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-top: 4px;
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: 12px;
+  color: #a8a29e;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tet-col__add-btn:hover {
+  color: #b45309;
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(214, 211, 209, 0.5);
+}
+
+.tet-col__add-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(245, 245, 244, 0.6);
+  transition: all 0.2s;
+}
+
+.tet-col__add-btn:hover .tet-col__add-icon {
+  background: rgba(251, 191, 36, 0.15);
+  color: #b45309;
 }
