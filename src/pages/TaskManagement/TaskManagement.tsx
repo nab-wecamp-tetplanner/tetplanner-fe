@@ -1,6 +1,6 @@
-import React from 'react'
-import type { Task, TaskStatus} from '../../types/task'
-import { MOCK_TASKS } from '../../data/mockTasks'
+import React, { useState } from 'react'
+import type { Plan, Task, TaskStatus} from '../../types/task'
+import { MOCK_PLANS } from '../../data/mockTasks';
 import './TaskManagement.css'
 import { LayoutGrid, Plus, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import TaskColumn from '../../components/TaskColumn/TaskColumn';
@@ -49,15 +49,28 @@ const Blossom: React.FC<{ className?: string }> = ({ className = '' }) => (
 
 const TaskManagement: React.FC = () => {
 
-    const [tasks, setTasks] = React.useState<Task[]>(MOCK_TASKS);
+    const [plans, setPlans] = React.useState<Plan[]>(MOCK_PLANS);
+    const [activePlanId, setActivePlanId] = useState<string>(MOCK_PLANS[0].id);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('todo');
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [celebration, setCelebration] = React.useState<{ x: number; y: number } | null>(null);
 
     const handleCelebrate = (x: number, y: number) => {
-        setCelebration({ x, y });
+        setCelebration(null);
+
+        setTimeout(() => {
+            setCelebration({ x, y });
+        }, 10);
+
+        setTimeout(() => {
+            setCelebration(null);
+        }, 2000);
+
     };
+
+    const activePlan = plans.find(p => p.id === activePlanId);
+    const currentTasks = activePlan ? activePlan.tasks : [];
 
     const columns: { id: TaskStatus; label: string} [] = [
         { id: 'todo', label: 'To Do' },
@@ -67,17 +80,41 @@ const TaskManagement: React.FC = () => {
     ];
 
     const handleDeleteTask = (taskId: string) => {
-        if(window.confirm('Bạn có chắc muốn xoá công việc này?')) {
-            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    setPlans(prevPlans => prevPlans.map(plan => {
+            if (plan.id !== activePlanId) return plan; // Bỏ qua nếu không phải Plan đang mở
+
+            const targetTask = plan.tasks.find(t => t.id === taskId);
+            if (!targetTask) return plan;
+
+            let updatedTasks;
+            if (targetTask.status === 'cancelled') {
+                // Xóa vĩnh viễn khỏi Plan
+                const confirmDelete = window.confirm('Bạn có chắc muốn xóa công việc đã hủy? Hành động này không thể hoàn tác.');
+                if (!confirmDelete) return plan;
+                updatedTasks = plan.tasks.filter(t => t.id !== taskId);
+            } else {
+                // Soft delete (Chuyển thành cancelled)
+                updatedTasks = plan.tasks.map(t =>
+                    t.id === taskId ? { ...t, status: 'cancelled' as TaskStatus } : t
+                );
+            }
+            return { ...plan, tasks: updatedTasks };
+        }));
+        if (selectedTask && selectedTask.id === taskId) {
+            setSelectedTask(null);
         }
-    }
+    };
 
     const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
-        setTasks((prevTasks) =>
-            prevTasks.map((task) =>
-                task.id === taskId ? { ...task, status: newStatus } : task
-            )
-        );
+        setPlans(prevPlans => prevPlans.map(plan => {
+            if (plan.id !== activePlanId) return plan;
+            return {
+                ...plan,
+                tasks: plan.tasks.map(task => 
+                    task.id === taskId ? { ...task, status: newStatus } : task
+                )
+            };
+        }));
     }
 
     const handleAddTask = (taskData: Omit<Task, "id" | "progressColor" | "dateColor" | "avatars">) => {
@@ -94,7 +131,13 @@ const TaskManagement: React.FC = () => {
         subTasks: taskData.subTasks,
         avatars: ["https://api.dicebear.com/7.x/avataaars/svg?seed=" + Date.now()]
         }
-        setTasks((prevTasks) => [...prevTasks, newTask]);
+        setPlans(prevPlans => prevPlans.map(plan => {
+            if (plan.id === activePlanId) {
+                return { ...plan, tasks: [...plan.tasks, newTask] }; // Nhét task vào đúng Plan
+            }
+            return plan;
+        }));
+        setIsModalOpen(false);
     }
 
     const handleOpenModal = (columnId: TaskStatus) => {
@@ -107,11 +150,15 @@ const TaskManagement: React.FC = () => {
     }
 
     const handleUpdateTask = (updatedTask: Task) => {
-        setTasks((prevTasks) =>
-            prevTasks.map((task) =>
-                task.id === updatedTask.id ? updatedTask : task
-            )
-        );
+        setPlans(prevPlans => prevPlans.map(plan => {
+            if (plan.id === activePlanId) {
+                return {
+                    ...plan,
+                    tasks: plan.tasks.map(task => task.id === updatedTask.id ? updatedTask : task)
+                };
+            }
+            return plan;
+        }));
         setSelectedTask(updatedTask); 
     }
 
@@ -129,9 +176,26 @@ const TaskManagement: React.FC = () => {
         <Blossom className="tet-deco-blossom--bl" />
 
         <header className="tet-page-header">
-            <div className="tet-header-left">
-                <h1 className="tet-heading">New Year Planner</h1>
-                <span className="tet-badge">{tasks.length} công việc</span>
+            <div className="tet-header-left"> 
+                    <div className="plan-selector">
+                        <select
+                            value={activePlanId}
+                            onChange={(e) => setActivePlanId(e.target.value)}
+                            className="plan-dropdown-select"
+                        >
+                            {plans.map((plan) => (
+                                <option key={plan.id} value={plan.id}>
+                                    {plan.title}
+                                </option>
+                            ))}
+                        </select>
+                        {activePlan && (
+                            <span className="plan-description" style={{ fontSize: '13px', color: '#d97706', fontWeight: 500 }}>
+                                {activePlan.description}
+                            </span>
+                        )}
+                    </div>
+                <span className="tet-badge">{currentTasks.length} công việc</span>
             </div>
 
             <div className="tet-header-right">
@@ -154,7 +218,7 @@ const TaskManagement: React.FC = () => {
                     key={column.id} 
                     label={column.label}
                     status={column.id}
-                    tasks={tasks.filter((task) => task.status === column.id)} 
+                    tasks={currentTasks.filter((task) => task.status === column.id)} 
                     onMoveTask={handleMoveTask}
                     onDeleteTask={handleDeleteTask}
                     onAddTask={() => handleOpenModal(column.id)}

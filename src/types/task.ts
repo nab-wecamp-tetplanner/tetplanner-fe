@@ -24,3 +24,11 @@ export interface Task {
     iconColor?: string;
     subTasks?: SubTask[];
 }
+
+
+export interface Plan {
+    id: string;
+    title: string;
+    description: string;
+    tasks: Task[];
+}

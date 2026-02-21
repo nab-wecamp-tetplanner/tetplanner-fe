@@ -1,4 +1,4 @@
-import  { type Task } from '../types/task';
+import  { type Plan, type Task } from '../types/task';
 
 export const MOCK_TASKS: Task[] = [
   {
@@ -55,4 +55,9 @@ export const MOCK_TASKS: Task[] = [
     commentsCount: 0,
     attachmentsCount: 1,
   },
+];
+
+export const MOCK_PLANS: Plan[] = [
+    { id: 'p1', title: '🧧 paternal family plans', description: 'Chuẩn bị đồ đạc và dọn dẹp nhà Nội', tasks: [] },
+    { id: 'p2', title: '🌸 maternal family plans', description: 'Mua sắm quà cáp về thăm Ngoại', tasks: [] }
 ];
