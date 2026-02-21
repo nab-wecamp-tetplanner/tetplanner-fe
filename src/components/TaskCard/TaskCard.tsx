@@ -1,6 +1,7 @@
 import React from 'react'
 import { Clock, Flame, MoreHorizontal, ShoppingCart } from 'lucide-react'
 import type { Task } from '../../types/task'
+import { MOCK_MEMBERS } from '../../data/mockTasks'
 import './TaskCard.css'
 
 interface TaskCardProps {
@@ -89,13 +90,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                 {/* Title */}
                 <h3 className="tet-card__title">{task.title}</h3>
 
-                {/* Assigned to */}
-                {task.assigned_to && (
-                    <div className="tet-card__meta">
-                        <span className="tet-card__project">{task.assigned_to}</span>
-                    </div>
-                )}
-
                 {/* Progress */}
                 <div className="tet-card__progress">
                     <div className="tet-card__progress-bar">
@@ -107,7 +101,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                     <span className="tet-card__progress-text">{progressText}</span>
                 </div>
 
-                {/* Footer: Deadline */}
+                {/* Footer: Deadline + Assignee */}
                 <div className="tet-card__footer">
                     <div className="tet-card__stats">
                         {task.deadline && (
@@ -116,6 +110,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                             </span>
                         )}
                     </div>
+                    {(() => {
+                        const member = MOCK_MEMBERS.find(m => m.id === task.assigned_to);
+                        return member ? (
+                            <div className="tet-card__assignee" title={member.name}>
+                                <img 
+                                    src={member.avatar} 
+                                    alt={member.name} 
+                                    className="tet-card__assignee-avatar" 
+                                />
+                            </div>
+                        ) : null;
+                    })()}
                 </div>
             </div>
         </div>

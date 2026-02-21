@@ -199,7 +199,7 @@ const TaskManagement: React.FC = () => {
             purchased: false,
         };
 
-        // Chỉ cập nhật UI, không gọi API
+        // Update UI only, no API call
         setTodoItems(prev => [...prev, newTask]);
         setIsModalOpen(false);
     };
@@ -241,8 +241,8 @@ const TaskManagement: React.FC = () => {
         <Blossom className="tet-deco-blossom--tr" />
         <Blossom className="tet-deco-blossom--bl" />
 
-        <header className="tet-page-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+        <header className="tet-page-header">
+                <div className="tet-header-row">
                     <div className="tet-header-left"> 
                         <div className="plan-selector">
                             <select
@@ -257,30 +257,23 @@ const TaskManagement: React.FC = () => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: '16px' }}>
-                            {MOCK_MEMBERS.map((member, index) => (
-                                <img 
-                                    key={member.id} 
-                                    src={member.avatar} 
-                                    alt={member.name} 
-                                    title={member.name}
-                                    style={{
-                                        width: '32px', height: '32px', borderRadius: '50%', 
-                                        border: '2px solid white', backgroundColor: '#f3f4f6',
-                                        marginLeft: index > 0 ? '-10px' : '0', // Hiệu ứng xếp chồng
-                                        zIndex: MOCK_MEMBERS.length - index,
-                                        objectFit: 'cover'
-                                    }} 
-                                />
-                            ))}
-                            <button style={{
-                                width: '32px', height: '32px', borderRadius: '50%', border: '1px dashed #dc2626',
-                                backgroundColor: '#fef2f2', color: '#dc2626', display: 'flex',
-                                alignItems: 'center', justifyContent: 'center', marginLeft: '-10px',
-                                cursor: 'pointer', zIndex: 0
-                            }} title="Add Member">
-                                <Plus size={14} />
-                            </button>
+                    <div className="tet-collaborators">
+                            <div className="tet-collaborators__avatars">
+                                {MOCK_MEMBERS.map((member, index) => (
+                                    <img 
+                                        key={member.id} 
+                                        src={member.avatar} 
+                                        alt={member.name} 
+                                        title={member.name}
+                                        className="tet-collaborators__avatar"
+                                        style={{ zIndex: MOCK_MEMBERS.length - index }}
+                                    />
+                                ))}
+                                <button className="tet-collaborators__add" title="Add Member">
+                                    <Plus size={14} />
+                                </button>
+                            </div>
+                            <span className="tet-collaborators__label">Collaborators</span>
                         </div>
 
                     <div className="tet-header-right">
@@ -293,55 +286,30 @@ const TaskManagement: React.FC = () => {
                             <button className="tet-view-btn active"><LayoutGrid size={15} /> Board</button>
                         </div>
 
-                        {/* 2. NÚT LỌC (FILTER) THEO TIMELINE */}
-                        <div style={{ position: 'relative' }}>
+                        {/* Filter by Timeline */}
+                        <div className="tet-filter-wrapper">
                             <button 
-                                className={`tet-ghost-btn ${isFilterOpen ? 'active' : ''}`}
+                                className={`tet-ghost-btn ${isFilterOpen ? 'tet-ghost-btn--active' : ''}`}
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                style={{ 
-                                    backgroundColor: isFilterOpen ? '#fee2e2' : 'transparent',
-                                    color: isFilterOpen ? '#dc2626' : 'inherit'
-                                }}
                             >
                                 <SlidersHorizontal size={15} /> 
-                                {TIMELINE_PHASES.find(p => p.id === activePhaseId)?.name || 'Lọc'}
+                                {TIMELINE_PHASES.find(p => p.id === activePhaseId)?.name || 'Filter'}
                             </button>
 
-                            {/* Menu Dropdown hiển thị khi bấm nút Lọc */}
+                            {/* Filter Dropdown Menu */}
                             {isFilterOpen && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '110%',
-                                    right: 0,
-                                    backgroundColor: '#fff',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                    borderRadius: '8px',
-                                    padding: '8px',
-                                    zIndex: 100,
-                                    minWidth: '150px',
-                                    border: '1px solid #f3f4f6'
-                                }}>
-                                    <div style={{ fontSize: '12px', color: '#6b7280', padding: '4px 8px', marginBottom: '4px', fontWeight: 600 }}>
+                                <div className="tet-filter-dropdown">
+                                    <div className="tet-filter-dropdown__title">
                                         Filter by Timeline Phase
                                     </div>
                                     {TIMELINE_PHASES.map(phase => (
                                         <div
                                             key={phase.id}
+                                            className={`tet-filter-dropdown__item ${activePhaseId === phase.id ? 'tet-filter-dropdown__item--active' : ''}`}
                                             onClick={() => {
                                                 setActivePhaseId(phase.id);
                                                 setIsFilterOpen(false); 
                                             }}
-                                            style={{
-                                                padding: '8px 12px',
-                                                cursor: 'pointer',
-                                                borderRadius: '6px',
-                                                backgroundColor: activePhaseId === phase.id ? '#fef2f2' : 'transparent',
-                                                color: activePhaseId === phase.id ? '#dc2626' : '#374151',
-                                                fontWeight: activePhaseId === phase.id ? 600 : 400,
-                                                transition: 'background 0.2s'
-                                            }}
-                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = activePhaseId === phase.id ? '#fef2f2' : '#f3f4f6'}
-                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = activePhaseId === phase.id ? '#fef2f2' : 'transparent'}
                                         >
                                             {phase.name}
                                         </div>

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "./TaskDetailModal.css";
 import type { Task, SubTask } from "../../types/task";
-import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare } from "lucide-react";
+import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare, User } from "lucide-react";
+import { MOCK_MEMBERS } from "../../data/mockTasks";
 
 /* ── Status / Priority lookup ── */
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -120,6 +121,20 @@ const TaskDetailModal = ({
             </span>
           )}
         </div>
+
+        {/* ── Assigned Member ── */}
+        {(() => {
+          const member = MOCK_MEMBERS.find(m => m.id === task.assigned_to);
+          return member ? (
+            <div className="tdm-assigned">
+              <span className="tdm-assigned__label"><User size={13} /> Assigned to</span>
+              <div className="tdm-assigned__member">
+                <img src={member.avatar} alt={member.name} className="tdm-assigned__avatar" />
+                <span className="tdm-assigned__name">{member.name}</span>
+              </div>
+            </div>
+          ) : null;
+        })()}
 
         {/* Divider */}
         <div className="tdm-divider" />

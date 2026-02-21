@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import type { SubTask, Task, TaskPriority, TaskStatus } from "../../types/task";
 import './AddTaskModal.css';
-import { Calendar, CheckSquare, Flag, Plus, Tag, Trash2, X } from "lucide-react";
+import { Calendar, CheckSquare, Flag, Plus, ShoppingCart, Tag, Trash2, User, X } from "lucide-react";
 import { MOCK_MEMBERS } from "../../data/mockTasks";
 
 interface AddTaskModalProps {
@@ -55,6 +55,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         status: status || 'pending' as TaskStatus,
         is_shopping: isShopping,
         estimated_price: estimatedPrice || undefined,
+        assigned_to: assignedTo || undefined,
         }
 
         onSave(taskData);
@@ -66,6 +67,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         setSubTasks([]);    
         setIsShopping(false);
         setEstimatedPrice('');
+        setAssignedTo('');
         onClose();
     };
 
@@ -94,18 +96,22 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
             />
           </div>
 
-            <div className="form-group" style={{ flex: 1 }}>
-                <label>Người phụ trách</label>
-                <select 
-                    value={assignedTo} 
-                    onChange={(e) => setAssignedTo(e.target.value)}
-                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
-                >
-                    <option value="">-- Chọn người làm --</option>
+            <div className="form-group">
+                <label className="form-label"><User size={14} /> Assigned To</label>
+                <div className="assignee-picker">
                     {MOCK_MEMBERS.map(member => (
-                        <option key={member.id} value={member.id}>{member.name}</option>
+                        <button
+                            key={member.id}
+                            type="button"
+                            className={`assignee-picker__item ${assignedTo === member.id ? 'assignee-picker__item--active' : ''}`}
+                            onClick={() => setAssignedTo(assignedTo === member.id ? '' : member.id)}
+                            title={member.name}
+                        >
+                            <img src={member.avatar} alt={member.name} className="assignee-picker__avatar" />
+                            <span className="assignee-picker__name">{member.name}</span>
+                        </button>
                     ))}
-                </select>
+                </div>
             </div>
 
             {/* Category & Priority */}
@@ -137,16 +143,41 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                 </div>
             </div>
 
-            {/* Deadline */}
-            <div className="form-group">
-                <label className="form-label"><Calendar size={14} /> Deadline</label>
-                <input 
-                className="form-input"
-                type="date" 
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                placeholder="mm/dd/yyyy"
-                />
+            {/* Deadline & Shopping */}
+            <div className="form-row">
+                <div className="form-group">
+                    <label className="form-label"><Calendar size={14} /> Deadline</label>
+                    <input 
+                    className="form-input"
+                    type="date" 
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    />
+                </div>
+                <div className="form-group">
+                    <label className="form-label"><ShoppingCart size={14} /> Shopping Item</label>
+                    <label className="form-toggle">
+                        <input 
+                            type="checkbox" 
+                            checked={isShopping}
+                            onChange={(e) => setIsShopping(e.target.checked)}
+                            className="form-toggle__input"
+                        />
+                        <span className="form-toggle__switch"></span>
+                        <span className="form-toggle__text">{isShopping ? 'Yes' : 'No'}</span>
+                    </label>
+                    {isShopping && (
+                        <input
+                            className="form-input"
+                            type="number"
+                            value={estimatedPrice}
+                            onChange={(e) => setEstimatedPrice(e.target.value ? Number(e.target.value) : '')}
+                            placeholder="Estimated price"
+                            min={0}
+                        />
+                    )}
+                </div>
             </div>
 
             {/* Subtasks */}
