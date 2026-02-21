@@ -37,8 +37,8 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
       });
-      toast.success("Sucessfully registered! Please check your email to verify your account.");
-      navigate("/login");
+      toast.success("Successfully registered! Please check your email to verify your account.");
+      navigate("/verify-otp", { state: { email: formData.email } });
     } catch (error: any) {
       toast.error(error.message || "Registration failed. Please try again.");
     } finally {

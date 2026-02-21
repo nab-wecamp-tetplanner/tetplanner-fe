@@ -12,6 +12,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Auth/LoginPage";
 import Register from "./pages/Auth/RegisterPage";
+import VerifyOTP from "./pages/Auth/VerifyOTP";
 const queryClient = new QueryClient();
 
 export default function App() {
@@ -38,6 +39,8 @@ export default function App() {
             <Route>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<div>Forgot Password Page</div>} />
+              <Route path="/verify-otp" element={<VerifyOTP />} />
             </Route>
 
             {/* Protected Routes  */}
