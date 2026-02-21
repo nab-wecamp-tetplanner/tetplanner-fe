@@ -1,6 +1,7 @@
 import React from 'react'
-import { MessageSquare, Paperclip, Clock, Flame, MoreHorizontal } from 'lucide-react'
+import { Clock, Flame, MoreHorizontal, ShoppingCart } from 'lucide-react'
 import type { Task } from '../../types/task'
+import { MOCK_MEMBERS } from '../../data/mockTasks'
 import './TaskCard.css'
 
 interface TaskCardProps {
@@ -14,15 +15,15 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDisssolving }) => {
 
     const getProgress = () => {
-        if (task.subTasks && task.subTasks.length > 0) {
-            const completed = task.subTasks.filter(st => st.isCompleted).length;
-            const total = task.subTasks.length;
+        if (task.sub_tasks && task.sub_tasks.length > 0) {
+            const completed = task.sub_tasks.filter(st => st.isCompleted).length;
+            const total = task.sub_tasks.length;
             return { text: `${completed}/${total}`, percent: `${Math.round((completed / total) * 100)}%` };
         }
         switch(task.status) {
-            case 'in-progress':
+            case 'in_progress':
                 return { text: '5/10', percent: '50%' };
-            case 'done':
+            case 'completed':
                 return { text: '10/10', percent: '100%' };
             default:
                 return { text: '0/10', percent: '0%' };
@@ -31,7 +32,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
     const { text: progressText, percent: progressWidth } = getProgress();
 
     const getCategoryColor = () => {
-        switch(task.category?.toLowerCase()) {
+        switch(task.category_id?.toLowerCase()) {
             case 'design':      return 'tet-tag--rose';
             case 'marketing':   return 'tet-tag--amber';
             case 'product':     return 'tet-tag--jade';
@@ -41,7 +42,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
     };
 
     /* Special gold trim for high priority */
-    const isHighPriority = task.priority === 'High';
+    const isHighPriority = task.priority === 'high' || task.priority === 'urgent';
 
     const handleMoreClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -64,13 +65,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
             <div className="tet-card__body">
                 {/* Header: Tag + Priority */}
                 <div className="tet-card__top">
-                    <span className={`tet-card__tag ${getCategoryColor()}`}>
-                        {task.category}
-                    </span>
+                    {task.category_id && (
+                        <span className={`tet-card__tag ${getCategoryColor()}`}>
+                            {task.category_id}
+                        </span>
+                    )}
                     <div className="tet-card__top-right">
                         {isHighPriority && (
                             <span className="tet-card__priority">
-                                <Flame size={12} /> Quan trọng
+                                <Flame size={12} /> Important
+                            </span>
+                        )}
+                        {task.is_shopping && (
+                            <span className="tet-card__priority">
+                                <ShoppingCart size={12} />
                             </span>
                         )}
                         <button className="tet-card__more" onClick={handleMoreClick}>
@@ -81,11 +89,6 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
 
                 {/* Title */}
                 <h3 className="tet-card__title">{task.title}</h3>
-
-                {/* Project meta */}
-                <div className="tet-card__meta">
-                    <span className="tet-card__project">{task.project}</span>
-                </div>
 
                 {/* Progress */}
                 <div className="tet-card__progress">
@@ -98,29 +101,27 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                     <span className="tet-card__progress-text">{progressText}</span>
                 </div>
 
-                {/* Footer: Avatars + Meta */}
+                {/* Footer: Deadline + Assignee */}
                 <div className="tet-card__footer">
-                    <div className="tet-card__avatars">
-                        {task.avatars.map((avatarUrl, index) => (
-                            <img key={index} src={avatarUrl} alt="" className="tet-card__avatar" />
-                        ))}
-                    </div>
-                    
                     <div className="tet-card__stats">
-                        {task.commentsCount > 0 && (
-                            <span className="tet-card__stat">
-                                <MessageSquare size={13} /> {task.commentsCount}
+                        {task.deadline && (
+                            <span className={`tet-card__date ${task.is_overdue ? 'tet-card__date--urgent' : ''}`}>
+                                <Clock size={13} /> {task.deadline}
                             </span>
                         )}
-                        {task.attachmentsCount > 0 && (
-                            <span className="tet-card__stat">
-                                <Paperclip size={13} /> {task.attachmentsCount}
-                            </span>
-                        )}
-                        <span className={`tet-card__date ${task.dueDate.toLowerCase().includes('today') || task.dueDate.toLowerCase().includes('urgent') ? 'tet-card__date--urgent' : ''}`}>
-                            <Clock size={13} /> {task.dueDate}
-                        </span>
                     </div>
+                    {(() => {
+                        const member = MOCK_MEMBERS.find(m => m.id === task.assigned_to);
+                        return member ? (
+                            <div className="tet-card__assignee" title={member.name}>
+                                <img 
+                                    src={member.avatar} 
+                                    alt={member.name} 
+                                    className="tet-card__assignee-avatar" 
+                                />
+                            </div>
+                        ) : null;
+                    })()}
                 </div>
             </div>
         </div>

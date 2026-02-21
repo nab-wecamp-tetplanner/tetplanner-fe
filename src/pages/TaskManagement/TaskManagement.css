@@ -1,12 +1,12 @@
-/* ===== Tet / Lunar New Year — Warm Theme ===== */
+/* ===== Tet / Lunar New Year — Theme-Aware Styles ===== */
 
 /* ===== Page Container ===== */
 .tet-page {
   position: relative;
   padding: 32px 40px;
-  background-color: #fdfbf7;
-  min-height: calc(100vh - 70px);
-  color: #44403c;
+  background-color: var(--bg);
+  min-height: calc(100vh - 56px);
+  color: var(--text);
   overflow: hidden;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
@@ -17,76 +17,112 @@
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.4;
+  opacity: var(--pattern-opacity);
 }
 
 .tet-bg-warm-gradient {
   position: fixed;
   inset: 0;
   background: 
-    radial-gradient(ellipse at 20% 0%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 0%, var(--gradient-bg-1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, var(--gradient-bg-2) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* ===== Decorative Lanterns ===== */
-.tet-lantern {
-  position: fixed;
-  z-index: 1;
-  pointer-events: none;
-  animation: sway 4s ease-in-out infinite;
-  transform-origin: top center;
-  filter: drop-shadow(0 4px 12px rgba(220, 38, 38, 0.25));
-}
-
-.tet-deco-lantern--left {
+/* ===== Decorative Positioning ===== */
+.tet-deco--top-left {
   top: 12px;
   left: 60px;
   animation-delay: 0s;
 }
 
-.tet-deco-lantern--right {
+.tet-deco--top-right {
   top: 20px;
   right: 80px;
   animation-delay: -1.5s;
 }
 
-@keyframes sway {
-  0%, 100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
+.tet-deco--branch-left {
+  top: 60px;
+  left: -10px;
+  animation-delay: -1s;
 }
 
-/* ===== Decorative Blossoms ===== */
-.tet-blossom {
+.tet-deco--branch-right {
+  top: 40px;
+  right: -10px;
+  animation-delay: -3s;
+  transform: scaleX(-1);
+}
+
+/* Center blossom branches — scattered between columns */
+.tet-deco--branch-center-1 {
+  top: 220px;
+  left: 32%;
+  opacity: 0.45;
+  animation-delay: -2s;
+  transform: scale(0.9);
+}
+
+.tet-deco--branch-center-2 {
+  top: 350px;
+  left: 55%;
+  opacity: 0.35;
+  animation-delay: -4s;
+  transform: scale(0.75) scaleX(-1);
+}
+
+.tet-deco--branch-center-3 {
+  top: 480px;
+  left: 42%;
+  opacity: 0.4;
+  animation-delay: -6s;
+  transform: scale(0.8) rotate(15deg);
+}
+
+/* Bottom blossom branches */
+.tet-deco--branch-bottom-left {
+  bottom: 60px;
+  left: 30px;
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  animation-delay: -2.5s;
+  transform: scale(0.85) rotate(-10deg);
+}
+
+.tet-deco--branch-bottom-right {
+  bottom: 80px;
+  right: 40px;
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  animation-delay: -3.5s;
+  transform: scale(0.9) scaleX(-1) rotate(5deg);
+}
+
+.tet-deco--cloud-1 {
+  top: 100px;
+  left: 15%;
+  animation-delay: 0s;
+}
+
+.tet-deco--cloud-2 {
+  top: 140px;
+  right: 10%;
+  animation-delay: -5s;
+}
+
+.tet-deco--cake {
+  bottom: 30px;
+  left: 40px;
   position: fixed;
   z-index: 1;
   pointer-events: none;
   opacity: 0.5;
-  animation: floatBlossom 6s ease-in-out infinite;
-}
-
-.tet-deco-blossom--tl {
-  top: 80px;
-  left: 30px;
-  animation-delay: 0s;
-}
-
-.tet-deco-blossom--tr {
-  top: 60px;
-  right: 50px;
-  animation-delay: -2s;
-}
-
-.tet-deco-blossom--bl {
-  bottom: 40px;
-  left: 100px;
-  animation-delay: -4s;
-}
-
-@keyframes floatBlossom {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-8px) rotate(10deg); }
 }
 
 /* ===== Page Header ===== */
@@ -105,10 +141,59 @@
   gap: 14px;
 }
 
+/* ===== Plan Selector ===== */
+.plan-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plan-dropdown-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 9px 36px 9px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-heading);
+  font-family: 'Playfair Display', 'Noto Serif', Georgia, serif;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.25s ease;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2378716c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  min-width: 180px;
+}
+
+.plan-dropdown-select:hover {
+  border-color: var(--border-hover);
+  background-color: var(--bg-card);
+}
+
+.plan-dropdown-select:focus {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
+  background-color: var(--bg-card);
+}
+
+.plan-description {
+  display: inline-block;
+  padding-left: 2px;
+  font-size: 12.5px !important;
+  color: var(--primary-dark) !important;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0.85;
+}
+
 .tet-heading {
   font-size: 28px;
   font-weight: 800;
-  color: #292524;
+  color: var(--text-heading);
   margin: 0;
   letter-spacing: -0.02em;
   font-family: 'Playfair Display', 'Noto Serif', Georgia, serif;
@@ -117,7 +202,7 @@
 .tet-badge {
   font-size: 12px;
   font-weight: 600;
-  color: #92400e;
+  color: var(--primary-dark);
   background: rgba(251, 191, 36, 0.15);
   border: 1px solid rgba(251, 191, 36, 0.3);
   padding: 3px 12px;
@@ -141,37 +226,37 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #a8a29e;
+  color: var(--text-subtle);
   pointer-events: none;
   transition: color 0.2s;
 }
 
 .tet-search-box:focus-within .tet-search-icon {
-  color: #b45309;
+  color: var(--primary);
 }
 
 .tet-search-input {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--bg-glass);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(214, 211, 209, 0.6);
+  border: 1px solid var(--border);
   border-radius: 24px;
   padding: 9px 16px 9px 34px;
   font-size: 13px;
-  color: #44403c;
+  color: var(--text);
   width: 220px;
   outline: none;
   transition: all 0.3s ease;
 }
 
 .tet-search-input::placeholder {
-  color: #a8a29e;
+  color: var(--text-subtle);
 }
 
 .tet-search-input:focus {
-  border-color: rgba(217, 119, 6, 0.4);
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
   width: 260px;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--bg-card);
 }
 
 /* ===== View Options ===== */
@@ -180,9 +265,9 @@
   align-items: center;
   gap: 4px;
   padding: 3px;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--bg-glass);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(214, 211, 209, 0.5);
+  border: 1px solid var(--border);
   border-radius: 10px;
   margin-right: 4px;
 }
@@ -196,21 +281,21 @@
   border: none;
   font-size: 13px;
   font-weight: 500;
-  color: #78716c;
+  color: var(--text-muted);
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s;
 }
 
 .tet-view-btn.active {
-  color: #292524;
-  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-heading);
+  background: var(--bg-card);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px var(--shadow);
 }
 
 .tet-view-btn:hover:not(.active) {
-  color: #57534e;
+  color: var(--text);
 }
 
 /* ===== Ghost Button ===== */
@@ -222,7 +307,7 @@
   border: 1px solid transparent;
   font-size: 13px;
   font-weight: 500;
-  color: #78716c;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 8px 14px;
   border-radius: 10px;
@@ -230,9 +315,156 @@
 }
 
 .tet-ghost-btn:hover {
-  color: #44403c;
-  background: rgba(255, 255, 255, 0.5);
-  border-color: rgba(214, 211, 209, 0.5);
+  color: var(--text);
+  background: var(--bg-glass);
+  border-color: var(--border);
+}
+
+.tet-ghost-btn--active,
+.tet-ghost-btn--active:hover {
+  background: var(--bg-card);
+  color: var(--secondary);
+  border-color: var(--border);
+}
+
+/* ===== Header Row ===== */
+.tet-header-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+/* ===== Collaborators ===== */
+.tet-collaborators {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-left: 16px;
+}
+
+.tet-collaborators__avatars {
+  display: flex;
+  align-items: center;
+}
+
+.tet-collaborators__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid var(--bg);
+  background-color: var(--bg-card);
+  object-fit: cover;
+  margin-left: -10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.tet-collaborators__avatar:first-child {
+  margin-left: 0;
+}
+
+.tet-collaborators__avatar:hover {
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 4px 12px var(--shadow);
+  z-index: 10 !important;
+}
+
+.tet-collaborators__add {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px dashed var(--border-hover);
+  background: var(--bg-glass);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -10px;
+  cursor: pointer;
+  z-index: 0;
+  transition: all 0.25s ease;
+}
+
+.tet-collaborators__add:hover {
+  background: var(--bg-card);
+  border-color: var(--primary);
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 3px 10px var(--shadow-accent);
+}
+
+.tet-collaborators__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Filter Dropdown ===== */
+.tet-filter-wrapper {
+  position: relative;
+}
+
+.tet-filter-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 8px 24px var(--shadow),
+    0 0 0 1px var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 100;
+  min-width: 180px;
+  animation: dropdownReveal 0.18s ease-out;
+}
+
+.tet-filter-dropdown__title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 10px 8px;
+}
+
+.tet-filter-dropdown__item {
+  padding: 9px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.tet-filter-dropdown__item:hover {
+  background: var(--bg-card);
+}
+
+.tet-filter-dropdown__item--active {
+  background: var(--bg-card);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.tet-filter-dropdown__item--active:hover {
+  background: var(--bg-card);
+}
+
+@keyframes dropdownReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ===== Primary Button ===== */
@@ -240,7 +472,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #d97706, #b45309);
+  background: var(--gradient-warm);
   color: white;
   padding: 9px 20px;
   border-radius: 10px;
@@ -249,11 +481,11 @@
   border: none;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 2px 12px rgba(217, 119, 6, 0.2);
+  box-shadow: 0 2px 12px var(--shadow-accent);
 }
 
 .tet-primary-btn:hover {
-  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.35);
+  box-shadow: 0 4px 20px var(--shadow-accent);
   transform: translateY(-1px);
 }
 
@@ -265,6 +497,64 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   align-items: flex-start;
+}
+
+/* ===== Progress Section ===== */
+.tet-progress-section {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.tet-progress {
+  flex: 1;
+}
+
+.tet-progress__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.tet-progress__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.01em;
+}
+
+.tet-progress__stats {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tet-progress__bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tet-progress__fill {
+  height: 100%;
+  background: var(--gradient-warm);
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.tet-progress__fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }
 
 /* ===== Responsive ===== */
@@ -285,6 +575,18 @@
     gap: 16px;
   }
 
+  .tet-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .tet-collaborators {
+    margin-left: 0;
+    flex-direction: row;
+    gap: 10px;
+  }
+
   .tet-header-right {
     flex-wrap: wrap;
   }
@@ -301,11 +603,23 @@
     width: 200px;
   }
 
-  .tet-deco-lantern--left,
-  .tet-deco-lantern--right,
-  .tet-deco-blossom--tl,
-  .tet-deco-blossom--tr,
-  .tet-deco-blossom--bl {
+  .tet-deco--top-left,
+  .tet-deco--top-right,
+  .tet-deco--branch-left,
+  .tet-deco--branch-right,
+  .tet-deco--branch-center-1,
+  .tet-deco--branch-center-2,
+  .tet-deco--branch-center-3,
+  .tet-deco--branch-bottom-left,
+  .tet-deco--branch-bottom-right,
+  .tet-deco--cloud-1,
+  .tet-deco--cloud-2,
+  .tet-deco--cake {
     display: none;
+  }
+
+  .tet-progress-section {
+    flex-direction: column;
+    gap: 8px;
   }
 }

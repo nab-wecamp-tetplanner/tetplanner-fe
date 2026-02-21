@@ -1,96 +1,234 @@
 @import "tailwindcss";
 
-/* 1. ĐỊNH NGHĨA BIẾN CSS CHO CÁC THEME */
+/* ============================================================
+   TET PLANNER — Theme System (CSS Custom Properties)
+   ============================================================ */
 
-/* Theme Minimal (Mặc định - Màu Xanh Dương nguyên bản) */
-:root {
-  --bg-main: #ffffff;
-  --text-main: #0f172a; /* text-slate-900 (Giống giao diện cũ) */
-  --theme-primary: #2563eb; /* blue-600 */
-  --theme-accent: #eff6ff; /* blue-50 */
+/* ===== 🌸 Spring Blossom (Default) ===== */
+:root,
+:root[data-theme="spring-blossom"] {
+  --bg:              #fdfbf7;
+  --bg-card:         rgba(255, 255, 255, 0.72);
+  --bg-glass:        rgba(255, 255, 255, 0.65);
+  --bg-overlay:      rgba(253, 251, 247, 0.92);
+  --primary:         #d97706;
+  --primary-light:   #fbbf24;
+  --primary-dark:    #b45309;
+  --secondary:       #dc2626;
+  --secondary-light: #ef4444;
+  --accent:          #f9a8d4;
+  --accent-alt:      #fde68a;
+  --text:            #44403c;
+  --text-heading:    #292524;
+  --text-muted:      #78716c;
+  --text-subtle:     #a8a29e;
+  --border:          rgba(214, 211, 209, 0.55);
+  --border-hover:    rgba(217, 119, 6, 0.35);
+  --shadow:          rgba(120, 113, 108, 0.12);
+  --shadow-accent:   rgba(217, 119, 6, 0.2);
+  --success:         #16a34a;
+  --danger:          #dc2626;
+  --gradient-warm:   linear-gradient(135deg, #d97706, #b45309);
+  --gradient-bg-1:   rgba(251, 191, 36, 0.08);
+  --gradient-bg-2:   rgba(239, 68, 68, 0.05);
+  --lantern-body:    #dc2626;
+  --lantern-glow:    #ef4444;
+  --lantern-core:    #fbbf24;
+  --blossom-petal:   #f9a8d4;
+  --blossom-center:  #fbbf24;
+  --pattern-opacity: 0.4;
 }
 
-/* Theme Bloom */
-[data-theme='bloom'] {
-  --bg-main: #fff0f5;
-  --text-main: #4a2333;
-  --theme-primary: #ff69b4;
-  --theme-accent: #ffb6c1;
+/* ===== 🀄 Jade Prosperity ===== */
+:root[data-theme="jade-prosperity"] {
+  --bg:              #f0fdf4;
+  --bg-card:         rgba(255, 255, 255, 0.7);
+  --bg-glass:        rgba(240, 253, 244, 0.65);
+  --bg-overlay:      rgba(240, 253, 244, 0.92);
+  --primary:         #15803d;
+  --primary-light:   #22c55e;
+  --primary-dark:    #166534;
+  --secondary:       #ca8a04;
+  --secondary-light: #eab308;
+  --accent:          #86efac;
+  --accent-alt:      #fde68a;
+  --text:            #1a3a2a;
+  --text-heading:    #14532d;
+  --text-muted:      #4d7c5a;
+  --text-subtle:     #86a892;
+  --border:          rgba(134, 239, 172, 0.4);
+  --border-hover:    rgba(21, 128, 61, 0.35);
+  --shadow:          rgba(20, 83, 45, 0.1);
+  --shadow-accent:   rgba(21, 128, 61, 0.2);
+  --success:         #15803d;
+  --danger:          #dc2626;
+  --gradient-warm:   linear-gradient(135deg, #15803d, #166534);
+  --gradient-bg-1:   rgba(34, 197, 94, 0.08);
+  --gradient-bg-2:   rgba(202, 138, 4, 0.05);
+  --lantern-body:    #15803d;
+  --lantern-glow:    #22c55e;
+  --lantern-core:    #fde68a;
+  --blossom-petal:   #86efac;
+  --blossom-center:  #fde68a;
+  --pattern-opacity: 0.35;
 }
 
-/* Theme Mai */
-[data-theme='mai'] {
-  --bg-main: #fffdf5;
-  --text-main: #5c1808;
-  --theme-primary: #f5a623;
-  --theme-accent: #d0021b;
+/* ===== 🏮 Morning Lantern ===== */
+:root[data-theme="morning-lantern"] {
+  --bg:              #fffbeb;
+  --bg-card:         rgba(255, 255, 255, 0.75);
+  --bg-glass:        rgba(255, 251, 235, 0.65);
+  --bg-overlay:      rgba(255, 251, 235, 0.92);
+  --primary:         #ea580c;
+  --primary-light:   #fb923c;
+  --primary-dark:    #c2410c;
+  --secondary:       #dc2626;
+  --secondary-light: #f87171;
+  --accent:          #fdba74;
+  --accent-alt:      #fecaca;
+  --text:            #431407;
+  --text-heading:    #7c2d12;
+  --text-muted:      #9a3412;
+  --text-subtle:     #c2713d;
+  --border:          rgba(253, 186, 116, 0.5);
+  --border-hover:    rgba(234, 88, 12, 0.35);
+  --shadow:          rgba(124, 45, 18, 0.1);
+  --shadow-accent:   rgba(234, 88, 12, 0.2);
+  --success:         #16a34a;
+  --danger:          #dc2626;
+  --gradient-warm:   linear-gradient(135deg, #ea580c, #c2410c);
+  --gradient-bg-1:   rgba(251, 146, 60, 0.1);
+  --gradient-bg-2:   rgba(220, 38, 38, 0.06);
+  --lantern-body:    #ea580c;
+  --lantern-glow:    #fb923c;
+  --lantern-core:    #fef3c7;
+  --blossom-petal:   #fdba74;
+  --blossom-center:  #fef3c7;
+  --pattern-opacity: 0.45;
 }
 
-/* 2. KẾT NỐI BIẾN CSS VÀO TAILWIND V4 */
-@theme {
-  /* Các màu động sẽ thay đổi theo Theme */
-  --color-bg-main: var(--bg-main);
-  --color-text-main: var(--text-main);
-  --color-primary: var(--theme-primary);
-  --color-accent: var(--theme-accent);
-  
-  /* Các màu tĩnh của hệ thống giữ nguyên */
-  --color-background: #ffffff;
-  --color-foreground: #0f172a;
-  --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #0f172a;
-  --color-primary-foreground: #f8fafc;
-  --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #1e293b;
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-  --color-accent-foreground: #f8fafc;
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #f8fafc;
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: var(--theme-primary); /* Đổi màu viền focus ăn theo theme luôn */
-  
-  /* Các màu tĩnh của riêng ứng dụng Planner */
-  --color-planner-blue: #3b82f6;
-  --color-planner-blue-light: #dbeafe;
-  --color-planner-pink: #ec4899;
-  --color-planner-pink-light: #fce7f3;
-  --color-planner-purple: #a855f7;
-  --color-planner-purple-light: #f3e8ff;
-  --color-planner-green: #22c55e;
-  --color-planner-green-light: #dcfce7;
-  --color-planner-amber: #f59e0b;
-  --color-planner-amber-light: #fef3c7;
-  --radius: 0.75rem;
+/* ===== 🐉 Midnight Dragon ===== */
+:root[data-theme="midnight-dragon"] {
+  --bg:              #0f172a;
+  --bg-card:         rgba(30, 41, 59, 0.8);
+  --bg-glass:        rgba(15, 23, 42, 0.75);
+  --bg-overlay:      rgba(15, 23, 42, 0.95);
+  --primary:         #f59e0b;
+  --primary-light:   #fbbf24;
+  --primary-dark:    #d97706;
+  --secondary:       #ef4444;
+  --secondary-light: #f87171;
+  --accent:          #fde68a;
+  --accent-alt:      #fecaca;
+  --text:            #e2e8f0;
+  --text-heading:    #f8fafc;
+  --text-muted:      #94a3b8;
+  --text-subtle:     #64748b;
+  --border:          rgba(148, 163, 184, 0.2);
+  --border-hover:    rgba(245, 158, 11, 0.4);
+  --shadow:          rgba(0, 0, 0, 0.3);
+  --shadow-accent:   rgba(245, 158, 11, 0.25);
+  --success:         #22c55e;
+  --danger:          #ef4444;
+  --gradient-warm:   linear-gradient(135deg, #f59e0b, #d97706);
+  --gradient-bg-1:   rgba(245, 158, 11, 0.06);
+  --gradient-bg-2:   rgba(239, 68, 68, 0.04);
+  --lantern-body:    #ef4444;
+  --lantern-glow:    #f87171;
+  --lantern-core:    #fde68a;
+  --blossom-petal:   #fecaca;
+  --blossom-center:  #fde68a;
+  --pattern-opacity: 0.15;
 }
 
-/* 3. SET STYLE MẶC ĐỊNH CHO BODY */
-@layer base {
-  * {
-    border-color: var(--color-border);
-  }
-  body {
-    font-feature-settings: "rlig" 1, "calt" 1;
-    @apply bg-bg-main text-text-main transition-colors duration-300;
-  }
+/* ============================================================
+   Theme Transition
+   ============================================================ */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition:
+    background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    fill 0.35s ease !important;
 }
 
-/* 4. UTILITIES */
-@layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out forwards;
-  }
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+/* ============================================================
+   Global Animations
+   ============================================================ */
+@keyframes swing {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes popIn {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes explode {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+@keyframes envelopePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3); }
+  50%      { transform: scale(1.06); box-shadow: 0 8px 30px rgba(220, 38, 38, 0.45); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slowSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Custom Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-subtle);
+}
+
+/* ============================================================
+   Global Body Defaults
+   ============================================================ */
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

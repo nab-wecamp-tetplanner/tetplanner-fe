@@ -1,25 +1,28 @@
 import React, { useState } from "react";
 import type { SubTask, Task, TaskPriority, TaskStatus } from "../../types/task";
 import './AddTaskModal.css';
-import { Calendar, CheckSquare, Flag, Plus, Tag, Trash2, X } from "lucide-react";
+import { Calendar, CheckSquare, Flag, Plus, ShoppingCart, Tag, Trash2, User, X } from "lucide-react";
+import { MOCK_MEMBERS } from "../../data/mockTasks";
 
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   status: TaskStatus;
-  onSave: (taskData: Omit<Task, "id" | "progressColor" | "dateColor" | "avatars">) => void;
+  onSave: (taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => void;
 }
 
 
 const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, onSave }) => {
     
-    const [title, setTitle] = useState("");
-    const [project, setProject] = useState("");
-    const [category, setCategory] = useState("Design");
-    const [priority, setPriority] = useState<TaskPriority>("Medium");
-    const [deadline, setDeadline] = useState("");
+    const [title, setTitle] = useState('');
+    const [priority, setPriority] = useState<TaskPriority>('medium');
+    const [isShopping, setIsShopping] = useState(false);
+    const [estimatedPrice, setEstimatedPrice] = useState<number | ''>('');
+    const [deadline, setDeadline] = useState('');
+    const [categoryId, setCategoryId] = useState('General');
     const [subTasks, setSubTasks] = useState<SubTask[]>([]);
-    const [tempSubtask, setTempSubtask] = useState("");
+    const [tempSubtask, setTempSubtask] = useState('');
+    const [assignedTo, setAssignedTo] = useState<string>('');
 
     if(!isOpen) return null;
 
@@ -45,24 +48,26 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
         const taskData = {
         title,
-        project: project.trim() || 'General',
-        category,
+        category_id: categoryId,
         priority,
-        dueDate: deadline || 'No Deadline', 
-        subTasks: subTasks,
-        status: status || 'todo',
-        commentsCount: 0,
-        attachmentsCount: 0,
+        deadline: deadline || undefined, 
+        sub_tasks: subTasks,
+        status: status || 'pending' as TaskStatus,
+        is_shopping: isShopping,
+        estimated_price: estimatedPrice || undefined,
+        assigned_to: assignedTo || undefined,
         }
 
         onSave(taskData);
 
         setTitle('');
-        setPriority('Medium');
-        setCategory('General');
-        setProject('');
+        setPriority('medium');
+        setCategoryId('General');
         setDeadline('');
         setSubTasks([]);    
+        setIsShopping(false);
+        setEstimatedPrice('');
+        setAssignedTo('');
         onClose();
     };
 
@@ -91,16 +96,22 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
             />
           </div>
 
-            {/* Project Name */}
             <div className="form-group">
-                <label className="form-label">Project Name</label>
-                <input 
-                className="form-input"
-                type="text" 
-                value={project}
-                onChange={(e) => setProject(e.target.value)}
-                placeholder="E.g. Dribbble Marketing"
-                />
+                <label className="form-label"><User size={14} /> Assigned To</label>
+                <div className="assignee-picker">
+                    {MOCK_MEMBERS.map(member => (
+                        <button
+                            key={member.id}
+                            type="button"
+                            className={`assignee-picker__item ${assignedTo === member.id ? 'assignee-picker__item--active' : ''}`}
+                            onClick={() => setAssignedTo(assignedTo === member.id ? '' : member.id)}
+                            title={member.name}
+                        >
+                            <img src={member.avatar} alt={member.name} className="assignee-picker__avatar" />
+                            <span className="assignee-picker__name">{member.name}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Category & Priority */}
@@ -109,8 +120,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     <label className="form-label"><Tag size={14} /> Category</label>
                     <select 
                     className="form-input"
-                    value={category} 
-                    onChange={(e) => setCategory(e.target.value)}
+                    value={categoryId} 
+                    onChange={(e) => setCategoryId(e.target.value)}
                     >
                     <option value="Design">Design</option>
                     <option value="Marketing">Marketing</option>
@@ -124,23 +135,49 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     value={priority} 
                     onChange={(e) => setPriority(e.target.value as TaskPriority)}
                     >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
                     </select>
                 </div>
             </div>
 
-            {/* Deadline */}
-            <div className="form-group">
-                <label className="form-label"><Calendar size={14} /> Deadline</label>
-                <input 
-                className="form-input"
-                type="date" 
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                placeholder="mm/dd/yyyy"
-                />
+            {/* Deadline & Shopping */}
+            <div className="form-row">
+                <div className="form-group">
+                    <label className="form-label"><Calendar size={14} /> Deadline</label>
+                    <input 
+                    className="form-input"
+                    type="date" 
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    placeholder="mm/dd/yyyy"
+                    />
+                </div>
+                <div className="form-group">
+                    <label className="form-label"><ShoppingCart size={14} /> Shopping Item</label>
+                    <label className="form-toggle">
+                        <input 
+                            type="checkbox" 
+                            checked={isShopping}
+                            onChange={(e) => setIsShopping(e.target.checked)}
+                            className="form-toggle__input"
+                        />
+                        <span className="form-toggle__switch"></span>
+                        <span className="form-toggle__text">{isShopping ? 'Yes' : 'No'}</span>
+                    </label>
+                    {isShopping && (
+                        <input
+                            className="form-input"
+                            type="number"
+                            value={estimatedPrice}
+                            onChange={(e) => setEstimatedPrice(e.target.value ? Number(e.target.value) : '')}
+                            placeholder="Estimated price"
+                            min={0}
+                        />
+                    )}
+                </div>
             </div>
 
             {/* Subtasks */}
@@ -176,7 +213,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
             <div className="modal-actions">
                 <button type="button" className="btn btn-cancel" onClick={onClose}>Cancel</button>
-                <button type="submit" className="btn btn-submit">Add Task</button>
+                <button type="submit" className="btn btn-submit" >Add Task</button>
             </div>
         </form>
         </div>

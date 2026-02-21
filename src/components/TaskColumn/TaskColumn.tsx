@@ -25,7 +25,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
         setIsOver(false);
         const taskId = e.dataTransfer.getData('taskId');
         if(taskId) {
-            if (status === 'done' && onCelebrate) {
+            if (status === 'completed' && onCelebrate) {
                 /* Trigger celebration at drop location */
                 const rect = e.currentTarget.getBoundingClientRect();
                 const cx = rect.left + rect.width / 2;
@@ -55,9 +55,9 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
     /* Column accent color based on status */
     const getStatusAccent = () => {
         switch(status) {
-            case 'todo': return 'tet-col--amber';
-            case 'in-progress': return 'tet-col--rose';
-            case 'done': return 'tet-col--emerald';
+            case 'pending': return 'tet-col--amber';
+            case 'in_progress': return 'tet-col--rose';
+            case 'completed': return 'tet-col--emerald';
             case 'cancelled': return 'tet-col--slate';
             default: return 'tet-col--amber';
         }
@@ -96,14 +96,14 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
                 ))
             ) : (
                 <div className={`tet-col__empty ${isOver ? 'tet-col__empty--active' : ''}`}>
-                    <span>Kéo thả vào đây</span>
+                    <span>Drop here</span>
                 </div>
             )}
 
             {/* Drop Zone Indicator */}
             {isOver && tasks.length > 0 && (
                 <div className="tet-col__dropzone">
-                    <span>Thả vào đây</span>
+                    <span>Drop here</span>
                 </div>
             )}
         </div>
@@ -113,7 +113,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
             <div className="tet-col__add-icon">
                 <Plus size={14} />
             </div>
-            <span>Thêm công việc</span>
+            <span>Add Task</span>
         </button>
     </div>
   )

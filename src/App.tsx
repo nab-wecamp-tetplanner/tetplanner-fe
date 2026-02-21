@@ -13,7 +13,8 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Auth/LoginPage";
 import Register from "./pages/Auth/RegisterPage";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import { ThemeProvider } from './context/ThemeContext';
+
 const queryClient = new QueryClient();
 
 export default function App() {
