@@ -7,19 +7,21 @@ interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   status: TaskStatus;
-  onSave: (taskData: Omit<Task, "id" | "progressColor" | "dateColor" | "avatars">) => void;
+  onSave: (taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => void;
 }
 
 
 const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, onSave }) => {
     
-    const [title, setTitle] = useState("");
-    const [project, setProject] = useState("");
-    const [category, setCategory] = useState("Design");
-    const [priority, setPriority] = useState<TaskPriority>("Medium");
-    const [deadline, setDeadline] = useState("");
+    const [title, setTitle] = useState('');
+    const [priority, setPriority] = useState<TaskPriority>('Medium');
+    const [isShopping, setIsShopping] = useState(false);
+    const [estimatedPrice, setEstimatedPrice] = useState<number | ''>('');
+    const [quantity, setQuantity] = useState<number>(1);
+    const [deadline, setDeadline] = useState('');
+    const [categoryId, setCategoryId] = useState('General');
     const [subTasks, setSubTasks] = useState<SubTask[]>([]);
-    const [tempSubtask, setTempSubtask] = useState("");
+    const [tempSubtask, setTempSubtask] = useState('');
 
     if(!isOpen) return null;
 
@@ -45,24 +47,24 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
         const taskData = {
         title,
-        project: project.trim() || 'General',
-        category,
+        category_id: categoryId,
         priority,
-        dueDate: deadline || 'No Deadline', 
-        subTasks: subTasks,
-        status: status || 'todo',
-        commentsCount: 0,
-        attachmentsCount: 0,
+        deadline: deadline || undefined, 
+        sub_tasks: subTasks,
+        status: status || 'todo' as TaskStatus,
+        is_shopping: isShopping,
+        estimated_price: estimatedPrice || undefined,
         }
 
         onSave(taskData);
 
         setTitle('');
         setPriority('Medium');
-        setCategory('General');
-        setProject('');
+        setCategoryId('General');
         setDeadline('');
         setSubTasks([]);    
+        setIsShopping(false);
+        setEstimatedPrice('');
         onClose();
     };
 
@@ -91,26 +93,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
             />
           </div>
 
-            {/* Project Name */}
-            <div className="form-group">
-                <label className="form-label">Project Name</label>
-                <input 
-                className="form-input"
-                type="text" 
-                value={project}
-                onChange={(e) => setProject(e.target.value)}
-                placeholder="E.g. Dribbble Marketing"
-                />
-            </div>
-
             {/* Category & Priority */}
             <div className="form-row">
                 <div className="form-group">
                     <label className="form-label"><Tag size={14} /> Category</label>
                     <select 
                     className="form-input"
-                    value={category} 
-                    onChange={(e) => setCategory(e.target.value)}
+                    value={categoryId} 
+                    onChange={(e) => setCategoryId(e.target.value)}
                     >
                     <option value="Design">Design</option>
                     <option value="Marketing">Marketing</option>

@@ -37,7 +37,7 @@ const TaskDetailModal = ({
 
   const toggleSubtask = (subtaskId: string) => {
     const updatedSubtasks =
-      task.subTasks?.map((st: SubTask) =>
+      task.sub_tasks?.map((st: SubTask) =>
         st.id === subtaskId ? { ...st, isCompleted: !st.isCompleted } : st,
       ) || [];
 
@@ -45,12 +45,12 @@ const TaskDetailModal = ({
       updatedSubtasks.length > 0 && updatedSubtasks.every((st) => st.isCompleted);
     const newStatus = isAllCompleted ? "done" : task.status;
 
-    onUpdateTask({ ...task, subTasks: updatedSubtasks, status: newStatus });
+    onUpdateTask({ ...task, sub_tasks: updatedSubtasks, status: newStatus });
   };
 
   const completedCount =
-    task.subTasks?.filter((st: SubTask) => st.isCompleted).length || 0;
-  const totalCount = task.subTasks?.length || 0;
+    task.sub_tasks?.filter((st: SubTask) => st.isCompleted).length || 0;
+  const totalCount = task.sub_tasks?.length || 0;
   const progress =
     totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
 
@@ -67,7 +67,7 @@ const TaskDetailModal = ({
     const newStatus = task.status === "done" ? "in-progress" : task.status;
     onUpdateTask({
       ...task,
-      subTasks: [...(task.subTasks || []), newSubtask],
+      sub_tasks: [...(task.sub_tasks || []), newSubtask],
       status: newStatus,
     });
     setNewSubtaskText("");
@@ -75,8 +75,8 @@ const TaskDetailModal = ({
 
   const handleDeleteSubtask = (subtaskId: string) => {
     const updatedSubtasks =
-      task.subTasks?.filter((st) => st.id !== subtaskId) || [];
-    onUpdateTask({ ...task, subTasks: updatedSubtasks });
+      task.sub_tasks?.filter((st) => st.id !== subtaskId) || [];
+    onUpdateTask({ ...task, sub_tasks: updatedSubtasks });
   };
 
   const status = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.todo;
@@ -108,12 +108,14 @@ const TaskDetailModal = ({
 
         {/* ── Meta chips ── */}
         <div className="tdm-meta">
-          <span className="tdm-chip">
-            <Calendar size={14} /> {task.dueDate}
-          </span>
-          {task.category && (
+          {task.deadline && (
             <span className="tdm-chip">
-              <Layers size={14} /> {task.category}
+              <Calendar size={14} /> {task.deadline}
+            </span>
+          )}
+          {task.category_id && (
+            <span className="tdm-chip">
+              <Layers size={14} /> {task.category_id}
             </span>
           )}
         </div>
@@ -138,8 +140,8 @@ const TaskDetailModal = ({
           </div>
 
           <div className="tdm-subtask-list">
-            {task.subTasks && task.subTasks.length > 0 ? (
-              task.subTasks.map((st, idx) => (
+            {task.sub_tasks && task.sub_tasks.length > 0 ? (
+              task.sub_tasks.map((st, idx) => (
                 <div
                   key={st.id}
                   className={`tdm-subtask ${st.isCompleted ? "tdm-subtask--done" : ""}`}

@@ -1,63 +1,76 @@
-import  { type Plan, type Task } from '../types/task';
+import  { type TetConfig, type Task  } from '../types/task';
 
 export const MOCK_TASKS: Task[] = [
   {
     id: "1",
     title: "Design new ui presentation",
-    project: "Dribbble marketing",
-    category: "Design",
     status: "todo",
     priority: "High",
-    dueDate: "24 Aug 2022",
-    avatars: [
-      "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-      "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-    ],
-    commentsCount: 7,
-    attachmentsCount: 2,
+    deadline: "2026-02-24",
+    is_overdue: false,
+    is_shopping: false,
+    quantity: 1,
+    purchased: false,
+    created_at: "2026-01-01T00:00:00Z",
+    category_id: "design",
   },
   {
     id: "2",
     title: "Add more ui/ux mockups",
-    project: "Pinterest promotion",
-    category: "Marketing",
     status: "todo",
     priority: "Medium",
-    dueDate: "25 Aug 2022",
-    avatars: ["https://api.dicebear.com/7.x/avataaars/svg?seed=John"],
-    commentsCount: 2,
-    attachmentsCount: 0,
+    deadline: "2026-02-25",
+    is_overdue: false,
+    is_shopping: false,
+    quantity: 1,
+    purchased: false,
+    created_at: "2026-01-01T00:00:00Z",
+    category_id: "marketing",
   },
   {
     id: "3",
     title: "Design system update",
-    project: "Oreo website project",
-    category: "Design",
     status: "in-progress",
     priority: "High",
-    dueDate: "12 Nov 2022",
-    avatars: [
-      "https://api.dicebear.com/7.x/avataaars/svg?seed=Mia",
-      "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo",
-    ],
-    commentsCount: 12,
-    attachmentsCount: 5,
+    deadline: "2026-03-12",
+    is_overdue: false,
+    is_shopping: false,
+    quantity: 1,
+    purchased: false,
+    created_at: "2026-01-01T00:00:00Z",
+    category_id: "design",
   },
   {
     id: "4",
     title: "Add product to the market",
-    project: "Ui8 marketplace",
-    category: "Product",
     status: "done",
     priority: "Low",
-    dueDate: "6 Jan 2022",
-    avatars: ["https://api.dicebear.com/7.x/avataaars/svg?seed=Sam"],
-    commentsCount: 0,
-    attachmentsCount: 1,
+    deadline: "2026-01-06",
+    is_overdue: false,
+    is_shopping: false,
+    quantity: 1,
+    purchased: false,
+    created_at: "2026-01-01T00:00:00Z",
+    category_id: "product",
   },
 ];
 
-export const MOCK_PLANS: Plan[] = [
-    { id: 'p1', title: '🧧 paternal family plans', description: 'Chuẩn bị đồ đạc và dọn dẹp nhà Nội', tasks: [] },
-    { id: 'p2', title: '🌸 maternal family plans', description: 'Mua sắm quà cáp về thăm Ngoại', tasks: [] }
+export const MOCK_CONFIGS: TetConfig[] = [
+    { id: 'p1', year: 2026, name: '🧧 Paternal Family Plans', total_budget: 0, created_at: '2026-01-01T00:00:00Z' },
+    { id: 'p2', year: 2026, name: '🌸 Maternal Family Plans', total_budget: 0, created_at: '2026-01-01T00:00:00Z' }
+];
+
+export const TIMELINE_PHASES = [
+    { id: 'phase_before', name: 'Before Tết' },
+    { id: 'phase_30', name: '30 Tết' },
+    { id: 'phase_m1', name: 'Mùng 1' },
+    { id: 'phase_m2', name: 'Mùng 2' },
+    { id: 'phase_m3', name: 'Mùng 3' },
+];
+
+export const COLUMNS = [
+    { id: 'PENDING', label: 'To do' },
+    { id: 'IN_PROGRESS', label: 'In progress' },
+    { id: 'COMPLETED', label: 'Completed' },
+    { id: 'CANCELLED', label: 'Cancelled' },
 ];

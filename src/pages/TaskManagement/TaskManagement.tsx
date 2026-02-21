@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
-import type { Plan, Task, TaskStatus} from '../../types/task'
-import { MOCK_PLANS } from '../../data/mockTasks';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from 'react'
+import type { TetConfig, Task, TaskStatus} from '../../types/task'
+import { todoService } from '../../services/todoService';
+import { MOCK_CONFIGS, TIMELINE_PHASES } from '../../data/mockTasks';
 import './TaskManagement.css'
 import { LayoutGrid, Plus, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import TaskColumn from '../../components/TaskColumn/TaskColumn';
@@ -49,12 +51,37 @@ const Blossom: React.FC<{ className?: string }> = ({ className = '' }) => (
 
 const TaskManagement: React.FC = () => {
 
-    const [plans, setPlans] = React.useState<Plan[]>(MOCK_PLANS);
-    const [activePlanId, setActivePlanId] = useState<string>(MOCK_PLANS[0].id);
+    const [configs, setConfigs] = React.useState<TetConfig[]>(MOCK_CONFIGS);
+    const [activeConfigId, setActiveConfigId] = useState<string>(MOCK_CONFIGS[0].id);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('todo');
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [celebration, setCelebration] = React.useState<{ x: number; y: number } | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [todoItems, setTodoItems] = useState<Task[]>([]);
+    const [activePhaseId, setActivePhaseId] = useState<string>(TIMELINE_PHASES[0].id);
+    useEffect(() => {
+        const fetchTasks = async () => {
+            if (!activeConfigId || !activePhaseId) return;
+            
+            try {
+                setIsLoading(true);
+                // GET /todo-items?tet_config_id=...&timeline_phase_id=...
+                const response: any = await todoService.getTodoItems(activeConfigId, activePhaseId);
+                setTodoItems(response.data || []); 
+            } catch (error) {
+                console.error("Error loading Tasks:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchTasks();
+    }, [activeConfigId, activePhaseId]);
+
+
+    const updateTasks = (updateFn: (tasks: Task[]) => Task[]) => {
+        setTodoItems(prevTasks => updateFn(prevTasks));
+    };
 
     const handleCelebrate = (x: number, y: number) => {
         setCelebration(null);
@@ -69,8 +96,8 @@ const TaskManagement: React.FC = () => {
 
     };
 
-    const activePlan = plans.find(p => p.id === activePlanId);
-    const currentTasks = activePlan ? activePlan.tasks : [];
+    const activeConfig = configs.find(p => p.id === activeConfigId);
+    const currentTasks = todoItems;
 
     const columns: { id: TaskStatus; label: string} [] = [
         { id: 'todo', label: 'To Do' },
@@ -80,63 +107,49 @@ const TaskManagement: React.FC = () => {
     ];
 
     const handleDeleteTask = (taskId: string) => {
-    setPlans(prevPlans => prevPlans.map(plan => {
-            if (plan.id !== activePlanId) return plan; // Bỏ qua nếu không phải Plan đang mở
+        const targetTask = todoItems.find(t => t.id === taskId);
+        if (!targetTask) return;
 
-            const targetTask = plan.tasks.find(t => t.id === taskId);
-            if (!targetTask) return plan;
-
-            let updatedTasks;
-            if (targetTask.status === 'cancelled') {
-                // Xóa vĩnh viễn khỏi Plan
-                const confirmDelete = window.confirm('Bạn có chắc muốn xóa công việc đã hủy? Hành động này không thể hoàn tác.');
-                if (!confirmDelete) return plan;
-                updatedTasks = plan.tasks.filter(t => t.id !== taskId);
-            } else {
-                // Soft delete (Chuyển thành cancelled)
-                updatedTasks = plan.tasks.map(t =>
-                    t.id === taskId ? { ...t, status: 'cancelled' as TaskStatus } : t
-                );
-            }
-            return { ...plan, tasks: updatedTasks };
-        }));
+        if (targetTask.status === 'cancelled') {
+            // Permanently delete
+            const confirmDelete = window.confirm('Are you sure you want to delete this cancelled task? This action cannot be undone.');
+            if (!confirmDelete) return;
+            setTodoItems(prev => prev.filter(t => t.id !== taskId));
+        } else {
+            // Soft delete (Move to cancelled)
+            setTodoItems(prev => prev.map(t =>
+                t.id === taskId ? { ...t, status: 'cancelled' as TaskStatus } : t
+            ));
+        }
         if (selectedTask && selectedTask.id === taskId) {
             setSelectedTask(null);
         }
     };
 
     const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
-        setPlans(prevPlans => prevPlans.map(plan => {
-            if (plan.id !== activePlanId) return plan;
-            return {
-                ...plan,
-                tasks: plan.tasks.map(task => 
-                    task.id === taskId ? { ...task, status: newStatus } : task
-                )
-            };
-        }));
+        setTodoItems(prev => prev.map(task =>
+            task.id === taskId ? { ...task, status: newStatus } : task
+        ));
     }
 
-    const handleAddTask = (taskData: Omit<Task, "id" | "progressColor" | "dateColor" | "avatars">) => {
+    const handleAddTask = (taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => {
         const newTask: Task = {
-        id: Date.now().toString(),
-        title: taskData.title,
-        status: activeColumn,
-        priority: taskData.priority,
-        category: taskData.category,
-        project: taskData.project,
-        dueDate: taskData.dueDate,
-        commentsCount: taskData.commentsCount,
-        attachmentsCount: taskData.attachmentsCount,
-        subTasks: taskData.subTasks,
-        avatars: ["https://api.dicebear.com/7.x/avataaars/svg?seed=" + Date.now()]
+            id: Date.now().toString(),
+            title: taskData.title,
+            status: activeColumn,
+            priority: taskData.priority,
+            deadline: taskData.deadline,
+            is_overdue: false,
+            is_shopping: taskData.is_shopping || false,
+            quantity: 1,
+            purchased: false,
+            created_at: new Date().toISOString(),
+            category_id: taskData.category_id,
+            sub_tasks: taskData.sub_tasks,
+            tet_config_id: activeConfigId,
+            timeline_phase_id: activePhaseId,
         }
-        setPlans(prevPlans => prevPlans.map(plan => {
-            if (plan.id === activePlanId) {
-                return { ...plan, tasks: [...plan.tasks, newTask] }; // Nhét task vào đúng Plan
-            }
-            return plan;
-        }));
+        setTodoItems(prev => [...prev, newTask]);
         setIsModalOpen(false);
     }
 
@@ -150,15 +163,9 @@ const TaskManagement: React.FC = () => {
     }
 
     const handleUpdateTask = (updatedTask: Task) => {
-        setPlans(prevPlans => prevPlans.map(plan => {
-            if (plan.id === activePlanId) {
-                return {
-                    ...plan,
-                    tasks: plan.tasks.map(task => task.id === updatedTask.id ? updatedTask : task)
-                };
-            }
-            return plan;
-        }));
+        setTodoItems(prev => prev.map(task =>
+            task.id === updatedTask.id ? updatedTask : task
+        ));
         setSelectedTask(updatedTask); 
     }
 
@@ -179,36 +186,31 @@ const TaskManagement: React.FC = () => {
             <div className="tet-header-left"> 
                     <div className="plan-selector">
                         <select
-                            value={activePlanId}
-                            onChange={(e) => setActivePlanId(e.target.value)}
+                            value={activeConfigId}
+                            onChange={(e) => setActiveConfigId(e.target.value)}
                             className="plan-dropdown-select"
                         >
-                            {plans.map((plan) => (
-                                <option key={plan.id} value={plan.id}>
-                                    {plan.title}
+                            {configs.map((config) => (
+                                <option key={config.id} value={config.id}>
+                                    {config.name}
                                 </option>
                             ))}
                         </select>
-                        {activePlan && (
-                            <span className="plan-description" style={{ fontSize: '13px', color: '#d97706', fontWeight: 500 }}>
-                                {activePlan.description}
-                            </span>
-                        )}
                     </div>
-                <span className="tet-badge">{currentTasks.length} công việc</span>
+                <span className="tet-badge">{currentTasks.length} tasks</span>
             </div>
 
             <div className="tet-header-right">
                 <div className="tet-search-box">
                     <Search size={15} className="tet-search-icon" />
-                    <input type="text" placeholder="Tìm kiếm..." className="tet-search-input" />
+                    <input type="text" placeholder="Search..." className="tet-search-input" />
                 </div>
                 <div className="tet-view-options">
-                    <button className="tet-view-btn active"><LayoutGrid size={15} /> Bảng</button>
+                    <button className="tet-view-btn active"><LayoutGrid size={15} /> Board</button>
                 </div>
-                <button className="tet-ghost-btn"><SlidersHorizontal size={15} /> Lọc</button>
-                <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sắp xếp</button>
-                <button className="tet-primary-btn"><Plus size={16} /> Thêm mới</button>
+                <button className="tet-ghost-btn"><SlidersHorizontal size={15} /> Filter</button>
+                <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sort</button>
+                <button className="tet-primary-btn"><Plus size={16} /> Add New</button>
             </div>
         </header>
 
