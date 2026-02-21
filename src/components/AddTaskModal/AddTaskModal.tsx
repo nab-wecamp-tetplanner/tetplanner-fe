@@ -51,7 +51,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         priority,
         deadline: deadline || undefined, 
         sub_tasks: subTasks,
-        status: status || 'todo' as TaskStatus,
+        status: status || 'PENDING' as TaskStatus,
         is_shopping: isShopping,
         estimated_price: estimatedPrice || undefined,
         }

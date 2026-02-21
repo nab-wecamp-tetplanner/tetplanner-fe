@@ -20,9 +20,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
             return { text: `${completed}/${total}`, percent: `${Math.round((completed / total) * 100)}%` };
         }
         switch(task.status) {
-            case 'in-progress':
+            case 'IN_PROGRESS':
                 return { text: '5/10', percent: '50%' };
-            case 'done':
+            case 'DONE':
                 return { text: '10/10', percent: '100%' };
             default:
                 return { text: '0/10', percent: '0%' };

@@ -4,7 +4,7 @@ export const MOCK_TASKS: Task[] = [
   {
     id: "1",
     title: "Design new ui presentation",
-    status: "todo",
+    status: "PENDING",
     priority: "High",
     deadline: "2026-02-24",
     is_overdue: false,
@@ -17,7 +17,7 @@ export const MOCK_TASKS: Task[] = [
   {
     id: "2",
     title: "Add more ui/ux mockups",
-    status: "todo",
+    status: "PENDING",
     priority: "Medium",
     deadline: "2026-02-25",
     is_overdue: false,
@@ -30,7 +30,7 @@ export const MOCK_TASKS: Task[] = [
   {
     id: "3",
     title: "Design system update",
-    status: "in-progress",
+    status: "IN_PROGRESS",
     priority: "High",
     deadline: "2026-03-12",
     is_overdue: false,
@@ -43,7 +43,7 @@ export const MOCK_TASKS: Task[] = [
   {
     id: "4",
     title: "Add product to the market",
-    status: "done",
+    status: "DONE",
     priority: "Low",
     deadline: "2026-01-06",
     is_overdue: false,

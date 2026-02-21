@@ -54,7 +54,7 @@ const TaskManagement: React.FC = () => {
     const [configs, setConfigs] = React.useState<TetConfig[]>(MOCK_CONFIGS);
     const [activeConfigId, setActiveConfigId] = useState<string>(MOCK_CONFIGS[0].id);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('todo');
+    const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('PENDING');
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [celebration, setCelebration] = React.useState<{ x: number; y: number } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -101,17 +101,17 @@ const TaskManagement: React.FC = () => {
     const currentTasks = todoItems;
 
     const columns: { id: TaskStatus; label: string} [] = [
-        { id: 'todo', label: 'To Do' },
-        { id: 'in-progress', label: 'In Progress' },
-        { id: 'done', label: 'Done' },
-        { id: 'cancelled', label: 'Cancelled' },
+        { id: 'PENDING', label: 'To Do' },
+        { id: 'IN_PROGRESS', label: 'In Progress' },
+        { id: 'DONE', label: 'Done' },
+        { id: 'CANCELLED', label: 'Cancelled' },
     ];
 
     const handleDeleteTask = (taskId: string) => {
         const targetTask = todoItems.find(t => t.id === taskId);
         if (!targetTask) return;
 
-        if (targetTask.status === 'cancelled') {
+        if (targetTask.status === 'CANCELLED') {
             // Permanently delete
             const confirmDelete = window.confirm('Are you sure you want to delete this cancelled task? This action cannot be undone.');
             if (!confirmDelete) return;
@@ -119,7 +119,7 @@ const TaskManagement: React.FC = () => {
         } else {
             // Soft delete (Move to cancelled)
             setTodoItems(prev => prev.map(t =>
-                t.id === taskId ? { ...t, status: 'cancelled' as TaskStatus } : t
+                t.id === taskId ? { ...t, status: 'CANCELLED' as TaskStatus } : t
             ));
         }
         if (selectedTask && selectedTask.id === taskId) {
@@ -203,11 +203,11 @@ const TaskManagement: React.FC = () => {
                     <div className="tet-header-right">
                         <div className="tet-search-box">
                             <Search size={15} className="tet-search-icon" />
-                            <input type="text" placeholder="Tìm kiếm..." className="tet-search-input" />
+                            <input type="text" placeholder="Search..." className="tet-search-input" />
                         </div>
                         
                         <div className="tet-view-options">
-                            <button className="tet-view-btn active"><LayoutGrid size={15} /> Bảng</button>
+                            <button className="tet-view-btn active"><LayoutGrid size={15} /> Board</button>
                         </div>
 
                         {/* 2. NÚT LỌC (FILTER) THEO TIMELINE */}
@@ -267,10 +267,10 @@ const TaskManagement: React.FC = () => {
                             )}
                         </div>
 
-                        <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sắp xếp</button>
+                        <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sort</button>
                         
-                        <button className="tet-primary-btn" onClick={() => { setActiveColumn('todo'); setIsModalOpen(true); }}>
-                            <Plus size={16} /> Thêm việc
+                        <button className="tet-primary-btn" onClick={() => { setActiveColumn('PENDING'); setIsModalOpen(true); }}>
+                            <Plus size={16} /> Add Task
                         </button>
                     </div>
                 </div>
