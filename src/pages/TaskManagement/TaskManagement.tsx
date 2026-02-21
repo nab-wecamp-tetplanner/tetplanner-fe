@@ -24,7 +24,7 @@ const TaskManagement: React.FC = () => {
     const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('pending');
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [celebration, setCelebration] = React.useState<{ x: number; y: number } | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [, setIsLoading] = useState(false);
     const [todoItems, setTodoItems] = useState<Task[]>(MOCK_INITIAL_TASKS);
     const [activePhaseId, setActivePhaseId] = useState<string>(TIMELINE_PHASES[0].id);
     const [isFilterOpen, setIsFilterOpen] = useState(false);

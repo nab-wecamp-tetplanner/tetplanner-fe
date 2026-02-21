@@ -5,7 +5,7 @@ import apiClient from "../../services/apiClient";
 
 export default function TaskListWidget({ tetConfigs }: { tetConfigs: string[] }) {
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const [, setExpandedTasks] = useState<string[]>([]); // ID is string per TodoItem interface
+  // const [, setExpandedTasks] = useState<string[]>([]); 
   const [tasks, setTasks] = useState<TodoItem[]>([]);
 
   /**
