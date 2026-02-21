@@ -1,5 +1,7 @@
 import React from 'react'
 import { NavLink } from "react-router-dom";
+import ThemeSelector from '../ThemeSelector/ThemeSelector';
+import { ZodiacMascot } from '../Decoratives/Decoratives';
 
 import './Header.css';
 
@@ -22,8 +24,8 @@ const Header = () => {
 
     <header className='header-container'>
         <div className="header-logo">
-            <div className="logo-icon"></div>
-            <span className="logo-text">NY Planner</span>
+            <ZodiacMascot size={28} className="header-mascot" />
+            <span className="logo-text">Tet Planner</span>
         </div>
     
         <nav className="header-nav">
@@ -35,6 +37,8 @@ const Header = () => {
         </nav>
 
         <div className="header-actions">
+            <ThemeSelector />
+            <div className="header-actions__divider" />
             <button className="action-button">⚙️</button>
             <div className="notification-wrapper">
                 <button className="action-button">🔔</button>

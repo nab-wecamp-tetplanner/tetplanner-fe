@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import type { TetConfig, Task, TaskStatus} from '../../types/task'
 import { todoService } from '../../services/todoService';
 import { MOCK_CONFIGS, MOCK_MEMBERS, TIMELINE_PHASES, MOCK_INITIAL_TASKS } from '../../data/mockTasks';
@@ -9,45 +9,12 @@ import TaskColumn from '../../components/TaskColumn/TaskColumn';
 import AddTaskModal from '../../components/AddTaskModal/AddTaskModal';
 import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal';
 import CelebrationParticles from '../../components/CelebrationParticles/CelebrationParticles';
+import { Lantern, BlossomBranch, CloudMotif, TraditionalCake, MysticKnot } from '../../components/Decoratives/Decoratives';
+import { LuckyEnvelope, RewardModal } from '../../components/Gamification/Gamification';
+import FallingPetals from '../../components/FallingPetals/FallingPetals';
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
-
-/* ===== Decorative Lantern Component ===== */
-const Lantern: React.FC<{ className?: string; size?: 'sm' | 'md' | 'lg' }> = ({ className = '', size = 'md' }) => {
-    const sizeMap = { sm: { w: 20, h: 32 }, md: { w: 28, h: 44 }, lg: { w: 36, h: 56 } };
-    const s = sizeMap[size];
-    return (
-        <div className={`tet-lantern tet-lantern--${size} ${className}`}>
-            <svg width={s.w} height={s.h} viewBox="0 0 28 44" fill="none">
-                <rect x="11" y="0" width="6" height="6" rx="1" fill="#b45309" />
-                <line x1="14" y1="6" x2="14" y2="10" stroke="#92400e" strokeWidth="1.5" />
-                <ellipse cx="14" cy="26" rx="13" ry="16" fill="#dc2626" />
-                <ellipse cx="14" cy="26" rx="10" ry="13" fill="#ef4444" opacity="0.7" />
-                <ellipse cx="14" cy="26" rx="5" ry="8" fill="#fbbf24" opacity="0.4" />
-                <rect x="10" y="42" width="8" height="2" rx="1" fill="#b45309" />
-            </svg>
-        </div>
-    );
-};
-
-/* ===== Decorative Blossom Component ===== */
-const Blossom: React.FC<{ className?: string }> = ({ className = '' }) => (
-    <div className={`tet-blossom ${className}`}>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            {[0, 72, 144, 216, 288].map((angle) => (
-                <ellipse
-                    key={angle}
-                    cx="10" cy="4" rx="3" ry="5"
-                    fill="#f9a8d4"
-                    opacity="0.7"
-                    transform={`rotate(${angle} 10 10)`}
-                />
-            ))}
-            <circle cx="10" cy="10" r="2.5" fill="#fbbf24" />
-        </svg>
-    </div>
-);
 
 const TaskManagement: React.FC = () => {
 
@@ -61,6 +28,7 @@ const TaskManagement: React.FC = () => {
     const [todoItems, setTodoItems] = useState<Task[]>(MOCK_INITIAL_TASKS);
     const [activePhaseId, setActivePhaseId] = useState<string>(TIMELINE_PHASES[0].id);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isRewardOpen, setIsRewardOpen] = useState(false);
     useEffect(() => {
         const fetchTasks = async () => {
             if (!activeConfigId || !activePhaseId) return;
@@ -228,6 +196,19 @@ const TaskManagement: React.FC = () => {
             });
     }
 
+    /* ===== Progress & Gamification Logic ===== */
+    const progress = useMemo(() => {
+        const total = currentTasks.length;
+        if (total === 0) return { percent: 0, completed: 0, total: 0, allDone: false };
+        const completed = currentTasks.filter(t => t.status === 'completed').length;
+        return {
+            percent: Math.round((completed / total) * 100),
+            completed,
+            total,
+            allDone: completed === total && total > 0,
+        };
+    }, [currentTasks]);
+
   return (
     <div className="tet-page">
         {/* Background Pattern & Warm Overlay */}
@@ -235,11 +216,19 @@ const TaskManagement: React.FC = () => {
         <div className="tet-bg-warm-gradient"></div>
 
         {/* Decorative Elements */}
-        <Lantern className="tet-deco-lantern--left" size="lg" />
-        <Lantern className="tet-deco-lantern--right" size="md" />
-        <Blossom className="tet-deco-blossom--tl" />
-        <Blossom className="tet-deco-blossom--tr" />
-        <Blossom className="tet-deco-blossom--bl" />
+        <FallingPetals count={20} />
+        <Lantern className="tet-deco--top-left" size="lg" />
+        <Lantern className="tet-deco--top-right" size="md" />
+        <BlossomBranch className="tet-deco--branch-left" variant="apricot" />
+        <BlossomBranch className="tet-deco--branch-right" variant="apricot" />
+        <BlossomBranch className="tet-deco--branch-center-1" variant="apricot" />
+        <BlossomBranch className="tet-deco--branch-center-2" variant="peach" />
+        <BlossomBranch className="tet-deco--branch-center-3" variant="apricot" />
+        <BlossomBranch className="tet-deco--branch-bottom-left" variant="peach" />
+        <BlossomBranch className="tet-deco--branch-bottom-right" variant="apricot" />
+        <CloudMotif className="tet-deco--cloud-1" />
+        <CloudMotif className="tet-deco--cloud-2" />
+        <TraditionalCake className="tet-deco--cake" variant="chung" />
 
         <header className="tet-page-header">
                 <div className="tet-header-row">
@@ -327,6 +316,28 @@ const TaskManagement: React.FC = () => {
                 </div>
             </header>
 
+        {/* ===== Progress Bar ===== */}
+        <div className="tet-progress-section">
+            <MysticKnot width={140} />
+            <div className="tet-progress">
+                <div className="tet-progress__header">
+                    <span className="tet-progress__label">
+                        Preparation Progress
+                    </span>
+                    <span className="tet-progress__stats">
+                        {progress.completed}/{progress.total} tasks · {progress.percent}%
+                    </span>
+                </div>
+                <div className="tet-progress__bar">
+                    <div
+                        className="tet-progress__fill"
+                        style={{ width: `${progress.percent}%` }}
+                    />
+                </div>
+            </div>
+            <MysticKnot width={140} />
+        </div>
+
         <div className="tet-kanban-board">
             {columns.map((column) => (
                 <TaskColumn 
@@ -365,6 +376,19 @@ const TaskManagement: React.FC = () => {
                 onComplete={() => setCelebration(null)}
             />
         )}
+
+        {/* Lucky Envelope — appears when all tasks are completed */}
+        <LuckyEnvelope
+            show={progress.allDone}
+            onOpen={() => setIsRewardOpen(true)}
+        />
+
+        {/* Reward Modal */}
+        <RewardModal
+            isOpen={isRewardOpen}
+            onClose={() => setIsRewardOpen(false)}
+            totalTasks={progress.total}
+        />
     </div>
     )
 }

@@ -47,18 +47,19 @@
   gap: 12px;
   padding: 16px 18px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(214, 211, 209, 0.5);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
   transition: box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
 }
 
 .tet-card:hover .tet-card__body {
-  border-color: rgba(168, 162, 158, 0.5);
-  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--border-hover);
+  background: var(--bg-card);
   box-shadow:
-    0 8px 24px rgba(120, 113, 108, 0.1),
-    0 0 0 1px rgba(214, 211, 209, 0.3);
+    0 8px 24px var(--shadow-accent),
+    0 0 0 1px var(--border);
 }
 
 /* ===== Top Row ===== */
@@ -139,7 +140,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #a8a29e;
+  color: var(--text-subtle);
   cursor: pointer;
   opacity: 0;
   transition: all 0.2s;
@@ -150,15 +151,15 @@
 }
 
 .tet-card__more:hover {
-  background: rgba(245, 245, 244, 0.8);
-  color: #44403c;
+  background: var(--bg-glass);
+  color: var(--text-heading);
 }
 
 /* ===== Title ===== */
 .tet-card__title {
   font-size: 14px;
   font-weight: 600;
-  color: #292524;
+  color: var(--text-heading);
   line-height: 1.45;
   margin: 0;
 }
@@ -175,8 +176,8 @@
   height: 26px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 6px rgba(120, 113, 108, 0.15);
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 1px 6px var(--shadow-accent);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -195,7 +196,7 @@
 .tet-card__progress-bar {
   flex: 1;
   height: 4px;
-  background: rgba(214, 211, 209, 0.5);
+  background: var(--border);
   border-radius: 100px;
   overflow: hidden;
 }
@@ -221,7 +222,7 @@
 .tet-card__progress-text {
   font-size: 11px;
   font-weight: 600;
-  color: #78716c;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
@@ -243,10 +244,10 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 2px solid #fdfbf7;
+  border: 2px solid var(--bg-card);
   margin-left: -7px;
   object-fit: cover;
-  background: #f5f5f4;
+  background: var(--bg-glass);
 }
 
 .tet-card__avatar:first-child {
@@ -265,12 +266,12 @@
   align-items: center;
   gap: 3px;
   font-size: 12px;
-  color: #a8a29e;
+  color: var(--text-subtle);
   transition: color 0.2s;
 }
 
 .tet-card__stat:hover {
-  color: #57534e;
+  color: var(--text-muted);
 }
 
 .tet-card__date {
@@ -278,7 +279,7 @@
   align-items: center;
   gap: 3px;
   font-size: 12px;
-  color: #78716c;
+  color: var(--text-muted);
 }
 
 .tet-card__date--urgent {

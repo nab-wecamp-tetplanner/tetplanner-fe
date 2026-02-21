@@ -7,11 +7,12 @@
   padding: 8px;
   transition: all 0.3s ease;
   background: transparent;
+  /* Fully transparent — lets background blossoms show through */
 }
 
 .tet-col--drag-over {
-  background: rgba(251, 191, 36, 0.06);
-  box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.2);
+  background: var(--bg-glass);
+  box-shadow: inset 0 0 0 1px var(--border-hover);
   border-radius: 16px;
 }
 
@@ -22,9 +23,10 @@
   justify-content: space-between;
   padding: 10px 14px;
   margin-bottom: 16px;
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(214, 211, 209, 0.4);
+  background: var(--bg-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
 
@@ -64,7 +66,7 @@
 .tet-col__title {
   font-size: 13px;
   font-weight: 700;
-  color: #44403c;
+  color: var(--text-heading);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0;
@@ -74,9 +76,9 @@
 .tet-col__count {
   font-size: 11px;
   font-weight: 600;
-  color: #78716c;
-  background: rgba(245, 245, 244, 0.8);
-  border: 1px solid rgba(214, 211, 209, 0.5);
+  color: var(--text-muted);
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
   padding: 2px 8px;
   border-radius: 20px;
 }
@@ -90,14 +92,14 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #a8a29e;
+  color: var(--text-subtle);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .tet-col__more-btn:hover {
-  background: rgba(245, 245, 244, 0.8);
-  color: #44403c;
+  background: var(--bg-glass);
+  color: var(--text-heading);
 }
 
 /* ===== Task List ===== */
@@ -115,28 +117,29 @@
   width: 4px;
 }
 .tet-col__tasks::-webkit-scrollbar-thumb {
-  background-color: rgba(168, 162, 158, 0.3);
+  background-color: var(--text-subtle);
   border-radius: 4px;
 }
 
 /* ===== Empty State ===== */
 .tet-col__empty {
   height: 100px;
-  border: 2px dashed rgba(214, 211, 209, 0.6);
+  border: 2px dashed var(--border);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a8a29e;
+  color: var(--text-subtle);
   font-size: 13px;
   font-weight: 500;
   transition: all 0.3s;
+  background: transparent;
 }
 
 .tet-col__empty--active {
-  border-color: rgba(217, 119, 6, 0.35);
-  background: rgba(251, 191, 36, 0.06);
-  color: #b45309;
+  border-color: var(--border-hover);
+  background: var(--bg-glass);
+  color: var(--primary);
 }
 
 /* ===== Drop Zone Indicator ===== */
@@ -144,8 +147,8 @@
   height: 80px;
   width: 100%;
   border-radius: 14px;
-  border: 2px dashed rgba(217, 119, 6, 0.35);
-  background: rgba(251, 191, 36, 0.06);
+  border: 2px dashed var(--border-hover);
+  background: var(--bg-glass);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,7 +156,7 @@
 }
 
 .tet-col__dropzone span {
-  color: #b45309;
+  color: var(--primary);
   font-size: 13px;
   font-weight: 600;
 }
@@ -173,7 +176,7 @@
   background: transparent;
   border: 1px dashed transparent;
   border-radius: 12px;
-  color: #a8a29e;
+  color: var(--text-subtle);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -181,9 +184,9 @@
 }
 
 .tet-col__add-btn:hover {
-  color: #b45309;
-  background: rgba(255, 255, 255, 0.4);
-  border-color: rgba(214, 211, 209, 0.5);
+  color: var(--primary);
+  background: var(--bg-glass);
+  border-color: var(--border);
 }
 
 .tet-col__add-icon {
@@ -193,11 +196,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  background: rgba(245, 245, 244, 0.6);
+  background: var(--bg-glass);
   transition: all 0.2s;
 }
 
 .tet-col__add-btn:hover .tet-col__add-icon {
-  background: rgba(251, 191, 36, 0.15);
-  color: #b45309;
+  background: var(--primary-light);
+  color: var(--primary);
 }
