@@ -1,25 +1,59 @@
 @import "tailwindcss";
 
+/* 1. ĐỊNH NGHĨA BIẾN CSS CHO CÁC THEME */
+
+/* Theme Minimal (Mặc định - Màu Xanh Dương nguyên bản) */
+:root {
+  --bg-main: #ffffff;
+  --text-main: #0f172a; /* text-slate-900 (Giống giao diện cũ) */
+  --theme-primary: #2563eb; /* blue-600 */
+  --theme-accent: #eff6ff; /* blue-50 */
+}
+
+/* Theme Bloom */
+[data-theme='bloom'] {
+  --bg-main: #fff0f5;
+  --text-main: #4a2333;
+  --theme-primary: #ff69b4;
+  --theme-accent: #ffb6c1;
+}
+
+/* Theme Mai */
+[data-theme='mai'] {
+  --bg-main: #fffdf5;
+  --text-main: #5c1808;
+  --theme-primary: #f5a623;
+  --theme-accent: #d0021b;
+}
+
+/* 2. KẾT NỐI BIẾN CSS VÀO TAILWIND V4 */
 @theme {
+  /* Các màu động sẽ thay đổi theo Theme */
+  --color-bg-main: var(--bg-main);
+  --color-text-main: var(--text-main);
+  --color-primary: var(--theme-primary);
+  --color-accent: var(--theme-accent);
+  
+  /* Các màu tĩnh của hệ thống giữ nguyên */
   --color-background: #ffffff;
   --color-foreground: #0f172a;
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
   --color-popover: #ffffff;
   --color-popover-foreground: #0f172a;
-  --color-primary: #3b82f6;
   --color-primary-foreground: #f8fafc;
   --color-secondary: #f1f5f9;
   --color-secondary-foreground: #1e293b;
   --color-muted: #f1f5f9;
   --color-muted-foreground: #64748b;
-  --color-accent: #22c55e;
   --color-accent-foreground: #f8fafc;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #f8fafc;
   --color-border: #e2e8f0;
   --color-input: #e2e8f0;
-  --color-ring: #3b82f6;
+  --color-ring: var(--theme-primary); /* Đổi màu viền focus ăn theo theme luôn */
+  
+  /* Các màu tĩnh của riêng ứng dụng Planner */
   --color-planner-blue: #3b82f6;
   --color-planner-blue-light: #dbeafe;
   --color-planner-pink: #ec4899;
@@ -30,28 +64,25 @@
   --color-planner-green-light: #dcfce7;
   --color-planner-amber: #f59e0b;
   --color-planner-amber-light: #fef3c7;
-
   --radius: 0.75rem;
 }
 
+/* 3. SET STYLE MẶC ĐỊNH CHO BODY */
 @layer base {
   * {
-    border-color: #e2e8f0;
+    border-color: var(--color-border);
   }
   body {
-    background-color: #ffffff;
-    color: #0f172a;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-bg-main text-text-main transition-colors duration-300;
   }
 }
 
+/* 4. UTILITIES */
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.4s ease-out forwards;
   }
-
   @keyframes fadeIn {
     from {
       opacity: 0;

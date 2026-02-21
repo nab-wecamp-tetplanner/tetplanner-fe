@@ -81,7 +81,7 @@ const Login = () => {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  Sign Up
+                  Login
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

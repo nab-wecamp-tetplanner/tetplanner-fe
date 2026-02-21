@@ -1,106 +1,86 @@
-import { useState, useMemo } from "react";
-import { Check, ChevronDown, ChevronRight, CirclePlus, X, Trash2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Check,  CirclePlus, X, Trash2 } from "lucide-react";
+import type { TodoItem } from "../../types/todo.types";
+import apiClient from "../../services/apiClient";
 
-type SubTask = {
-  id: string;
-  title: string;
-  done: boolean;
-};
-
-type TaskProps = {
-  id: number;
-  title: string;
-  done: boolean;
-  hasNotes: boolean;
-  project?: string;
-  priority?: "High" | "Normal" | "Low";
-  subTasks?: SubTask[];
-};
-
-export default function TaskListWidget() {
+export default function TaskListWidget({ tetConfigs }: { tetConfigs: string[] }) {
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const [expandedTasks, setExpandedTasks] = useState<number[]>([]);
-  const [tasks, setTasks] = useState<TaskProps[]>([
-    { 
-      id: 1, title: "House cleaning", done: false, hasNotes: false,
-      subTasks: [
-        { id: "1-1", title: "Clean living room", done: true },
-        { id: "1-2", title: "Wash dishes", done: false }
-      ]
-    },
-    { 
-      id: 2, title: "Shopping", done: false, hasNotes: true, 
-      subTasks: [{ id: "2-1", title: "Buy milk", done: false }] 
-    },
-  ]);
+  const [, setExpandedTasks] = useState<string[]>([]); // ID is string per TodoItem interface
+  const [tasks, setTasks] = useState<TodoItem[]>([]);
 
   /**
-   * Calculates overall completion percentage
+   * Fetches todos for all provided configuration IDs.
+   * Uses Promise.all for concurrent requests and optimal performance.
+   */
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const results = await Promise.all(
+          tetConfigs.map(configId => apiClient.todos.getAll({ tetConfigId: configId }))
+        );
+        setTasks(results.flat());
+      } catch (error) {
+        console.error("Failed to synchronize tasks:", error);
+      }
+    };
+
+    if (tetConfigs.length > 0) fetchTasks();
+  }, [tetConfigs]);
+
+  /**
+   * Derives completion percentage based on the 'status' field.
    */
   const progress = useMemo(() => {
     if (tasks.length === 0) return 0;
-    const completed = tasks.filter(t => t.done).length;
+    const completed = tasks.filter(t => t.status === "completed").length;
     return Math.round((completed / tasks.length) * 100);
   }, [tasks]);
 
-  /**
-   * Toggles expansion for viewing sub-tasks
-   */
-  const toggleExpand = (id: number) => {
-    setExpandedTasks(prev => 
-      prev.includes(id) ? prev.filter(taskId => taskId !== id) : [...prev, id]
-    );
-  };
+  // const toggleExpand = (id: string) => {
+  //   setExpandedTasks(prev => 
+  //     prev.includes(id) ? prev.filter(taskId => taskId !== id) : [...prev, id]
+  //   );
+  // };
 
   /**
-   * Toggles the completion status of a main task
+   * Updates task status by mapping boolean toggle to TodoItem status enum.
    */
-  const updateStatus = (id: number, state: boolean) => {
-    setTasks(prev => prev.map(t => (t.id === id ? { ...t, done: state } : t)));
+  const updateStatus = (id: string, isDone: boolean) => {
+    setTasks(prev => prev.map(t => 
+      t.id === id ? { ...t, status: isDone ? "completed" : "pending" } : t
+    ));
   };
 
-  /**
-   * Toggles the completion status of a sub-task
-   */
-  const updateSubTaskStatus = (taskId: number, subTaskId: string, state: boolean) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id === taskId && t.subTasks) {
-        return {
-          ...t,
-          subTasks: t.subTasks.map(st => st.id === subTaskId ? { ...st, done: state } : st)
-        };
-      }
-      return t;
-    }));
-  };
-
-  /**
-   * Removes a task from the list by ID
-   */
-  const deleteTask = (id: number) => {
+  const deleteTask = (id: string) => {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
   /**
-   * Processes form data to create a new task entry
+   * Handles submission and constructs a new TodoItem following the schema.
    */
-  const handleSaveTask = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSaveTask = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title") as string;
-    const project = formData.get("project") as string;
-    const priority = formData.get("priority") as TaskProps["priority"];
+    const priority = formData.get("priority") as TodoItem["priority"];
 
     if (!title.trim()) return;
 
-    const newTask: TaskProps = {
-      id: Date.now(),
+    const newTask: TodoItem = {
+      id: crypto.randomUUID(),
       title: title.trim(),
-      project: project.trim(),
-      priority,
-      done: false,
-      hasNotes: !!project.trim(),
-      subTasks: []
+      priority: priority,
+      status: "pending",
+      deadline: new Date().toISOString(),
+      is_overdue: false,
+      is_shopping: false,
+      purchased: false,
+      assigned_to: null,
+      created_at: new Date().toISOString(),
+      deleted_at: null,
+      tet_config: { id: tetConfigs[0] || "" },
+      timeline_phase: { id: "default" },
+      category: { id: "default" }
     };
 
     setTasks(prev => [newTask, ...prev]);
@@ -110,7 +90,7 @@ export default function TaskListWidget() {
 
   return (
     <div className="p-5 bg-white rounded-2xl shadow-md border border-slate-50 max-w-md mx-auto">
-      {/* Header & Progress */}
+      {/* Header Section */}
       <header className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-bold text-slate-800 text-[16px]">
@@ -122,7 +102,7 @@ export default function TaskListWidget() {
           />
         </div>
         
-        {/* Progress Bar Container */}
+        {/* Progress Visualization */}
         <div className="space-y-2">
           <div className="flex justify-between text-[11px] font-bold text-slate-400 uppercase tracking-tighter">
             <span>Daily Progress</span>
@@ -137,35 +117,26 @@ export default function TaskListWidget() {
         </div>
       </header>
 
-      {/* Task List Container */}
+      {/* Main Task List */}
       <div className="space-y-4">
         {tasks.map((task) => {
-          const isExpanded = expandedTasks.includes(task.id);
-          const hasSubTasks = !!(task.subTasks && task.subTasks.length > 0);
-          const completedCount = task.subTasks?.filter(st => st.done).length || 0;
-          const totalCount = task.subTasks?.length || 0;
-
+          const isDone = task.status === "completed";
+          
           return (
             <div key={task.id} className="flex flex-col border-b border-slate-50 pb-3 last:border-0 group/container">
               <div className="flex items-center justify-between group">
                 <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => toggleExpand(task.id)}
-                    className={`p-1 rounded hover:bg-slate-100 transition-colors ${!hasSubTasks && 'invisible'}`}
-                  >
-                    {isExpanded ? <ChevronDown size={16} className="text-slate-400"/> : <ChevronRight size={16} className="text-slate-400"/>}
-                  </button>
-
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                      <p className={`text-[14px] font-medium transition-colors ${task.done ? "text-slate-400 line-through" : "text-slate-700"}`}>
+                      <p className={`text-[14px] font-medium transition-colors ${isDone ? "text-slate-400 line-through" : "text-slate-700"}`}>
                         {task.title}
                       </p>
-                      {hasSubTasks && (
-                        <span className="text-[11px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded-full font-semibold">
-                          {completedCount}/{totalCount}
-                        </span>
-                      )}
+                      {/* Priority Badge */}
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full uppercase font-bold ${
+                        task.priority === 'urgent' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {task.priority}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -178,38 +149,19 @@ export default function TaskListWidget() {
                     <Trash2 size={16} />
                   </button>
                   <button
-                    onClick={() => updateStatus(task.id, !task.done)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${task.done ? "bg-emerald-500 border-emerald-500" : "border-slate-300 hover:border-emerald-500"}`}
+                    onClick={() => updateStatus(task.id, !isDone)}
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? "bg-emerald-500 border-emerald-500" : "border-slate-300 hover:border-emerald-500"}`}
                   >
-                    {task.done && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+                    {isDone && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                   </button>
                 </div>
               </div>
-
-              {/* Sub-tasks Render */}
-              {isExpanded && hasSubTasks && (
-                <div className="ml-9 mt-3 space-y-3 border-l-2 border-slate-100 pl-4">
-                  {task.subTasks?.map((sub) => (
-                    <div key={sub.id} className="flex items-center justify-between group/sub">
-                      <span className={`text-[13px] transition-colors ${sub.done ? "text-slate-400 line-through" : "text-slate-600"}`}>
-                        {sub.title}
-                      </span>
-                      <button
-                        onClick={() => updateSubTaskStatus(task.id, sub.id, !sub.done)}
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${sub.done ? "bg-emerald-400 border-emerald-400" : "border-slate-200 hover:border-emerald-400"}`}
-                      >
-                        {sub.done && <Check className="w-3 h-3 text-white" strokeWidth={4} />}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           );
         })}
       </div>
 
-      {/* Creation Modal */}
+      {/* Task Creation Modal */}
       {isOpenModal && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
           <form
@@ -226,22 +178,21 @@ export default function TaskListWidget() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Title</label>
-                <input name="title" placeholder="Task name" className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all" required autoFocus />
+                <input name="title" className="w-full p-3 border border-slate-200 rounded-xl focus:border-slate-900 transition-all outline-none" required autoFocus />
               </div>
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Project</label>
-                <input name="project" placeholder="Project name" className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all" />
-              </div>
+              
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Priority</label>
-                <select name="priority" defaultValue="Normal" className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 transition-all bg-white">
-                  <option value="High">High</option>
-                  <option value="Normal">Normal</option>
-                  <option value="Low">Low</option>
+                <select name="priority" defaultValue="medium" className="w-full p-3 border border-slate-200 rounded-xl bg-white outline-none">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
+
               <button type="submit" className="w-full py-3 mt-2 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800 transition-colors">
-                Save Task
+                Create Task
               </button>
             </div>
           </form>
