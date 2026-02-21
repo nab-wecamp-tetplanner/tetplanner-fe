@@ -61,11 +61,12 @@ export const MOCK_CONFIGS: TetConfig[] = [
 ];
 
 export const TIMELINE_PHASES = [
-    { id: 'phase_before', name: 'Before Tết' },
-    { id: 'phase_30', name: '30 Tết' },
+    { id: 'phase_before', name: 'Before Tet' },
+    { id: 'phase_30', name: '30 Tet' },
     { id: 'phase_m1', name: 'Mùng 1' },
     { id: 'phase_m2', name: 'Mùng 2' },
     { id: 'phase_m3', name: 'Mùng 3' },
+    { id: 'phase_after', name: 'After Tet' },
 ];
 
 export const COLUMNS = [

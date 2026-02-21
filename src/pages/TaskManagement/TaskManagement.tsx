@@ -60,6 +60,7 @@ const TaskManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [todoItems, setTodoItems] = useState<Task[]>([]);
     const [activePhaseId, setActivePhaseId] = useState<string>(TIMELINE_PHASES[0].id);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     useEffect(() => {
         const fetchTasks = async () => {
             if (!activeConfigId || !activePhaseId) return;
@@ -182,37 +183,98 @@ const TaskManagement: React.FC = () => {
         <Blossom className="tet-deco-blossom--tr" />
         <Blossom className="tet-deco-blossom--bl" />
 
-        <header className="tet-page-header">
-            <div className="tet-header-left"> 
-                    <div className="plan-selector">
-                        <select
-                            value={activeConfigId}
-                            onChange={(e) => setActiveConfigId(e.target.value)}
-                            className="plan-dropdown-select"
-                        >
-                            {configs.map((config) => (
-                                <option key={config.id} value={config.id}>
-                                    {config.name}
-                                </option>
-                            ))}
-                        </select>
+<header className="tet-page-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                    <div className="tet-header-left"> 
+                        {/* 1. CHỌN PLAN (TET CONFIG) */}
+                        <div className="plan-selector">
+                            <select
+                                value={activeConfigId}
+                                onChange={(e) => setActiveConfigId(e.target.value)}
+                                className="plan-dropdown-select"
+                            >
+                                {configs.map((config) => (
+                                    <option key={config.id} value={config.id}>{config.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                <span className="tet-badge">{currentTasks.length} tasks</span>
-            </div>
 
-            <div className="tet-header-right">
-                <div className="tet-search-box">
-                    <Search size={15} className="tet-search-icon" />
-                    <input type="text" placeholder="Search..." className="tet-search-input" />
+                    <div className="tet-header-right">
+                        <div className="tet-search-box">
+                            <Search size={15} className="tet-search-icon" />
+                            <input type="text" placeholder="Tìm kiếm..." className="tet-search-input" />
+                        </div>
+                        
+                        <div className="tet-view-options">
+                            <button className="tet-view-btn active"><LayoutGrid size={15} /> Bảng</button>
+                        </div>
+
+                        {/* 2. NÚT LỌC (FILTER) THEO TIMELINE */}
+                        <div style={{ position: 'relative' }}>
+                            <button 
+                                className={`tet-ghost-btn ${isFilterOpen ? 'active' : ''}`}
+                                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                style={{ 
+                                    backgroundColor: isFilterOpen ? '#fee2e2' : 'transparent',
+                                    color: isFilterOpen ? '#dc2626' : 'inherit'
+                                }}
+                            >
+                                <SlidersHorizontal size={15} /> 
+                                {TIMELINE_PHASES.find(p => p.id === activePhaseId)?.name || 'Lọc'}
+                            </button>
+
+                            {/* Menu Dropdown hiển thị khi bấm nút Lọc */}
+                            {isFilterOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '110%',
+                                    right: 0,
+                                    backgroundColor: '#fff',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                    borderRadius: '8px',
+                                    padding: '8px',
+                                    zIndex: 100,
+                                    minWidth: '150px',
+                                    border: '1px solid #f3f4f6'
+                                }}>
+                                    <div style={{ fontSize: '12px', color: '#6b7280', padding: '4px 8px', marginBottom: '4px', fontWeight: 600 }}>
+                                        CHỌN MỐC THỜI GIAN
+                                    </div>
+                                    {TIMELINE_PHASES.map(phase => (
+                                        <div
+                                            key={phase.id}
+                                            onClick={() => {
+                                                setActivePhaseId(phase.id);
+                                                setIsFilterOpen(false); // Chọn xong tự đóng menu
+                                            }}
+                                            style={{
+                                                padding: '8px 12px',
+                                                cursor: 'pointer',
+                                                borderRadius: '6px',
+                                                backgroundColor: activePhaseId === phase.id ? '#fef2f2' : 'transparent',
+                                                color: activePhaseId === phase.id ? '#dc2626' : '#374151',
+                                                fontWeight: activePhaseId === phase.id ? 600 : 400,
+                                                transition: 'background 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = activePhaseId === phase.id ? '#fef2f2' : '#f3f4f6'}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = activePhaseId === phase.id ? '#fef2f2' : 'transparent'}
+                                        >
+                                            {phase.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sắp xếp</button>
+                        
+                        <button className="tet-primary-btn" onClick={() => { setActiveColumn('todo'); setIsModalOpen(true); }}>
+                            <Plus size={16} /> Thêm việc
+                        </button>
+                    </div>
                 </div>
-                <div className="tet-view-options">
-                    <button className="tet-view-btn active"><LayoutGrid size={15} /> Board</button>
-                </div>
-                <button className="tet-ghost-btn"><SlidersHorizontal size={15} /> Filter</button>
-                <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sort</button>
-                <button className="tet-primary-btn"><Plus size={16} /> Add New</button>
-            </div>
-        </header>
+            </header>
 
         <div className="tet-kanban-board">
             {columns.map((column) => (
