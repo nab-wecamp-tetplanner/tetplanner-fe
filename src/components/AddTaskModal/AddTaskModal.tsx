@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { SubTask, Task, TaskPriority, TaskStatus } from "../../types/task";
 import './AddTaskModal.css';
 import { Calendar, CheckSquare, Flag, Plus, Tag, Trash2, X } from "lucide-react";
+import { MOCK_MEMBERS } from "../../data/mockTasks";
 
 interface AddTaskModalProps {
   isOpen: boolean;
@@ -14,14 +15,14 @@ interface AddTaskModalProps {
 const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, onSave }) => {
     
     const [title, setTitle] = useState('');
-    const [priority, setPriority] = useState<TaskPriority>('Medium');
+    const [priority, setPriority] = useState<TaskPriority>('medium');
     const [isShopping, setIsShopping] = useState(false);
     const [estimatedPrice, setEstimatedPrice] = useState<number | ''>('');
-    const [quantity, setQuantity] = useState<number>(1);
     const [deadline, setDeadline] = useState('');
     const [categoryId, setCategoryId] = useState('General');
     const [subTasks, setSubTasks] = useState<SubTask[]>([]);
     const [tempSubtask, setTempSubtask] = useState('');
+    const [assignedTo, setAssignedTo] = useState<string>('');
 
     if(!isOpen) return null;
 
@@ -51,7 +52,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         priority,
         deadline: deadline || undefined, 
         sub_tasks: subTasks,
-        status: status || 'PENDING' as TaskStatus,
+        status: status || 'pending' as TaskStatus,
         is_shopping: isShopping,
         estimated_price: estimatedPrice || undefined,
         }
@@ -59,7 +60,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         onSave(taskData);
 
         setTitle('');
-        setPriority('Medium');
+        setPriority('medium');
         setCategoryId('General');
         setDeadline('');
         setSubTasks([]);    
@@ -93,6 +94,20 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
             />
           </div>
 
+            <div className="form-group" style={{ flex: 1 }}>
+                <label>Người phụ trách</label>
+                <select 
+                    value={assignedTo} 
+                    onChange={(e) => setAssignedTo(e.target.value)}
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
+                >
+                    <option value="">-- Chọn người làm --</option>
+                    {MOCK_MEMBERS.map(member => (
+                        <option key={member.id} value={member.id}>{member.name}</option>
+                    ))}
+                </select>
+            </div>
+
             {/* Category & Priority */}
             <div className="form-row">
                 <div className="form-group">
@@ -114,9 +129,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     value={priority} 
                     onChange={(e) => setPriority(e.target.value as TaskPriority)}
                     >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
                     </select>
                 </div>
             </div>
@@ -166,7 +182,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
             <div className="modal-actions">
                 <button type="button" className="btn btn-cancel" onClick={onClose}>Cancel</button>
-                <button type="submit" className="btn btn-submit">Add Task</button>
+                <button type="submit" className="btn btn-submit" >Add Task</button>
             </div>
         </form>
         </div>

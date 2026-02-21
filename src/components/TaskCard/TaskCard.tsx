@@ -20,9 +20,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
             return { text: `${completed}/${total}`, percent: `${Math.round((completed / total) * 100)}%` };
         }
         switch(task.status) {
-            case 'IN_PROGRESS':
+            case 'in_progress':
                 return { text: '5/10', percent: '50%' };
-            case 'DONE':
+            case 'completed':
                 return { text: '10/10', percent: '100%' };
             default:
                 return { text: '0/10', percent: '0%' };
@@ -41,7 +41,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
     };
 
     /* Special gold trim for high priority */
-    const isHighPriority = task.priority === 'High';
+    const isHighPriority = task.priority === 'high' || task.priority === 'urgent';
 
     const handleMoreClick = (e: React.MouseEvent) => {
         e.stopPropagation();

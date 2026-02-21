@@ -197,15 +197,15 @@
   transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.tet-card__progress-fill--PENDING {
+.tet-card__progress-fill--pending {
   background: linear-gradient(90deg, #d97706, #f59e0b);
 }
 
-.tet-card__progress-fill--IN_PROGRESS {
+.tet-card__progress-fill--in_progress {
   background: linear-gradient(90deg, #e11d48, #f43f5e);
 }
 
-.tet-card__progress-fill--DONE {
+.tet-card__progress-fill--completed {
   background: linear-gradient(90deg, #059669, #34d399);
 }
 
@@ -307,6 +307,6 @@
 }
 
 /* Progress fill for cancelled */
-.tet-card__progress-fill--CANCELLED {
+.tet-card__progress-fill--cancelled {
   background: linear-gradient(90deg, #78716c, #a8a29e);
 }

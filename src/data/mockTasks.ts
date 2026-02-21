@@ -1,67 +1,43 @@
 import  { type TetConfig, type Task  } from '../types/task';
 
-export const MOCK_TASKS: Task[] = [
-  {
-    id: "1",
-    title: "Design new ui presentation",
-    status: "PENDING",
-    priority: "High",
-    deadline: "2026-02-24",
-    is_overdue: false,
-    is_shopping: false,
-    quantity: 1,
-    purchased: false,
-    created_at: "2026-01-01T00:00:00Z",
-    category_id: "design",
-  },
-  {
-    id: "2",
-    title: "Add more ui/ux mockups",
-    status: "PENDING",
-    priority: "Medium",
-    deadline: "2026-02-25",
-    is_overdue: false,
-    is_shopping: false,
-    quantity: 1,
-    purchased: false,
-    created_at: "2026-01-01T00:00:00Z",
-    category_id: "marketing",
-  },
-  {
-    id: "3",
-    title: "Design system update",
-    status: "IN_PROGRESS",
-    priority: "High",
-    deadline: "2026-03-12",
-    is_overdue: false,
-    is_shopping: false,
-    quantity: 1,
-    purchased: false,
-    created_at: "2026-01-01T00:00:00Z",
-    category_id: "design",
-  },
-  {
-    id: "4",
-    title: "Add product to the market",
-    status: "DONE",
-    priority: "Low",
-    deadline: "2026-01-06",
-    is_overdue: false,
-    is_shopping: false,
-    quantity: 1,
-    purchased: false,
-    created_at: "2026-01-01T00:00:00Z",
-    category_id: "product",
-  },
+export const MOCK_INITIAL_TASKS: Task[] = [
+    {
+        id: "task-1",
+        title: "Dọn dẹp bàn thờ",
+        priority: "high",
+        status: "pending",
+        is_shopping: false,
+        quantity: 1,
+        assigned_to: "user-bo", // Giao cho Bố
+        created_at: new Date().toISOString(),
+        is_overdue: false,
+        purchased: false
+    },
+    {
+        id: "task-2",
+        title: "Mua sắm mứt Tết",
+        priority: "medium",
+        status: "in_progress",
+        is_shopping: true,
+        estimated_price: 500000,
+        quantity: 1,
+        assigned_to: "user-me", // Giao cho Mẹ
+        created_at: new Date().toISOString(),
+        is_overdue: false,
+        purchased: false
+    }
 ];
 
 export const MOCK_CONFIGS: TetConfig[] = [
-    { id: 'p1', year: 2026, name: '🧧 Paternal Family Plans', total_budget: 0, created_at: '2026-01-01T00:00:00Z' },
-    { id: 'p2', year: 2026, name: '🌸 Maternal Family Plans', total_budget: 0, created_at: '2026-01-01T00:00:00Z' }
+    {
+        id: "config-1", 
+        name: "🧧 Tết Nhà Nội 2026",
+        year: 2026,
+        total_budget: 50000000
+    }
 ];
-
 export const TIMELINE_PHASES = [
-    { id: 'phase_before', name: 'Before Tet' },
+    { id: 'before_tet', name: 'Before Tet' },
     { id: 'phase_30', name: '30 Tet' },
     { id: 'phase_m1', name: 'Mùng 1' },
     { id: 'phase_m2', name: 'Mùng 2' },
@@ -70,8 +46,14 @@ export const TIMELINE_PHASES = [
 ];
 
 export const COLUMNS = [
-    { id: 'PENDING', label: 'To do' },
-    { id: 'IN_PROGRESS', label: 'In progress' },
-    { id: 'COMPLETED', label: 'Completed' },
-    { id: 'CANCELLED', label: 'Cancelled' },
+    { id: 'pending', label: 'To Do' },
+    { id: 'in_progress', label: 'In progress' },
+    { id: 'completed', label: 'Completed' },
+    { id: 'cancelled', label: 'Cancelled' },
+];
+
+export const MOCK_MEMBERS = [
+    { id: 'user-bo', name: 'Dad', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bo&backgroundColor=b6e3f4' },
+    { id: 'user-me', name: 'Mom', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Me&backgroundColor=ffdfbf' },
+    { id: 'user-con', name: 'Myself', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=BanThan&backgroundColor=c0aede' },
 ];

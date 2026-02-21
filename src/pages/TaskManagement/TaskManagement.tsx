@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import type { TetConfig, Task, TaskStatus} from '../../types/task'
 import { todoService } from '../../services/todoService';
-import { MOCK_CONFIGS, TIMELINE_PHASES } from '../../data/mockTasks';
+import { MOCK_CONFIGS, MOCK_MEMBERS, TIMELINE_PHASES, MOCK_INITIAL_TASKS } from '../../data/mockTasks';
 import './TaskManagement.css'
 import { LayoutGrid, Plus, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import TaskColumn from '../../components/TaskColumn/TaskColumn';
@@ -51,14 +51,14 @@ const Blossom: React.FC<{ className?: string }> = ({ className = '' }) => (
 
 const TaskManagement: React.FC = () => {
 
-    const [configs, setConfigs] = React.useState<TetConfig[]>(MOCK_CONFIGS);
+    const [configs] = React.useState<TetConfig[]>(MOCK_CONFIGS);
     const [activeConfigId, setActiveConfigId] = useState<string>(MOCK_CONFIGS[0].id);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('PENDING');
+    const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('pending');
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [celebration, setCelebration] = React.useState<{ x: number; y: number } | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [todoItems, setTodoItems] = useState<Task[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [todoItems, setTodoItems] = useState<Task[]>(MOCK_INITIAL_TASKS);
     const [activePhaseId, setActivePhaseId] = useState<string>(TIMELINE_PHASES[0].id);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     useEffect(() => {
@@ -80,10 +80,6 @@ const TaskManagement: React.FC = () => {
     }, [activeConfigId, activePhaseId]);
 
 
-    const updateTasks = (updateFn: (tasks: Task[]) => Task[]) => {
-        setTodoItems(prevTasks => updateFn(prevTasks));
-    };
-
     const handleCelebrate = (x: number, y: number) => {
         setCelebration(null);
 
@@ -97,62 +93,116 @@ const TaskManagement: React.FC = () => {
 
     };
 
-    const activeConfig = configs.find(p => p.id === activeConfigId);
     const currentTasks = todoItems;
 
     const columns: { id: TaskStatus; label: string} [] = [
-        { id: 'PENDING', label: 'To Do' },
-        { id: 'IN_PROGRESS', label: 'In Progress' },
-        { id: 'DONE', label: 'Done' },
-        { id: 'CANCELLED', label: 'Cancelled' },
+        { id: 'pending', label: 'To Do' },
+        { id: 'in_progress', label: 'In Progress' },
+        { id: 'completed', label: 'Completed' },
+        { id: 'cancelled', label: 'Cancelled' },
     ];
 
-    const handleDeleteTask = (taskId: string) => {
+    const handleDeleteTask = async(taskId: string) => {
         const targetTask = todoItems.find(t => t.id === taskId);
         if (!targetTask) return;
 
-        if (targetTask.status === 'CANCELLED') {
-            // Permanently delete
+        const isHardDelete = targetTask.status === 'cancelled';
+        if (isHardDelete) {
             const confirmDelete = window.confirm('Are you sure you want to delete this cancelled task? This action cannot be undone.');
             if (!confirmDelete) return;
+        } 
+        const backupTasks = [...todoItems];
+        if (isHardDelete) {
             setTodoItems(prev => prev.filter(t => t.id !== taskId));
         } else {
-            // Soft delete (Move to cancelled)
             setTodoItems(prev => prev.map(t =>
-                t.id === taskId ? { ...t, status: 'CANCELLED' as TaskStatus } : t
+                t.id === taskId ? { ...t, status: 'cancelled' as TaskStatus } : t
             ));
         }
         if (selectedTask && selectedTask.id === taskId) {
             setSelectedTask(null);
         }
+
+        // API call to update status or delete
+        try {
+            if (isHardDelete) {
+                await todoService.deleteTodoItem(taskId);
+            } else {
+                await todoService.updateTodoItemStatus(taskId, 'cancelled' as TaskStatus);
+            }
+        } catch (error) {
+            console.error("Error updating task status:", error);
+            setTodoItems(backupTasks); 
+            alert("Failed to update task. Please try again.");
+        }
     };
 
+    // const handleMoveTask = async(taskId: string, newStatus: TaskStatus) => {
+    //     const backupTasks = [...todoItems];
+        
+    //     setTodoItems(prev => prev.map(task =>
+    //         task.id === taskId ? { ...task, status: newStatus } : task
+    //     ));
+
+    //     // API call to update status
+    //     try {
+    //         await todoService.updateTodoItemStatus(taskId, newStatus);
+    //     } catch (error) {
+    //         console.error("Error updating task status:", error);
+    //         setTodoItems(backupTasks); 
+    //         alert("Failed to move task. Please try again.");
+    //     }
+    // }
+
+    //MOCK
     const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
         setTodoItems(prev => prev.map(task =>
             task.id === taskId ? { ...task, status: newStatus } : task
         ));
-    }
-
-    const handleAddTask = (taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => {
-        const newTask: Task = {
-            id: Date.now().toString(),
-            title: taskData.title,
-            status: activeColumn,
-            priority: taskData.priority,
-            deadline: taskData.deadline,
-            is_overdue: false,
-            is_shopping: taskData.is_shopping || false,
-            quantity: 1,
-            purchased: false,
-            created_at: new Date().toISOString(),
-            category_id: taskData.category_id,
-            sub_tasks: taskData.sub_tasks,
-            tet_config_id: activeConfigId,
-            timeline_phase_id: activePhaseId,
+        if (newStatus === 'completed') {
+            handleCelebrate(window.innerWidth / 2, window.innerHeight / 2);
         }
+    }
+    // const handleAddTask = async(taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => {
+    //     // API call to create new task
+    //     let newTask: Task;
+    //     try {
+    //         const response = await todoService.addTodoItem({
+    //             ...taskData,
+    //             tet_config_id: activeConfigId,
+    //             timeline_phase_id: activePhaseId,
+    //         });
+    //         newTask = (response as { data: Task }).data;
+    //     } catch (error) {
+    //         console.error("Error creating task:", error);
+    //         alert("Failed to create task. Please try again.");
+    //         return;
+    //     }
+
+    //     setTodoItems(prev => [...prev, newTask]);
+    //     setIsModalOpen(false);
+    // }
+    //MOCK
+    const handleAddTask = (taskData: any) => {
+        const newTask: Task = {
+            id: `mock-task-${Date.now()}`, 
+            title: taskData.title,
+            priority: taskData.priority,
+            status: activeColumn as any,
+            deadline: taskData.deadline,
+            is_shopping: taskData.is_shopping,
+            estimated_price: taskData.estimated_price,
+            quantity: taskData.quantity,
+            assigned_to: taskData.assigned_to, 
+            created_at: new Date().toISOString(),
+            is_overdue: false,
+            purchased: false,
+        };
+
+        // Chỉ cập nhật UI, không gọi API
         setTodoItems(prev => [...prev, newTask]);
         setIsModalOpen(false);
-    }
+    };
 
     const handleOpenModal = (columnId: TaskStatus) => {
         setActiveColumn(columnId);
@@ -164,10 +214,18 @@ const TaskManagement: React.FC = () => {
     }
 
     const handleUpdateTask = (updatedTask: Task) => {
-        setTodoItems(prev => prev.map(task =>
-            task.id === updatedTask.id ? updatedTask : task
-        ));
-        setSelectedTask(updatedTask); 
+        // API call to update task details
+        todoService.updateTodoItem(updatedTask.id, updatedTask)
+            .then(() => {
+                setTodoItems(prev => prev.map(task =>
+                    task.id === updatedTask.id ? updatedTask : task
+                ));
+                setSelectedTask(updatedTask); 
+            })
+            .catch((error) => {
+                console.error("Error updating task:", error);
+                alert("Failed to update task. Please try again.");
+            });
     }
 
   return (
@@ -183,10 +241,9 @@ const TaskManagement: React.FC = () => {
         <Blossom className="tet-deco-blossom--tr" />
         <Blossom className="tet-deco-blossom--bl" />
 
-<header className="tet-page-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
+        <header className="tet-page-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                     <div className="tet-header-left"> 
-                        {/* 1. CHỌN PLAN (TET CONFIG) */}
                         <div className="plan-selector">
                             <select
                                 value={activeConfigId}
@@ -199,6 +256,32 @@ const TaskManagement: React.FC = () => {
                             </select>
                         </div>
                     </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', marginLeft: '16px' }}>
+                            {MOCK_MEMBERS.map((member, index) => (
+                                <img 
+                                    key={member.id} 
+                                    src={member.avatar} 
+                                    alt={member.name} 
+                                    title={member.name}
+                                    style={{
+                                        width: '32px', height: '32px', borderRadius: '50%', 
+                                        border: '2px solid white', backgroundColor: '#f3f4f6',
+                                        marginLeft: index > 0 ? '-10px' : '0', // Hiệu ứng xếp chồng
+                                        zIndex: MOCK_MEMBERS.length - index,
+                                        objectFit: 'cover'
+                                    }} 
+                                />
+                            ))}
+                            <button style={{
+                                width: '32px', height: '32px', borderRadius: '50%', border: '1px dashed #dc2626',
+                                backgroundColor: '#fef2f2', color: '#dc2626', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', marginLeft: '-10px',
+                                cursor: 'pointer', zIndex: 0
+                            }} title="Add Member">
+                                <Plus size={14} />
+                            </button>
+                        </div>
 
                     <div className="tet-header-right">
                         <div className="tet-search-box">
@@ -239,14 +322,14 @@ const TaskManagement: React.FC = () => {
                                     border: '1px solid #f3f4f6'
                                 }}>
                                     <div style={{ fontSize: '12px', color: '#6b7280', padding: '4px 8px', marginBottom: '4px', fontWeight: 600 }}>
-                                        CHỌN MỐC THỜI GIAN
+                                        Filter by Timeline Phase
                                     </div>
                                     {TIMELINE_PHASES.map(phase => (
                                         <div
                                             key={phase.id}
                                             onClick={() => {
                                                 setActivePhaseId(phase.id);
-                                                setIsFilterOpen(false); // Chọn xong tự đóng menu
+                                                setIsFilterOpen(false); 
                                             }}
                                             style={{
                                                 padding: '8px 12px',
@@ -269,7 +352,7 @@ const TaskManagement: React.FC = () => {
 
                         <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sort</button>
                         
-                        <button className="tet-primary-btn" onClick={() => { setActiveColumn('PENDING'); setIsModalOpen(true); }}>
+                        <button className="tet-primary-btn" onClick={() => { setActiveColumn('pending'); setIsModalOpen(true); }}>
                             <Plus size={16} /> Add Task
                         </button>
                     </div>

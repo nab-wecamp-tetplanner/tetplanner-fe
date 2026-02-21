@@ -5,16 +5,17 @@ import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare } from "lucide-rea
 
 /* ── Status / Priority lookup ── */
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  PENDING:       { label: "To Do",        cls: "tdm-status--todo" },
-  IN_PROGRESS:   { label: "In Progress",   cls: "tdm-status--progress" },
-  DONE:          { label: "Done",          cls: "tdm-status--done" },
-  CANCELLED:     { label: "Cancelled",     cls: "tdm-status--cancel" },
+  pending:       { label: "To Do",        cls: "tdm-status--todo" },
+  in_progress:   { label: "In Progress",   cls: "tdm-status--progress" },
+  completed:     { label: "Completed",     cls: "tdm-status--done" },
+  cancelled:     { label: "Cancelled",     cls: "tdm-status--cancel" },
 };
 
 const PRIORITY_CONFIG: Record<string, { label: string; cls: string }> = {
-  High:   { label: "High",       cls: "tdm-pri--high" },
-  Medium: { label: "Medium", cls: "tdm-pri--med" },
-  Low:    { label: "Low",      cls: "tdm-pri--low" },
+  high:   { label: "High",       cls: "tdm-pri--high" },
+  medium: { label: "Medium",     cls: "tdm-pri--med" },
+  low:    { label: "Low",        cls: "tdm-pri--low" },
+  urgent: { label: "Urgent",     cls: "tdm-pri--urgent" },
 };
 
 interface TaskDetailModalProps {
@@ -43,7 +44,7 @@ const TaskDetailModal = ({
 
     const isAllCompleted =
       updatedSubtasks.length > 0 && updatedSubtasks.every((st) => st.isCompleted);
-    const newStatus = isAllCompleted ? "DONE" : task.status;
+    const newStatus = isAllCompleted ? "completed" : task.status;
 
     onUpdateTask({ ...task, sub_tasks: updatedSubtasks, status: newStatus });
   };
@@ -64,7 +65,7 @@ const TaskDetailModal = ({
       isCompleted: false,
     };
 
-    const newStatus = task.status === "DONE" ? "IN_PROGRESS" : task.status;
+    const newStatus = task.status === "completed" ? "in_progress" : task.status;
     onUpdateTask({
       ...task,
       sub_tasks: [...(task.sub_tasks || []), newSubtask],
@@ -79,8 +80,8 @@ const TaskDetailModal = ({
     onUpdateTask({ ...task, sub_tasks: updatedSubtasks });
   };
 
-  const status = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.PENDING;
-  const priority = PRIORITY_CONFIG[task.priority ?? "Medium"] ?? PRIORITY_CONFIG.Medium;
+  const status = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.pending;
+  const priority = PRIORITY_CONFIG[task.priority ?? "medium"] ?? PRIORITY_CONFIG.medium;
 
   return (
     <div className="tdm-overlay" onClick={onClose}>

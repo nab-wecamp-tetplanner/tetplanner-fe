@@ -25,7 +25,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
         setIsOver(false);
         const taskId = e.dataTransfer.getData('taskId');
         if(taskId) {
-            if (status === 'DONE' && onCelebrate) {
+            if (status === 'completed' && onCelebrate) {
                 /* Trigger celebration at drop location */
                 const rect = e.currentTarget.getBoundingClientRect();
                 const cx = rect.left + rect.width / 2;
@@ -55,10 +55,10 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
     /* Column accent color based on status */
     const getStatusAccent = () => {
         switch(status) {
-            case 'PENDING': return 'tet-col--amber';
-            case 'IN_PROGRESS': return 'tet-col--rose';
-            case 'DONE': return 'tet-col--emerald';
-            case 'CANCELLED': return 'tet-col--slate';
+            case 'pending': return 'tet-col--amber';
+            case 'in_progress': return 'tet-col--rose';
+            case 'completed': return 'tet-col--emerald';
+            case 'cancelled': return 'tet-col--slate';
             default: return 'tet-col--amber';
         }
     };

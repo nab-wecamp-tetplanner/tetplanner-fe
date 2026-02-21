@@ -1,5 +1,5 @@
-export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
-export type TaskPriority = 'Low' | 'Medium' | 'High';
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface SubTask {
     id: string;
@@ -42,7 +42,7 @@ export interface TetConfig {
     year: number;
     name: string; 
     total_budget: number;
-    created_at: string;
+    created_at?: string;
     deleted_at?: string;
     owner_id?: string;
 }
