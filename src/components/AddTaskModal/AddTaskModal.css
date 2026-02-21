@@ -206,6 +206,8 @@ select.form-input option {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(214, 211, 209, 0.35);
 }
 
 .btn {
@@ -238,6 +240,144 @@ select.form-input option {
 .btn-submit:hover {
   box-shadow: 0 4px 20px rgba(217, 119, 6, 0.35);
   transform: translateY(-1px);
+}
+
+/* ===== Toggle Switch ===== */
+.form-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.form-toggle__input {
+  display: none;
+}
+
+.form-toggle__switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: rgba(214, 211, 209, 0.6);
+  border-radius: 12px;
+  transition: background 0.25s ease;
+  flex-shrink: 0;
+}
+
+.form-toggle__switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-toggle__input:checked + .form-toggle__switch {
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.form-toggle__input:checked + .form-toggle__switch::after {
+  transform: translateX(18px);
+}
+
+.form-toggle__text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #57534e;
+}
+
+/* ===== Assignee Avatar Picker ===== */
+.assignee-picker {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.assignee-picker__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 2px solid rgba(214, 211, 209, 0.45);
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  min-width: 72px;
+}
+
+.assignee-picker__item:hover {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(255, 251, 235, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.1);
+}
+
+.assignee-picker__item--active {
+  border-color: #d97706;
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.9), rgba(254, 243, 199, 0.7));
+  box-shadow:
+    0 0 0 3px rgba(251, 191, 36, 0.15),
+    0 4px 14px rgba(217, 119, 6, 0.12);
+}
+
+.assignee-picker__item--active::after {
+  content: '\2713';
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+  animation: checkPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes checkPop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+.assignee-picker__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(120, 113, 108, 0.12);
+  transition: transform 0.2s ease;
+}
+
+.assignee-picker__item:hover .assignee-picker__avatar {
+  transform: scale(1.08);
+}
+
+.assignee-picker__name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #57534e;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.assignee-picker__item--active .assignee-picker__name {
+  color: #92400e;
 }
 
 /* ===== Animations ===== */
