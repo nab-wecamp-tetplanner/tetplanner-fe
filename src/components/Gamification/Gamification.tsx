@@ -104,7 +104,7 @@ interface RewardModalProps {
 }
 
 const LUCKY_MESSAGES = [
-  '🎊 Chúc Mừng Năm Mới!',
+  '🎊 Happy New Year!',
   '🧧 Wishing you prosperity!',
   '🎆 May fortune smile upon you!',
   '🏮 A new year of great luck!',

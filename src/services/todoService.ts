@@ -1,10 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { create } from 'domain';
 import apiClient from './apiClient';
 
 export const todoService = {
     getTetConfigs: () => {
         return apiClient.get('/tet-configs'); 
     },
+
+    getTimelinePhases: (tetConfigId: string) => {
+        return apiClient.get('/timeline-phases', {
+            params: { tet_config_id: tetConfigId }
+        });
+    },
+
+    createTimelinePhase: (data: any) => {
+        return apiClient.post('/timeline-phases', data);
+    },  
 
     getTodoItems: (tetConfigId: string, phaseId: string) => {
         return apiClient.get(`/todo-items`, {
