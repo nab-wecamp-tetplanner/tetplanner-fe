@@ -12,6 +12,7 @@ import CelebrationParticles from '../../components/CelebrationParticles/Celebrat
 import { Lantern, BlossomBranch, CloudMotif, TraditionalCake, MysticKnot } from '../../components/Decoratives/Decoratives';
 import { LuckyEnvelope, RewardModal } from '../../components/Gamification/Gamification';
 import FallingPetals from '../../components/FallingPetals/FallingPetals';
+import SharePlanModal from '../../components/SharePlanModal/SharePlanModal';
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
@@ -29,6 +30,9 @@ const TaskManagement: React.FC = () => {
     const [activePhaseId, setActivePhaseId] = useState<string>(TIMELINE_PHASES[0].id);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isRewardOpen, setIsRewardOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
     useEffect(() => {
         const fetchTasks = async () => {
             if (!activeConfigId || !activePhaseId) return;
@@ -61,7 +65,12 @@ const TaskManagement: React.FC = () => {
 
     };
 
-    const currentTasks = todoItems;
+    const currentTasks = useMemo(() => {
+    if (!searchQuery.trim()) return todoItems;
+    return todoItems.filter(task => 
+        task.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    }, [todoItems, searchQuery]);
 
     const columns: { id: TaskStatus; label: string} [] = [
         { id: 'pending', label: 'To Do' },
@@ -258,7 +267,7 @@ const TaskManagement: React.FC = () => {
                                         style={{ zIndex: MOCK_MEMBERS.length - index }}
                                     />
                                 ))}
-                                <button className="tet-collaborators__add" title="Add Member">
+                                <button className="tet-collaborators__add" title="Add Member" onClick={() => setIsShareModalOpen(true)}>
                                     <Plus size={14} />
                                 </button>
                             </div>
@@ -268,7 +277,7 @@ const TaskManagement: React.FC = () => {
                     <div className="tet-header-right">
                         <div className="tet-search-box">
                             <Search size={15} className="tet-search-icon" />
-                            <input type="text" placeholder="Search..." className="tet-search-input" />
+                            <input type="text" placeholder="Search..." className="tet-search-input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}/>
                         </div>
                         
                         <div className="tet-view-options">
@@ -389,6 +398,12 @@ const TaskManagement: React.FC = () => {
             onClose={() => setIsRewardOpen(false)}
             totalTasks={progress.total}
         />
+        {/* Share Modal */}
+        <SharePlanModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            configId={activeConfigId}
+        /> 
     </div>
     )
 }
