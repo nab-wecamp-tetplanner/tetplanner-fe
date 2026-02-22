@@ -4,7 +4,7 @@ import type { TetConfig, Task, TaskStatus} from '../../types/task'
 import { todoService } from '../../services/todoService';
 import { MOCK_CONFIGS, MOCK_MEMBERS, TIMELINE_PHASES, MOCK_INITIAL_TASKS } from '../../data/mockTasks';
 import './TaskManagement.css'
-import { LayoutGrid, Plus, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { LayoutGrid, Plus, Search, SlidersHorizontal, ArrowUpDown, Calendar } from 'lucide-react';
 import TaskColumn from '../../components/TaskColumn/TaskColumn';
 import AddTaskModal from '../../components/AddTaskModal/AddTaskModal';
 import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal';
@@ -13,25 +13,58 @@ import { Lantern, BlossomBranch, CloudMotif, TraditionalCake, MysticKnot } from 
 import { LuckyEnvelope, RewardModal } from '../../components/Gamification/Gamification';
 import FallingPetals from '../../components/FallingPetals/FallingPetals';
 import SharePlanModal from '../../components/SharePlanModal/SharePlanModal';
+import ManagePhasesModal from '../../components/ManagePhasesModal/ManagePhasesModal';
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
 const TaskManagement: React.FC = () => {
 
-    const [configs] = React.useState<TetConfig[]>(MOCK_CONFIGS);
-    const [activeConfigId, setActiveConfigId] = useState<string>(MOCK_CONFIGS[0].id);
+    const [configs, setConfigs] = useState<TetConfig[]>([]);
+    const [phases, setPhases] = useState<any[]>([]);    
+    const [activeConfigId, setActiveConfigId] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [activeColumn, setActiveColumn] = React.useState<TaskStatus>('pending');
     const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
     const [celebration, setCelebration] = React.useState<{ x: number; y: number } | null>(null);
     const [, setIsLoading] = useState(false);
     const [todoItems, setTodoItems] = useState<Task[]>(MOCK_INITIAL_TASKS);
-    const [activePhaseId, setActivePhaseId] = useState<string>(TIMELINE_PHASES[0].id);
+    const [activePhaseId, setActivePhaseId] = useState<string>('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isRewardOpen, setIsRewardOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                const configRes: any = await todoService.getTetConfigs(); 
+                const configList = configRes.data || [];
+                
+                setConfigs(configList);
+
+                
+                if (configList.length > 0) {
+                    const firstConfigId = configList[0].id;
+                    setActiveConfigId(firstConfigId);
+
+                    
+                    const phaseRes: any = await todoService.getTimelinePhases(firstConfigId);
+                    const phaseList = phaseRes.data || [];
+                    setPhases(phaseList);
+
+                    if (phaseList.length > 0) {
+                        setActivePhaseId(phaseList[0].id);
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading Config/Phase data from DB:", error);
+            }
+        };
+
+        fetchInitialData();
+    }, []);
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -140,46 +173,46 @@ const TaskManagement: React.FC = () => {
             handleCelebrate(window.innerWidth / 2, window.innerHeight / 2);
         }
     }
-    // const handleAddTask = async(taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => {
-    //     // API call to create new task
-    //     let newTask: Task;
-    //     try {
-    //         const response = await todoService.addTodoItem({
-    //             ...taskData,
-    //             tet_config_id: activeConfigId,
-    //             timeline_phase_id: activePhaseId,
-    //         });
-    //         newTask = (response as { data: Task }).data;
-    //     } catch (error) {
-    //         console.error("Error creating task:", error);
-    //         alert("Failed to create task. Please try again.");
-    //         return;
-    //     }
+    const handleAddTask = async(taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => {
+        // API call to create new task
+        let newTask: Task;
+        try {
+            const response = await todoService.addTodoItem({
+                ...taskData,
+                tet_config_id: activeConfigId,
+                timeline_phase_id: activePhaseId,
+            });
+            newTask = (response as { data: Task }).data;
+        } catch (error) {
+            console.error("Error creating task:", error);
+            alert("Failed to create task. Please try again.");
+            return;
+        }
 
-    //     setTodoItems(prev => [...prev, newTask]);
-    //     setIsModalOpen(false);
-    // }
-    //MOCK
-    const handleAddTask = (taskData: any) => {
-        const newTask: Task = {
-            id: `mock-task-${Date.now()}`, 
-            title: taskData.title,
-            priority: taskData.priority,
-            status: activeColumn as any,
-            deadline: taskData.deadline,
-            is_shopping: taskData.is_shopping,
-            estimated_price: taskData.estimated_price,
-            quantity: taskData.quantity,
-            assigned_to: taskData.assigned_to, 
-            created_at: new Date().toISOString(),
-            is_overdue: false,
-            purchased: false,
-        };
-
-        // Update UI only, no API call
         setTodoItems(prev => [...prev, newTask]);
         setIsModalOpen(false);
-    };
+    }
+    //MOCK
+    // const handleAddTask = (taskData: any) => {
+    //     const newTask: Task = {
+    //         id: `mock-task-${Date.now()}`, 
+    //         title: taskData.title,
+    //         priority: taskData.priority,
+    //         status: activeColumn as any,
+    //         deadline: taskData.deadline,
+    //         is_shopping: taskData.is_shopping,
+    //         estimated_price: taskData.estimated_price,
+    //         quantity: taskData.quantity,
+    //         assigned_to: taskData.assigned_to, 
+    //         created_at: new Date().toISOString(),
+    //         is_overdue: false,
+    //         purchased: false,
+    //     };
+
+    //     // Update UI only, no API call
+    //     setTodoItems(prev => [...prev, newTask]);
+    //     setIsModalOpen(false);
+    // };
 
     const handleOpenModal = (columnId: TaskStatus) => {
         setActiveColumn(columnId);
@@ -218,6 +251,28 @@ const TaskManagement: React.FC = () => {
         };
     }, [currentTasks]);
 
+    //budget
+    const budgetStats = useMemo(() => {
+        const activeConfig = configs.find(c => c.id === activeConfigId);
+        const total = activeConfig?.total_budget || 0;
+
+        const used = currentTasks
+            .filter(t => t.is_shopping && t.status !== 'cancelled')
+            .reduce((sum, task) => {
+                const price = task.estimated_price || 0;
+                const qty = task.quantity || 1;
+                return sum + (price * qty);
+            }, 0);
+
+        const percent = total > 0 ? Math.min(Math.round((used / total) * 100), 100) : 0;
+        const isWarning = percent >= 80; 
+
+        return { total, used, percent, isWarning };
+    }, [currentTasks, configs, activeConfigId]);
+
+    const formatVND = (amount: number) => {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    };
   return (
     <div className="tet-page">
         {/* Background Pattern & Warm Overlay */}
@@ -314,6 +369,14 @@ const TaskManagement: React.FC = () => {
                                     ))}
                                 </div>
                             )}
+                            <button 
+                                    className="tet-ghost-btn" 
+                                    onClick={() => setIsPhaseModalOpen(true)}
+                                    title="Manage timeline phases"
+                                >
+                                    <Calendar size={15} color="#dc2626" />
+                                    {/* Button can be icon-only or labeled "Schedule" */}
+                            </button>
                         </div>
 
                         <button className="tet-ghost-btn"><ArrowUpDown size={15} /> Sort</button>
@@ -343,6 +406,29 @@ const TaskManagement: React.FC = () => {
                         style={{ width: `${progress.percent}%` }}
                     />
                 </div>
+            </div>
+
+            <div className="tet-progress">
+                    <div className="tet-progress__header">
+                        <span className="tet-progress__label">
+                            Shopping Budget 
+                            {budgetStats.isWarning && <span style={{ color: '#dc2626', marginLeft: '8px', fontSize: '12px' }}>⚠️ Approaching budget limit!</span>}
+                        </span>
+                        <span className="tet-progress__stats" style={{ color: budgetStats.isWarning ? '#dc2626' : '#4b5563', fontWeight: budgetStats.isWarning ? 600 : 400 }}>
+                            {formatVND(budgetStats.used)} / {formatVND(budgetStats.total)}
+                        </span>
+                    </div>
+                    {/* Progress bar background (light gray, or light red if warning) */}
+                    <div className="tet-progress__bar" style={{ backgroundColor: budgetStats.isWarning ? '#fee2e2' : '#f3f4f6' }}>
+                        <div
+                            className="tet-progress__fill"
+                            style={{ 
+                                width: `${budgetStats.percent}%`,
+                                backgroundColor: budgetStats.isWarning ? '#ef4444' : '#10b981', 
+                                transition: 'width 0.5s ease-in-out, background-color 0.3s'
+                            }}
+                        />
+                    </div>
             </div>
             <MysticKnot width={140} />
         </div>
@@ -408,6 +494,19 @@ const TaskManagement: React.FC = () => {
             onClose={() => setIsShareModalOpen(false)}
             configId={activeConfigId}
         /> 
+
+        <ManagePhasesModal 
+        isOpen={isPhaseModalOpen}
+        onClose={() => setIsPhaseModalOpen(false)}
+        phases={phases} // Pass current phases list for display
+        configId={activeConfigId}
+        onPhaseCreated={(newPhase) => {
+            // On successful creation, automatically add it to the phases list
+            setPhases(prev => [...prev, newPhase]);
+            // Optional: Switch filter to the newly created phase
+            setActivePhaseId(newPhase.id); 
+        }}
+        />
     </div>
     )
 }

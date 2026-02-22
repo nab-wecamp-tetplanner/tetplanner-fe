@@ -3,25 +3,25 @@ import  { type TetConfig, type Task  } from '../types/task';
 export const MOCK_INITIAL_TASKS: Task[] = [
     {
         id: "task-1",
-        title: "Dọn dẹp bàn thờ",
+        title: "Clean the altar",
         priority: "high",
         status: "pending",
         is_shopping: false,
         quantity: 1,
-        assigned_to: "user-bo", // Giao cho Bố
+        assigned_to: "user-bo", // Assigned to Dad
         created_at: new Date().toISOString(),
         is_overdue: false,
         purchased: false
     },
     {
         id: "task-2",
-        title: "Mua sắm mứt Tết",
+        title: "Buy Tet candied fruits",
         priority: "medium",
         status: "in_progress",
         is_shopping: true,
         estimated_price: 500000,
         quantity: 1,
-        assigned_to: "user-me", // Giao cho Mẹ
+        assigned_to: "user-me", // Assigned to Mom
         created_at: new Date().toISOString(),
         is_overdue: false,
         purchased: false
@@ -30,8 +30,8 @@ export const MOCK_INITIAL_TASKS: Task[] = [
 
 export const MOCK_CONFIGS: TetConfig[] = [
     {
-        id: "config-1", 
-        name: "🧧 Tết Nhà Nội 2026",
+        id: "394f2fdc-ad4b-42d9-b37f-0cf72b74a331", 
+        name: "🧧 Tet Paternal Family 2026",
         year: 2026,
         total_budget: 50000000
     }
@@ -39,9 +39,9 @@ export const MOCK_CONFIGS: TetConfig[] = [
 export const TIMELINE_PHASES = [
     { id: 'before_tet', name: 'Before Tet' },
     { id: 'phase_30', name: '30 Tet' },
-    { id: 'phase_m1', name: 'Mùng 1' },
-    { id: 'phase_m2', name: 'Mùng 2' },
-    { id: 'phase_m3', name: 'Mùng 3' },
+    { id: 'phase_m1', name: '1st Day' },
+    { id: 'phase_m2', name: '2nd Day' },
+    { id: 'phase_m3', name: '3rd Day' },
     { id: 'phase_after', name: 'After Tet' },
 ];
 

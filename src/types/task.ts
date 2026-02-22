@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
@@ -45,4 +46,12 @@ export interface TetConfig {
     created_at?: string;
     deleted_at?: string;
     owner_id?: string;
+}
+
+export interface ManagePhasesModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    phases: any[];
+    configId: string;
+    onPhaseCreated: (newPhase: any) => void;
 }
