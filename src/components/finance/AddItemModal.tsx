@@ -158,7 +158,8 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
               )}
               {phases.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({new Date(p.start_date).toLocaleDateString()} - {new Date(p.end_date).toLocaleDateString()})
+                  {p.name} ({new Date(p.start_date).toLocaleDateString()} -{" "}
+                  {new Date(p.end_date).toLocaleDateString()})
                 </option>
               ))}
             </select>

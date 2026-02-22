@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { Plus, FolderPlus } from "lucide-react";
 import { BudgetOverview } from "../components/finance/BudgetOverview";
 import { CategoryCards } from "../components/finance/CategoryCards";
 import { ShoppingList } from "../components/finance/ShoppingList";
@@ -17,19 +18,60 @@ import type {
 } from "../types/shopping.types";
 import type { TimelinePhase } from "../types/timeline.types";
 
+interface PageHeaderProps {
+  onAddItem: () => void;
+  onAddCategory: () => void;
+}
+
+const PageHeader: React.FC<PageHeaderProps> = ({
+  onAddItem,
+  onAddCategory,
+}) => (
+  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
+    <div>
+      <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
+        Budget Planner
+      </p>
+      <h1 className="text-4xl font-serif text-foreground mb-1">
+        Shopping Manager
+      </h1>
+      <p className="text-muted-foreground text-sm">
+        Theo dõi chi tiêu và quản lý ngân sách mua sắm Tết
+      </p>
+    </div>
+    <div className="mt-4 md:mt-0 flex items-center gap-2">
+      <button
+        onClick={onAddCategory}
+        className="inline-flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
+      >
+        <FolderPlus className="w-4 h-4" />
+        Add category
+      </button>
+      <button
+        onClick={onAddItem}
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm"
+      >
+        <Plus className="w-4 h-4" />
+        Add item
+      </button>
+    </div>
+  </div>
+);
+
 export default function FinanceDashboard() {
   // State
   const [tetConfigId, setTetConfigId] = useState<string | null>(null);
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
-  const [categories, setCategories] = useState<CustomCategory[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] =
+    useState<CustomCategory[]>(DEFAULT_CATEGORIES);
   const [phases, setPhases] = useState<TimelinePhase[]>([]);
   const [defaultPhaseId, setDefaultPhaseId] = useState<string | null>(null);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<TimelinePhase | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch data on mount
@@ -58,7 +100,7 @@ export default function FinanceDashboard() {
           configId = newConfig.id;
           console.log("Created new config:", configId);
         }
-        
+
         setTetConfigId(configId);
 
         // Fetch data with fallbacks
@@ -86,27 +128,36 @@ export default function FinanceDashboard() {
         }
 
         try {
-          phasesData = await apiClient.get(`/timeline-phases?tet_config_id=${configId}`);
-          setPhases(phasesData);
-          if (phasesData.length > 0) {
+          // Fetch timeline phases for this tet config
+          phasesData = await apiClient.get<TimelinePhase[]>(
+            `/timeline-phases/tet-config/${configId}`
+          );
+          
+          setPhases(phasesData || []);
+          if (phasesData && phasesData.length > 0) {
             setDefaultPhaseId(phasesData[0].id);
           }
-        } catch (err) {
+        } catch (err: any) {
           console.warn("Failed to fetch timeline phases:", err);
+          setPhases([]);
         }
 
         setBudget({ total: budgetData.total, used: budgetData.used });
         setItems(itemsData);
 
-        const backendCategories: CustomCategory[] = categoriesData.map(cat => ({
-          id: cat.id,
-          name: cat.name,
-          icon: cat.icon || "Package",
-          color: cat.color || "planner-blue",
-          isDefault: false,
-        }));
-        setCategories([...DEFAULT_CATEGORIES, ...backendCategories]);
-
+        // Map backend categories to frontend format
+        const backendCategories: CustomCategory[] = categoriesData.map(
+          (cat) => ({
+            id: cat.id,
+            name: cat.name,
+            icon: cat.icon || "Package",
+            color: cat.color || "planner-blue",
+            isDefault: cat.is_system || false, // Use is_system from backend
+          }),
+        );
+        
+        // Use ONLY backend categories (including system categories from backend)
+        setCategories(backendCategories);
       } catch (err) {
         console.error("Failed to fetch finance data:", err);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
@@ -126,12 +177,15 @@ export default function FinanceDashboard() {
 
   const categorySummaries = useMemo<CategorySummary[]>(() => {
     return categories.map((category) => {
-      const categoryItems = items.filter((item) => item.category === category.name);
+      const categoryItems = items.filter(
+        (item) => item.category === category.name,
+      );
       const total = categoryItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0,
       );
-      const config = COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
+      const config =
+        COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
       return {
         category: category.name,
         total,
@@ -144,13 +198,36 @@ export default function FinanceDashboard() {
   }, [items, categories]);
 
   // Handlers
-  const handleAddCategory = (newCategory: Omit<CustomCategory, "id" | "isDefault">) => {
-    const category: CustomCategory = {
-      ...newCategory,
-      id: `custom-${Date.now()}`,
-      isDefault: false,
-    };
-    setCategories((prev) => [...prev, category]);
+  const handleAddCategory = async (
+    newCategory: Omit<CustomCategory, "id" | "isDefault">,
+  ) => {
+    if (!tetConfigId) return;
+
+    try {
+      // Call API to create category
+      const created = await financeApi.addCategory(tetConfigId, {
+        name: newCategory.name,
+        icon: newCategory.icon,
+        color: newCategory.color,
+        allocated: 0, // Default allocated budget
+      });
+
+      // Add to local state
+      setCategories((prev) => [...prev, created]);
+    } catch (error) {
+      console.error("Failed to add category:", error);
+      alert("Failed to add category. Please try again.");
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      await financeApi.deleteCategory(categoryId);
+      setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+      alert("Failed to delete category. Please try again.");
+    }
   };
 
   const handleAddItem = async (newItem: Omit<ShoppingItem, "id">) => {
@@ -166,11 +243,15 @@ export default function FinanceDashboard() {
       let mappedItem = { ...newItem };
 
       // Map default category to backend UUID
-      if (newItem.category && !newItem.category.includes('-')) {
-        const defaultCat = DEFAULT_CATEGORIES.find(c => c.id === newItem.category);
+      if (newItem.category && !newItem.category.includes("-")) {
+        const defaultCat = DEFAULT_CATEGORIES.find(
+          (c) => c.id === newItem.category,
+        );
         if (defaultCat) {
-          const backendCat = categories.find(c =>
-            c.name.toLowerCase() === defaultCat.name.toLowerCase() && !c.isDefault
+          const backendCat = categories.find(
+            (c) =>
+              c.name.toLowerCase() === defaultCat.name.toLowerCase() &&
+              !c.isDefault,
           );
           if (backendCat) {
             mappedItem.category = backendCat.id;
@@ -179,14 +260,18 @@ export default function FinanceDashboard() {
               name: defaultCat.name,
               icon: defaultCat.icon,
               color: defaultCat.color,
-              allocated: 0
+              allocated: 0,
             });
             mappedItem.category = created.id;
           }
         }
       }
 
-      const created = await financeApi.addItem(tetConfigId, mappedItem, phaseId);
+      const created = await financeApi.addItem(
+        tetConfigId,
+        mappedItem,
+        phaseId,
+      );
       setItems((prev) => [...prev, created]);
 
       const budgetData = await financeApi.getBudget(tetConfigId);
@@ -195,7 +280,9 @@ export default function FinanceDashboard() {
       setIsAddItemModalOpen(false);
     } catch (err: any) {
       console.error("Failed to add item:", err);
-      alert(`Failed to add item: ${err.response?.data?.message || err.message}`);
+      alert(
+        `Failed to add item: ${err.response?.data?.message || err.message}`,
+      );
     }
   };
 
@@ -204,10 +291,14 @@ export default function FinanceDashboard() {
 
     try {
       const newPurchased = currentStatus !== "purchased";
-      const result = await financeApi.toggleItemStatus(itemId, newPurchased, tetConfigId);
+      const result = await financeApi.toggleItemStatus(
+        itemId,
+        newPurchased,
+        tetConfigId,
+      );
 
       setItems((prev) =>
-        prev.map((item) => (item.id === itemId ? result.item : item))
+        prev.map((item) => (item.id === itemId ? result.item : item)),
       );
       setBudget({ total: result.budget.total, used: result.budget.used });
     } catch (err) {
@@ -233,11 +324,13 @@ export default function FinanceDashboard() {
   };
 
   // Timeline Phase Handlers
-  const handleAddPhase = async (phaseData: Omit<TimelinePhase, "id" | "tet_config_id">) => {
+  const handleAddPhase = async (
+    phaseData: Omit<TimelinePhase, "id" | "tet_config_id">,
+  ) => {
     if (!tetConfigId) return;
 
     try {
-      const newPhase = await apiClient.post('/timeline-phases', {
+      const newPhase = await apiClient.post("/timeline-phases", {
         ...phaseData,
         tet_config_id: tetConfigId,
       });
@@ -251,30 +344,40 @@ export default function FinanceDashboard() {
       setIsAddPhaseModalOpen(false);
     } catch (err: any) {
       console.error("Failed to create phase:", err);
-      alert(`Failed to create phase: ${err.response?.data?.message || err.message}`);
+      alert(
+        `Failed to create phase: ${err.response?.data?.message || err.message}`,
+      );
     }
   };
 
-  const handleUpdatePhase = async (phaseData: Omit<TimelinePhase, "id" | "tet_config_id">) => {
+  const handleUpdatePhase = async (
+    phaseData: Omit<TimelinePhase, "id" | "tet_config_id">,
+  ) => {
     if (!editingPhase) return;
 
     try {
-      const updatedPhase = await apiClient.patch(`/timeline-phases/${editingPhase.id}`, phaseData);
+      const updatedPhase = await apiClient.patch(
+        `/timeline-phases/${editingPhase.id}`,
+        phaseData,
+      );
 
       setPhases((prev) =>
-        prev.map((p) => (p.id === editingPhase.id ? updatedPhase : p))
+        prev.map((p) => (p.id === editingPhase.id ? updatedPhase : p)),
       );
 
       setIsAddPhaseModalOpen(false);
       setEditingPhase(null);
     } catch (err: any) {
       console.error("Failed to update phase:", err);
-      alert(`Failed to update phase: ${err.response?.data?.message || err.message}`);
+      alert(
+        `Failed to update phase: ${err.response?.data?.message || err.message}`,
+      );
     }
   };
 
   const handleDeletePhase = async (phaseId: string) => {
-    if (!confirm("Are you sure you want to delete this timeline phase?")) return;
+    if (!confirm("Are you sure you want to delete this timeline phase?"))
+      return;
 
     try {
       await apiClient.delete(`/timeline-phases/${phaseId}`);
@@ -287,42 +390,32 @@ export default function FinanceDashboard() {
       }
     } catch (err: any) {
       console.error("Failed to delete phase:", err);
-      alert(`Failed to delete phase: ${err.response?.data?.message || err.message}`);
+      alert(
+        `Failed to delete phase: ${err.response?.data?.message || err.message}`,
+      );
     }
   };
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-destructive mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:opacity-90"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {/* Error banner */}
+        {error && (
+          <div className="mb-6 bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between">
+            <p className="text-destructive text-sm font-medium">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-destructive hover:underline text-sm font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        <PageHeader
+          onAddItem={() => setIsAddItemModalOpen(true)}
+          onAddCategory={() => setIsAddCategoryModalOpen(true)}
+        />
         <BudgetOverview
           budget={budget}
           itemCount={items.length}
@@ -342,6 +435,7 @@ export default function FinanceDashboard() {
         <CategoryCards
           categorySummaries={categorySummaries}
           categories={categories}
+          onDeleteCategory={handleDeleteCategory}
         />
 
         <ShoppingList

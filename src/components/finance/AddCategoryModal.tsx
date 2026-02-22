@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { X, ShoppingCart, Gift, Sparkles, Package, TrendingUp, Calendar, CheckCircle2, Clock } from "lucide-react";
+import {
+  X,
+  ShoppingCart,
+  Gift,
+  Sparkles,
+  Package,
+  TrendingUp,
+  Calendar,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 import type { CustomCategory } from "../../types/shopping.types";
 import { ICON_MAP, COLOR_CONFIG } from "../../constants/finance";
 
@@ -151,10 +161,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
               <div
                 className={`h-10 w-10 rounded-xl ${COLOR_CONFIG[selectedColor].iconBg} flex items-center justify-center`}
               >
-                {React.createElement(
-                  ICON_MAP[selectedIcon] || Package,
-                  { className: "w-5 h-5 text-primary-foreground" }
-                )}
+                {React.createElement(ICON_MAP[selectedIcon] || Package, {
+                  className: "w-5 h-5 text-primary-foreground",
+                })}
               </div>
               <span className="font-medium text-foreground">
                 {name || "Category name"}

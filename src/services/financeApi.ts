@@ -25,6 +25,7 @@ interface BackendCategory {
   id: string; // UUID
   name: string;
   icon?: string;
+  is_system?: boolean;
   allocated_budget?: number;
   tet_config_id: string; // UUID
   created_at: string;
@@ -64,6 +65,7 @@ const mapFrontendItemToBackend = (
   item: Partial<ShoppingItem>,
   tetConfigId: string,
   timelinePhaseId?: string, // Add timeline phase ID
+  isUpdate: boolean = false, // Add flag to distinguish create vs update
 ): Partial<BackendTodoItem> => {
   const payload: any = {
     title: item.name,
@@ -78,8 +80,10 @@ const mapFrontendItemToBackend = (
     timeline_phase_id: timelinePhaseId || null, // Use provided phase ID
   };
 
-  // DON'T include 'purchased' field at all
-  // Backend will handle it automatically based on status
+  // Only include 'purchased' for updates, not creates
+  if (isUpdate && item.status !== undefined) {
+    payload.purchased = item.status === "purchased";
+  }
 
   return payload;
 };
@@ -177,6 +181,7 @@ export const financeApi = {
       updates,
       tetConfigId,
       timelinePhaseId,
+      true, // isUpdate = true for updates
     );
     const updated = await apiClient.patch<BackendTodoItem>(
       `/todo-items/${itemId}`,

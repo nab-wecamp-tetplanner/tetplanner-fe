@@ -19,7 +19,7 @@ export interface ShoppingItem {
   dueDate: string; // ISO date string
   status: ShoppingStatus;
   notes?: string;
-  timelinePhaseId?: string;  // Add timeline phase ID
+  timelinePhaseId?: string; // Add timeline phase ID
 }
 
 export interface Budget {

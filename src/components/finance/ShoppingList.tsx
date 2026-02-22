@@ -1,7 +1,20 @@
 import React, { useState, useMemo } from "react";
-import { Package, Search, Calendar, CheckCircle2, Clock, Edit2, Trash2, Plus } from "lucide-react";
+import {
+  Package,
+  Search,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Edit2,
+  Trash2,
+  Plus,
+} from "lucide-react";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import type { ShoppingItem, ShoppingCategory, CustomCategory } from "../../types/shopping.types";
+import type {
+  ShoppingItem,
+  ShoppingCategory,
+  CustomCategory,
+} from "../../types/shopping.types";
 import { ICON_MAP, COLOR_CONFIG } from "../../constants/finance";
 
 interface ShoppingListProps {
@@ -12,8 +25,8 @@ interface ShoppingListProps {
   onDeleteItem: (itemId: string) => void;
 }
 
-export const ShoppingList: React.FC<ShoppingListProps> = ({ 
-  items, 
+export const ShoppingList: React.FC<ShoppingListProps> = ({
+  items,
   categories,
   onAddItem,
   onToggleStatus,
@@ -174,7 +187,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
                   <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
-                <button 
+                <button
                   onClick={() => onDeleteItem(item.id)}
                   className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors"
                 >

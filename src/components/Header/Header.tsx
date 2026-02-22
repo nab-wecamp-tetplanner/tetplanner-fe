@@ -24,7 +24,9 @@ const Header = () => {
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2">
         <div className="w-6 h-6 bg-primary rounded-sm transform rotate-45 transition-colors duration-300"></div>
-        <span className="font-bold text-text-main text-lg transition-colors duration-300">NY Planner</span>
+        <span className="font-bold text-text-main text-lg transition-colors duration-300">
+          NY Planner
+        </span>
       </Link>
 
       {/* Navigation isAuthenticated*/}
@@ -48,24 +50,31 @@ const Header = () => {
 
       {/* Auth Actions & Profile */}
       <div className="flex items-center gap-4 text-sm">
-        
         {/*THEME SELECTOR*/}
         <ThemeSelector />
 
         {isAuthenticated ? (
           <>
-            <button className="text-text-main hover:text-primary transition-colors">⚙️</button>
+            <button className="text-text-main hover:text-primary transition-colors">
+              ⚙️
+            </button>
             <div className="relative">
-              <button className="text-text-main hover:text-primary transition-colors">🔔</button>
+              <button className="text-text-main hover:text-primary transition-colors">
+                🔔
+              </button>
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-bg-main transition-colors duration-300"></span>
             </div>
-            
+
             <div className="flex items-center gap-3 ml-2 pl-4 border-l border-accent transition-colors duration-300">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-text-main">{currentUser?.name}</p>
-                <p className="text-xs text-text-main opacity-60">{currentUser?.email}</p>
+                <p className="text-sm font-semibold text-text-main">
+                  {currentUser?.name}
+                </p>
+                <p className="text-xs text-text-main opacity-60">
+                  {currentUser?.email}
+                </p>
               </div>
-              <button 
+              <button
                 onClick={logout}
                 className="bg-accent hover:bg-primary text-text-main hover:text-bg-main px-3 py-1.5 rounded-md transition-all duration-300"
               >
@@ -75,14 +84,14 @@ const Header = () => {
           </>
         ) : (
           <div className="flex items-center gap-3 ml-2 pl-4 border-l border-accent transition-colors duration-300">
-            <Link 
-              to="/login" 
+            <Link
+              to="/login"
               className="text-text-main hover:text-primary font-medium transition-colors"
             >
               Login
             </Link>
-            <Link 
-              to="/register" 
+            <Link
+              to="/register"
               className="bg-primary text-bg-main px-4 py-2 rounded-md hover:opacity-90 transition-all duration-300"
             >
               Register

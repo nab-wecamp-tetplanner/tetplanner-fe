@@ -24,8 +24,8 @@ export const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
     if (isOpen && editingPhase) {
       // Editing existing phase
       setName(editingPhase.name);
-      setStartDate(editingPhase.start_date.split('T')[0]);  // Extract date part
-      setEndDate(editingPhase.end_date.split('T')[0]);
+      setStartDate(editingPhase.start_date.split("T")[0]); // Extract date part
+      setEndDate(editingPhase.end_date.split("T")[0]);
       setDisplayOrder(String(editingPhase.display_order));
     } else if (isOpen) {
       // Creating new phase - reset form

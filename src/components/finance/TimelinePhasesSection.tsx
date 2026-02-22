@@ -29,11 +29,13 @@ export const TimelinePhasesSection: React.FC<TimelinePhasesSectionProps> = ({
           Add Phase
         </button>
       </div>
-      
+
       {phases.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">No timeline phases yet. Add one to start planning!</p>
+          <p className="text-sm">
+            No timeline phases yet. Add one to start planning!
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -47,7 +49,8 @@ export const TimelinePhasesSection: React.FC<TimelinePhasesSectionProps> = ({
                 <div className="flex-1">
                   <h3 className="font-medium text-foreground">{phase.name}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(phase.start_date).toLocaleDateString()} - {new Date(phase.end_date).toLocaleDateString()}
+                    {new Date(phase.start_date).toLocaleDateString()} -{" "}
+                    {new Date(phase.end_date).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
