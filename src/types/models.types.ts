@@ -11,9 +11,3 @@ export interface ApiError {
   message: string;
   details?: Record<string, unknown>;
 }
-
-export interface UserPermissions {
-  user_id: string;
-  token: string;
-  role: string;
-}

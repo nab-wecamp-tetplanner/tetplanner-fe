@@ -1,0 +1,238 @@
+/* ============================================================
+   Gamification Components
+   ============================================================ */
+
+/* ===== Firecracker Confetti ===== */
+.gamification-confetti-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.gamification-confetti-particle {
+  position: absolute;
+  border-radius: 2px;
+  animation: explode forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity;
+}
+
+/* ===== Lucky Envelope ===== */
+.lucky-envelope {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  border-radius: 16px;
+  cursor: pointer;
+  animation: envelopePulse 2s ease-in-out infinite, popIn 0.4s ease-out;
+  transition: transform 0.2s;
+}
+
+.lucky-envelope:hover {
+  transform: scale(1.08);
+}
+
+.lucky-envelope__body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lucky-envelope__icon {
+  font-size: 28px;
+}
+
+.lucky-envelope__text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fef3c7;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lucky-envelope__glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 20px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  animation: envelopePulse 2s ease-in-out infinite;
+}
+
+/* ===== Reward Modal ===== */
+.reward-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.reward-modal {
+  position: relative;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 36px;
+  max-width: 480px;
+  width: 90vw;
+  box-shadow: 0 20px 60px var(--shadow), 0 0 0 1px var(--border);
+  animation: popIn 0.35s ease-out;
+}
+
+.reward-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-subtle);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.reward-modal__close:hover {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.reward-modal__header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.reward-modal__emoji {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.reward-modal__title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-heading);
+  margin: 0 0 8px;
+  font-family: 'Playfair Display', 'Noto Serif', Georgia, serif;
+}
+
+.reward-modal__subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ===== Envelope Cards ===== */
+.reward-modal__envelopes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.reward-envelope-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  cursor: pointer;
+  perspective: 600px;
+  transition: transform 0.15s;
+}
+
+.reward-envelope-card:hover:not(.reward-envelope-card--flipped) {
+  transform: translateY(-4px);
+}
+
+.reward-envelope-card__front,
+.reward-envelope-card__back {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reward-envelope-card__front {
+  background: linear-gradient(145deg, #dc2626, #991b1b);
+  border: 2px solid rgba(251, 191, 36, 0.4);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2);
+  font-size: 32px;
+}
+
+.reward-envelope-card__back {
+  background: linear-gradient(145deg, var(--primary-light), var(--primary));
+  border: 2px solid var(--primary-dark);
+  transform: rotateY(180deg);
+  padding: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.reward-envelope-card--flipped .reward-envelope-card__front {
+  transform: rotateY(180deg);
+}
+
+.reward-envelope-card--flipped .reward-envelope-card__back {
+  transform: rotateY(0);
+}
+
+/* ===== Reward Message ===== */
+.reward-modal__message {
+  text-align: center;
+  padding: 14px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  animation: popIn 0.3s ease-out;
+}
+
+.reward-modal__message p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* ===== Done Button ===== */
+.reward-modal__done-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: var(--gradient-warm);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 16px var(--shadow-accent);
+}
+
+.reward-modal__done-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px var(--shadow-accent);
+}

@@ -1,0 +1,55 @@
+/* ===== Falling Petals — ambient apricot blossoms ===== */
+.falling-petals {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.falling-petals__petal {
+  position: absolute;
+  top: -24px;
+  animation: petalFall linear infinite;
+  will-change: transform;
+}
+
+@keyframes petalFall {
+  0% {
+    transform: translateY(-5vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(50vh) translateX(var(--drift, 30px)) rotate(180deg);
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(105vh) translateX(calc(var(--drift, 30px) * -0.5)) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Subtle sway for natural feel */
+.falling-petals__petal:nth-child(odd) {
+  animation-timing-function: ease-in-out;
+}
+
+.falling-petals__petal:nth-child(3n) svg {
+  transform: rotate(var(--rotation, 45deg));
+}
+
+.falling-petals__petal:nth-child(5n) svg {
+  transform: rotate(calc(var(--rotation, 45deg) + 90deg));
+}
+
+/* Reduce petals on mobile for performance */
+@media (max-width: 768px) {
+  .falling-petals__petal:nth-child(n+10) {
+    display: none;
+  }
+}
