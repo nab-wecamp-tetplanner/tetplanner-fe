@@ -1,6 +1,7 @@
 import React from "react";
 import { TrendingUp, CheckCircle2 } from "lucide-react";
 import { ProgressRing } from "../ProgressRing";
+import { formatCurrency } from "../../utils/formatters";
 import type { Budget } from "../../types/shopping.types";
 
 interface BudgetOverviewProps {
@@ -8,13 +9,6 @@ interface BudgetOverviewProps {
   itemCount: number;
   purchasedCount: number;
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
 
 export const BudgetOverview: React.FC<BudgetOverviewProps> = ({
   budget,

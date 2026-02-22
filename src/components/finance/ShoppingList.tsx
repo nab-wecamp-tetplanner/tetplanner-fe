@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Package, Search, Calendar, CheckCircle2, Clock, Edit2, Trash2, Plus } from "lucide-react";
+import { formatCurrency, formatDate } from "../../utils/formatters";
 import type { ShoppingItem, ShoppingCategory, CustomCategory } from "../../types/shopping.types";
 import { ICON_MAP, COLOR_CONFIG } from "../../constants/finance";
 
@@ -10,23 +11,6 @@ interface ShoppingListProps {
   onToggleStatus: (itemId: string, currentStatus: string) => void;
   onDeleteItem: (itemId: string) => void;
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
-
-const formatDate = (dateString: string) => {
-  if (!dateString) return "No date";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
 
 export const ShoppingList: React.FC<ShoppingListProps> = ({ 
   items, 

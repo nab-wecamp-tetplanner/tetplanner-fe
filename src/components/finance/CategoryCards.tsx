@@ -1,5 +1,6 @@
 import React from "react";
 import { Package } from "lucide-react";
+import { formatCurrency } from "../../utils/formatters";
 import type { CategorySummary, CustomCategory } from "../../types/shopping.types";
 import { ICON_MAP, COLOR_CONFIG } from "../../constants/finance";
 
@@ -7,13 +8,6 @@ interface CategoryCardsProps {
   categorySummaries: CategorySummary[];
   categories: CustomCategory[];
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
 
 export const CategoryCards: React.FC<CategoryCardsProps> = ({
   categorySummaries,
