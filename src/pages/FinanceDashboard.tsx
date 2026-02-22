@@ -42,14 +42,23 @@ export default function FinanceDashboard() {
         const configs = await apiClient.tetConfigs.getMyConfigs();
         console.log("Existing configs:", configs);
 
-        // TEMPORARY: Always create new config for testing
-        const newConfig = await apiClient.tetConfigs.create({
-          year: 2025,
-          name: `Tết ${new Date().getTime()}`,
-          total_budget: 5000000,
-        });
+        // Use existing config or create new one
+        let configId: string;
+        if (configs && configs.length > 0) {
+          // Use most recent config
+          configId = configs[0].id;
+          console.log("Using existing config:", configId);
+        } else {
+          // Create new config if none exists
+          const newConfig = await apiClient.tetConfigs.create({
+            year: 2025,
+            name: `Tết 2025`,
+            total_budget: 5000000,
+          });
+          configId = newConfig.id;
+          console.log("Created new config:", configId);
+        }
         
-        const configId = newConfig.id;
         setTetConfigId(configId);
 
         // Fetch data with fallbacks
