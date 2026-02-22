@@ -27,13 +27,13 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
         });
     }
     return (
-        // Dùng chung class với AddTaskModal để đồng bộ UI
+        // Reuse AddTaskModal classes for consistent UI
         <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1000 }}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', padding: 0, overflow: 'hidden' }}>
                 
                 {/* HEADER */}
                 <div className="modal-header" style={{ padding: '20px 24px', borderBottom: '1px solid #f3f4f6' }}>
-                    <h3 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>Chia sẻ Kế hoạch Tết</h3>
+                    <h3 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>Share Tet Plan</h3>
                     <button className="close-button" onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
                         <X size={20} color="#6b7280" />
                     </button>
@@ -41,11 +41,11 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
 
                 <div className="modal-body" style={{ padding: '24px' }}>
                     
-                    {/* KHU VỰC 1: Form mời thêm người */}
+                    {/* SECTION 1: Invite form */}
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
                         <input 
                             type="email" 
-                            placeholder="Nhập email người thân..." 
+                            placeholder="Enter family member's email..." 
                             value={inviteEmail}
                             onChange={(e) => setInviteEmail(e.target.value)}
                             style={{ 
@@ -57,14 +57,14 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                             backgroundColor: '#dc2626', color: 'white', border: 'none', 
                             borderRadius: '8px', padding: '0 20px', cursor: 'pointer', fontWeight: 500
                         }}>
-                            Mời
+                            Invite
                         </button>
                     </div>
 
-                    {/* KHU VỰC 2: Danh sách người đã có quyền truy cập */}
+                    {/* SECTION 2: People with access */}
                     <div style={{ marginBottom: '24px' }}>
                         <h4 style={{ fontSize: '13px', color: '#4b5563', marginBottom: '16px', fontWeight: 600, textTransform: 'uppercase' }}>
-                            Người có quyền truy cập
+                            People with access
                         </h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             {MOCK_MEMBERS.map((member, index) => (
@@ -77,26 +77,26 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                                         />
                                         <div>
                                             <div style={{ fontWeight: 500, fontSize: '14px', color: '#111827' }}>
-                                                {member.name} {index === 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>(Bạn)</span>}
+                                                {member.name} {index === 0 && <span style={{ color: '#6b7280', fontWeight: 400 }}>(You)</span>}
                                             </div>
                                             <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                                                {/* Giả lập email từ ID */}
+                                                {/* Simulated email from ID */}
                                                 {member.id.replace('user-', '')}@family.com
                                             </div>
                                         </div>
                                     </div>
                                     <span style={{ fontSize: '13px', color: index === 0 ? '#6b7280' : '#374151' }}>
-                                        {index === 0 ? 'Chủ sở hữu' : 'Người chỉnh sửa'}
+                                        {index === 0 ? 'Owner' : 'Editor'}
                                     </span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* KHU VỰC 3: Quyền truy cập chung (Restricted / Public) */}
+                    {/* SECTION 3: General access (Restricted / Public) */}
                     <div style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #f3f4f6' }}>
                         <h4 style={{ fontSize: '13px', color: '#4b5563', marginBottom: '12px', fontWeight: 600, textTransform: 'uppercase' }}>
-                            Quyền truy cập chung
+                            General access
                         </h4>
                         <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
                             <div style={{ padding: '10px', backgroundColor: '#e5e7eb', borderRadius: '50%', display: 'flex' }}>
@@ -111,13 +111,13 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                                         padding: 0, cursor: 'pointer', outline: 'none', backgroundColor: 'transparent', marginBottom: '4px' 
                                     }}
                                 >
-                                    <option value="restricted">Hạn chế (Chỉ người được mời)</option>
-                                    <option value="public">Bất kỳ ai có liên kết</option>
+                                    <option value="restricted">Restricted (Only invited people)</option>
+                                    <option value="public">Anyone with the link</option>
                                 </select>
                                 <p style={{ fontSize: '13px', color: '#6b7280', margin: 0, lineHeight: 1.4 }}>
                                     {accessLevel === 'restricted' 
-                                        ? 'Chỉ những người được thêm ở trên mới có thể mở liên kết này.' 
-                                        : 'Bất kỳ ai trên internet có liên kết này đều có thể xem và chỉnh sửa kế hoạch.'}
+                                        ? 'Only people added above can open this link.' 
+                                        : 'Anyone on the internet with this link can view and edit the plan.'}
                                 </p>
                             </div>
                         </div>
@@ -136,7 +136,7 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                         }}
                     >
                         {isCopied ? <Check size={16} /> : <Copy size={16} />}
-                        {isCopied ? 'Đã sao chép link' : 'Sao chép liên kết'}
+                        {isCopied ? 'Link copied!' : 'Copy link'}
                     </button>
                     <button 
                         onClick={onClose}
@@ -145,7 +145,7 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                             borderRadius: '8px', padding: '8px 24px', cursor: 'pointer', fontWeight: 500 
                         }}
                     >
-                        Xong
+                        Done
                     </button>
                 </div>
 

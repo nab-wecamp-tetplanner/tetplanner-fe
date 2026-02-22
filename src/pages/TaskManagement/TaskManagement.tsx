@@ -346,12 +346,15 @@ const TaskManagement: React.FC = () => {
             </div>
             <MysticKnot width={140} />
         </div>
-
-        <div className="tet-kanban-board">
-            {columns.map((column) => (
-                <TaskColumn 
-                    key={column.id} 
-                    label={column.label}
+        
+        {isLoading ? (
+            <div className="tet-loading">Loading tasks...</div>
+        ) : (
+            <div className="tet-kanban-board">
+                {columns.map((column) => (
+                    <TaskColumn 
+                        key={column.id} 
+                            label={column.label}
                     status={column.id}
                     tasks={currentTasks.filter((task) => task.status === column.id)} 
                     onMoveTask={handleMoveTask}
@@ -360,8 +363,9 @@ const TaskManagement: React.FC = () => {
                     onTaskClick={handleOpenTaskDetail}
                     onCelebrate={handleCelebrate}
                 />
-            ))}
-        </div>
+            ))} 
+            </div>
+        )}
 
         <AddTaskModal 
             isOpen={isModalOpen} 
