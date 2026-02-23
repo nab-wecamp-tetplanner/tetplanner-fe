@@ -1,89 +1,103 @@
+/* ==========================================
+   HEADER & TITLE
+   ========================================== */
 .custom-calendar-container .fc-toolbar {
   margin-bottom: 2rem !important;
 }
 
-.custom-calendar-container .fc-toolbar-title {
-  font-size: 1.5rem !important;
-  font-weight: 900 !important;
-  color: #1e293b;
+.fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #0f172a; /* text-slate-900 */
   text-transform: capitalize;
 }
 
-.custom-calendar-container .fc-button {
-  background: #ffffff !important;
-  border: 1px solid #f1f5f9 !important;
-  color: #64748b !important;
-  font-weight: bold !important;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.05) !important;
+/* ==========================================
+   BUTTONS (Nút Tháng/Tuần/Ngày)
+   ========================================== */
+.fc .fc-button-primary {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+  color: #64748b !important; /* text-slate-500 */
+  font-weight: 600 !important;
   text-transform: capitalize !important;
+  padding: 0.4rem 1rem !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s ease-in-out !important;
 }
-.fc-button-primary {
-  background-color: #5f3bf0 !important; /* orange-500 */
-  border: none !important;
-  border-radius: 10px !important;
-  padding: 4px !important;
-  box-shadow: 0 4px 6px -1px rgba(253, 186, 116, 0.5); /* shadow-orange-200 */
+
+/* Trạng thái Hover của nút */
+.fc .fc-button-primary:hover {
+  background-color: #f8fafc !important; /* bg-slate-50 */
+  color: #0f172a !important; /* text-slate-900 */
+  border-color: #cbd5e1 !important; /* border-slate-300 */
 }
-.custom-calendar-container .fc-button:hover {
-  background: #f8fafc !important;
+
+/* Trạng thái Active (Nút đang được chọn) */
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #0f172a !important; /* Nền đen slate-900 cực kỳ sang trọng */
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+/* Nút "Today" */
+.fc .fc-today-button {
+  background-color: #f1f5f9 !important; /* bg-slate-100 */
   color: #0f172a !important;
 }
 
-.custom-calendar-container .fc-button-active {
-  background: #0f172a !important;
-  color: white !important;
+.fc .fc-today-button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
 }
 
-.custom-calendar-container .fc-daygrid-day {
-  transition: 0.2s;
+/* ==========================================
+   CELL & DAY (Ô lịch)
+   ========================================== */
+.fc-daygrid-day {
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
-.custom-calendar-container .fc-daygrid-day:hover {
-  background-color: #f0fdf4 !important;
+/* Hover vào ô ngày */
+.fc-daygrid-day:hover {
+  background-color: #f8fafc !important; /* Xám nhạt thay vì xanh lá */
 }
 
-.custom-calendar-container .fc-day-today {
+/* Ngày hôm nay (Today) */
+.fc-day-today {
   background-color: transparent !important;
 }
 
-.custom-calendar-container .fc-day-today .fc-daygrid-day-number {
-  background: #10b981;
-  color: white;
+.fc-day-today .fc-daygrid-day-number {
+  background-color: #3b82f6 !important; /* Blue-500 */
+  color: white !important;
   border-radius: 50%;
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 4px;
+  margin: 4px auto; /* Canh giữa số */
 }
 
+/* Ngày đang được click chọn */
+.fc-daygrid-day.selected-day-active {
+  background-color: rgba(59, 130, 246, 0.05) !important; /* Nền xanh dương siêu nhạt */
+  box-shadow: inset 0 0 0 2px #3b82f6 !important; /* Viền trong xanh dương mượt hơn outline */
+}
+
+/* ==========================================
+   EVENTS (Các dấu chấm công việc)
+   ========================================== */
 .fc-daygrid-event {
   background: transparent !important;
   border: none !important;
 }
 
-.fc .fc-button-primary {
-    background-color: #3b82f6 !important;
-    border-color: #3b82f6 !important;
-    text-transform: capitalize !important;
-    font-weight: 500 !important;
-    transition: all 0.2s;
-  }
-.fc .fc-button-primary:hover {
-  background-color: #2563eb !important;
-}
-.fc .fc-button-active {
-  background-color: #1d4ed8 !important;
-  border-color: #1d4ed8 !important;
-}
-.fc-daygrid-day.selected-day-active {
-  background-color: rgba(59, 130, 246, 0.05) !important;
-  outline: 2px solid #3b82f6 inset;
-}
-.fc .fc-toolbar-title {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: #1e293b;
+.fc-daygrid-dot-event:hover {
+  background: rgba(0,0,0,0.03) !important; /* Đổi màu nền cực nhẹ khi hover vào task */
 }

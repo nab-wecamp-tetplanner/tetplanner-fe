@@ -13,11 +13,11 @@ export default function HeroSection() {
           </span>
           Tết Planner Pro
         </div>
-        <h1 className="text-4xl font-extrabold text-white tracking-tight leading-snug">
-          Làm chủ thời gian, làm chủ chi tiêu
+        <h1 className="text-3xl font-extrabold text-white tracking-tight leading-snug">
+          Quản lý tài chính và công việc, 
           <br className="hidden md:block mt-2" />
           <span className="text-transparent bg-clip-text bg-linear-to-r from-red-500 via-orange-400 to-amber-400 drop-shadow-sm">
-            Tận hưởng cuộc sống
+          Tận hưởng cuộc sống dễ dàng
           </span>
         </h1>
       </div>

@@ -39,3 +39,9 @@
   border-color: #3b82f6 !important;
   border-width: 3px !important;
 }
+
+.fc .fc-event,
+.fc .fc-daygrid-event,
+.fc .fc-daygrid-dot-event {
+  cursor: pointer !important;
+}
