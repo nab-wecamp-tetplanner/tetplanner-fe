@@ -75,7 +75,9 @@ export default function FinanceDashboard() {
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<TimelinePhase | null>(null);
   const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
-  const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   // Fetch tet config (cached)
@@ -105,7 +107,11 @@ export default function FinanceDashboard() {
         const configId = tetConfig.id;
         setTetConfigId(configId);
 
-        // Fetch data with fallbacks
+        // Log tetConfigId before each API call
+        console.log(
+          "[FinanceDashboard] Fetching budget with tetConfigId:",
+          configId,
+        );
         let budgetData = { total: 5000000, used: 0 };
         let itemsData: ShoppingItem[] = [];
         let categoriesData: any[] = [];
@@ -117,18 +123,30 @@ export default function FinanceDashboard() {
           console.warn("Failed to fetch budget:", err);
         }
 
+        console.log(
+          "[FinanceDashboard] Fetching items with tetConfigId:",
+          configId,
+        );
         try {
           itemsData = await financeApi.getItems(configId);
         } catch (err) {
           console.warn("Failed to fetch items:", err);
         }
 
+        console.log(
+          "[FinanceDashboard] Fetching categories with tetConfigId:",
+          configId,
+        );
         try {
           categoriesData = await financeApi.getCategories(configId);
         } catch (err) {
           console.warn("Failed to fetch categories:", err);
         }
 
+        console.log(
+          "[FinanceDashboard] Fetching timeline phases with tetConfigId:",
+          configId,
+        );
         try {
           // Fetch timeline phases for this tet config
           phasesData = await apiClient.get<TimelinePhase[]>(
@@ -234,7 +252,12 @@ export default function FinanceDashboard() {
       setCategories((prev) =>
         prev.map((cat) =>
           cat.id === category.id
-            ? { ...cat, name: updates.name, color: updates.color, allocated: updates.allocated }
+            ? {
+                ...cat,
+                name: updates.name,
+                color: updates.color,
+                allocated: updates.allocated,
+              }
             : cat,
         ),
       );
@@ -349,8 +372,6 @@ export default function FinanceDashboard() {
         console.error("Item not found:", itemId);
         return;
       }
-
-
 
       const result = await financeApi.toggleItemStatus(
         itemId,
