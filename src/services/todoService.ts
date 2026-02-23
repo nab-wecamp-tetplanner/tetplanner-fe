@@ -37,5 +37,9 @@ export const todoService = {
 
     deleteTodoItem: (id: string) => {
         return apiClient.delete(`/todo-items/${id}`);
+    },
+
+    getCategories: () => {
+        return apiClient.get('/categories');
     }
 }

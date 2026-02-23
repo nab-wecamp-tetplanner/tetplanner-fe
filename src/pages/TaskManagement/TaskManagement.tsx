@@ -177,8 +177,16 @@ const TaskManagement: React.FC = () => {
         // API call to create new task
         let newTask: Task;
         try {
-            const response = await todoService.addTodoItem({
-                ...taskData,
+            const response = await todoService.addTodoItem({ 
+                title: taskData.title,
+                priority: taskData.priority,
+                status: activeColumn as any,
+                deadline: taskData.deadline,
+                is_shopping: taskData.is_shopping,
+                estimated_price: taskData.estimated_price,
+                assigned_to: taskData.assigned_to,
+                category_id: (taskData as any).category_id,
+                subtasks: taskData.subtasks || {},
                 tet_config_id: activeConfigId,
                 timeline_phase_id: activePhaseId,
             });

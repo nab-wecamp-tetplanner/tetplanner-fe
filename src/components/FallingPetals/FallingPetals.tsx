@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import './FallingPetals.css';
 
 interface Petal {
@@ -30,11 +30,7 @@ function generatePetals(count: number): Petal[] {
 }
 
 const FallingPetals: React.FC<FallingPetalsProps> = ({ count = 18 }) => {
-  const petalsRef = useRef<Petal[] | null>(null);
-  if (petalsRef.current === null) {
-    petalsRef.current = generatePetals(count);
-  }
-  const petals = petalsRef.current;
+  const [petals] = useState<Petal[]>(() => generatePetals(count));
 
   return (
     <div className="falling-petals" aria-hidden="true">
