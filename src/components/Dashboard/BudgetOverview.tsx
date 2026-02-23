@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Card from "./Card";
 import {
   PieChart,
@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import type { TooltipContentProps } from "recharts";
 
-// Types
 type Transaction = {
   id: string;
   name: string;

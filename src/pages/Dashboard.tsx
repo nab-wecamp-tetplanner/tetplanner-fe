@@ -3,10 +3,6 @@ import { Calendar } from "lucide-react";
 import { TaskOverview } from "../components/Dashboard/TaskOverview";
 import { BudgetOverview } from "../components/Dashboard/BudgetOverview";
 
-// ==========================================
-// PAGE HEADER
-// ==========================================
-
 const PageHeader = () => (
   <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
     <div>
@@ -35,10 +31,6 @@ const PageHeader = () => (
     </div>
   </div>
 );
-
-// ==========================================
-// MAIN DASHBOARD PAGE
-// ==========================================
 
 export default function Dashboard() {
   return (
