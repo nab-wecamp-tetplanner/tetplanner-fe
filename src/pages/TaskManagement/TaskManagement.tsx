@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import type { TetConfig, Task, TaskStatus} from '../../types/task'
 import { todoService } from '../../services/todoService';
-import { MOCK_CONFIGS, MOCK_MEMBERS, TIMELINE_PHASES, MOCK_INITIAL_TASKS } from '../../data/mockTasks';
+import { MOCK_MEMBERS, TIMELINE_PHASES, MOCK_INITIAL_TASKS } from '../../data/mockTasks';
 import './TaskManagement.css'
 import { LayoutGrid, Plus, Search, SlidersHorizontal, ArrowUpDown, Calendar } from 'lucide-react';
 import TaskColumn from '../../components/TaskColumn/TaskColumn';

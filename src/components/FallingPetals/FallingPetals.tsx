@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useRef } from 'react';
 import './FallingPetals.css';
 
 interface Petal {
@@ -16,19 +16,25 @@ interface FallingPetalsProps {
   count?: number;
 }
 
+function generatePetals(count: number): Petal[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    size: 8 + Math.random() * 10,
+    delay: Math.random() * 12,
+    duration: 10 + Math.random() * 10,
+    rotation: Math.random() * 360,
+    drift: -40 + Math.random() * 80,
+    opacity: 0.25 + Math.random() * 0.45,
+  }));
+}
+
 const FallingPetals: React.FC<FallingPetalsProps> = ({ count = 18 }) => {
-  const petals = useMemo<Petal[]>(() => {
-    return Array.from({ length: count }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      size: 8 + Math.random() * 10,
-      delay: Math.random() * 12,
-      duration: 10 + Math.random() * 10,
-      rotation: Math.random() * 360,
-      drift: -40 + Math.random() * 80,
-      opacity: 0.25 + Math.random() * 0.45,
-    }));
-  }, [count]);
+  const petalsRef = useRef<Petal[] | null>(null);
+  if (petalsRef.current === null) {
+    petalsRef.current = generatePetals(count);
+  }
+  const petals = petalsRef.current;
 
   return (
     <div className="falling-petals" aria-hidden="true">

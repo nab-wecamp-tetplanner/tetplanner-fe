@@ -120,13 +120,13 @@ export const RewardModal: React.FC<RewardModalProps> = ({ isOpen, onClose, total
     setMessage(LUCKY_MESSAGES[index % LUCKY_MESSAGES.length]);
   }, [flippedCards]);
 
-  // Reset when modal opens — use key pattern instead of effect
-  const prevIsOpen = React.useRef(isOpen);
-  if (isOpen && !prevIsOpen.current) {
-    setFlippedCards(new Set());
-    setMessage('');
-  }
-  prevIsOpen.current = isOpen;
+  // Reset when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setFlippedCards(new Set());
+      setMessage('');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

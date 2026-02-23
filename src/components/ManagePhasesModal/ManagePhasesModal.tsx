@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { X, Calendar as CalIcon, Plus } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import './ManagePhasesModal.css';
 import { type ManagePhasesModalProps } from '../../types/task';
 import { todoService } from '../../services/todoService';
