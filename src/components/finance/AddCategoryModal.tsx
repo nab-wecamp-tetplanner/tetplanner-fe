@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   ShoppingCart,
@@ -17,16 +17,61 @@ interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (category: Omit<CustomCategory, "id" | "isDefault">) => void;
+  initialData?: CustomCategory;
 }
 
 export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   isOpen,
   onClose,
   onAdd,
+  initialData,
 }) => {
   const [name, setName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState("Package");
   const [selectedColor, setSelectedColor] = useState("planner-blue");
+  const [allocatedBudget, setAllocatedBudget] = useState("");
+
+  const isEditMode = !!initialData;
+
+  // Emoji to icon name mapping (reverse of iconToEmoji)
+  const emojiToIconName: Record<string, string> = {
+    "🛒": "ShoppingCart",
+    "🎁": "Gift",
+    "✨": "Sparkles",
+    "📦": "Package",
+    "📈": "TrendingUp",
+    "📅": "Calendar",
+    "✅": "CheckCircle2",
+    "🕐": "Clock",
+  };
+
+  // Hex to color name mapping (reverse lookup)
+  const getColorNameFromHex = (hex: string): string => {
+    const colorMap: Record<string, string> = {
+      "#3b82f6": "planner-blue",
+      "#ec4899": "planner-pink",
+      "#a855f7": "planner-purple",
+      "#10b981": "planner-green",
+      "#f59e0b": "planner-amber",
+    };
+    return colorMap[hex] || "planner-blue";
+  };
+
+  // Load initial data when modal opens
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setName(initialData.name);
+      setSelectedIcon(emojiToIconName[initialData.icon] || "Package");
+      setSelectedColor(getColorNameFromHex(initialData.color));
+      setAllocatedBudget(initialData.allocated?.toString() || "");
+    } else if (isOpen && !initialData) {
+      // Reset for add mode
+      setName("");
+      setSelectedIcon("Package");
+      setSelectedColor("planner-blue");
+      setAllocatedBudget("");
+    }
+  }, [isOpen, initialData?.id]);
 
   const availableIcons = [
     { name: "ShoppingCart", icon: ShoppingCart },
@@ -69,12 +114,17 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 
       onAdd({
         name: name.trim(),
-        icon: emoji, // Send emoji instead of component name
-        color: selectedColorHex, // Send hex color instead of name
+        icon: emoji,
+        color: selectedColorHex,
+        allocated: allocatedBudget ? parseFloat(allocatedBudget) : undefined,
       });
-      setName("");
-      setSelectedIcon("Package");
-      setSelectedColor("planner-blue");
+
+      if (!isEditMode) {
+        setName("");
+        setSelectedIcon("Package");
+        setSelectedColor("planner-blue");
+        setAllocatedBudget("");
+      }
       onClose();
     }
   };
@@ -86,7 +136,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
       <div className="bg-card rounded-2xl border border-border shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h2 className="font-serif text-xl text-foreground">
-            Add new category
+            {isEditMode ? "Edit category" : "Add new category"}
           </h2>
           <button
             onClick={onClose}
@@ -112,35 +162,51 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             />
           </div>
 
-          {/* Icon Selection */}
+          {/* Allocated Budget */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Choose icon
+              Allocated budget (optional)
             </label>
-            <div className="grid grid-cols-4 gap-2">
-              {availableIcons.map((iconItem) => {
-                const Icon = iconItem.icon;
-                const isSelected = selectedIcon === iconItem.name;
-                const config = COLOR_CONFIG[selectedColor];
-                return (
-                  <button
-                    key={iconItem.name}
-                    type="button"
-                    onClick={() => setSelectedIcon(iconItem.name)}
-                    className={`p-3 rounded-xl border-2 transition-all ${
-                      isSelected
-                        ? `${config.iconBg} border-${selectedColor}`
-                        : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <Icon
-                      className={`w-6 h-6 mx-auto ${isSelected ? "text-primary-foreground" : "text-muted-foreground"}`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
+            <input
+              type="number"
+              value={allocatedBudget}
+              onChange={(e) => setAllocatedBudget(e.target.value)}
+              placeholder="0"
+              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+            />
           </div>
+
+          {/* Icon Selection - Only show in add mode */}
+          {!isEditMode && (
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Choose icon
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {availableIcons.map((iconItem) => {
+                  const Icon = iconItem.icon;
+                  const isSelected = selectedIcon === iconItem.name;
+                  const config = COLOR_CONFIG[selectedColor];
+                  return (
+                    <button
+                      key={iconItem.name}
+                      type="button"
+                      onClick={() => setSelectedIcon(iconItem.name)}
+                      className={`p-3 rounded-xl border-2 transition-all ${
+                        isSelected
+                          ? `${config.iconBg} border-${selectedColor}`
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <Icon
+                        className={`w-6 h-6 mx-auto ${isSelected ? "text-primary-foreground" : "text-muted-foreground"}`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Color Selection */}
           <div>
@@ -202,7 +268,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
               disabled={!name.trim()}
               className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add category
+              {isEditMode ? "Save changes" : "Add category"}
             </button>
           </div>
         </form>

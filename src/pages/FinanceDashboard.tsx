@@ -75,6 +75,7 @@ export default function FinanceDashboard() {
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<TimelinePhase | null>(null);
   const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch tet config (cached)
@@ -177,7 +178,7 @@ export default function FinanceDashboard() {
   const categorySummaries = useMemo<CategorySummary[]>(() => {
     return categories.map((category) => {
       const categoryItems = items.filter(
-        (item) => item.category === category.name,
+        (item) => item.category === category.id,
       );
       const total = categoryItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
@@ -207,7 +208,7 @@ export default function FinanceDashboard() {
         name: newCategory.name,
         icon: newCategory.icon,
         color: newCategory.color,
-        allocated: 0, // Default allocated budget
+        allocated: newCategory.allocated || 0,
       });
 
       // Add to local state
@@ -215,6 +216,31 @@ export default function FinanceDashboard() {
     } catch (error) {
       console.error("Failed to add category:", error);
       alert("Failed to add category. Please try again.");
+    }
+  };
+
+  const handleEditCategory = async (
+    category: CustomCategory,
+    updates: Omit<CustomCategory, "id" | "isDefault">,
+  ) => {
+    try {
+      await financeApi.updateCategory(category.id, {
+        name: updates.name,
+        color: updates.color,
+        allocated_budget: updates.allocated,
+      });
+
+      // Update local state
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === category.id
+            ? { ...cat, name: updates.name, color: updates.color, allocated: updates.allocated }
+            : cat,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to edit category:", error);
+      alert("Failed to edit category. Please try again.");
     }
   };
 
@@ -494,6 +520,7 @@ export default function FinanceDashboard() {
           categorySummaries={categorySummaries}
           categories={categories}
           onDeleteCategory={handleDeleteCategory}
+          onEditCategory={(category) => setEditingCategory(category)}
         />
 
         <ShoppingList
@@ -531,9 +558,20 @@ export default function FinanceDashboard() {
       )}
 
       <AddCategoryModal
-        isOpen={isAddCategoryModalOpen}
-        onClose={() => setIsAddCategoryModalOpen(false)}
-        onAdd={handleAddCategory}
+        isOpen={isAddCategoryModalOpen || !!editingCategory}
+        onClose={() => {
+          setIsAddCategoryModalOpen(false);
+          setEditingCategory(null);
+        }}
+        onAdd={(categoryData) => {
+          if (editingCategory) {
+            handleEditCategory(editingCategory, categoryData);
+            setEditingCategory(null);
+          } else {
+            handleAddCategory(categoryData);
+          }
+        }}
+        initialData={editingCategory || undefined}
       />
 
       <AddPhaseModal

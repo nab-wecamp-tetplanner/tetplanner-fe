@@ -360,6 +360,22 @@ export const financeApi = {
     return mapBackendCategoryToFrontend(created);
   },
 
+  updateCategory: async (
+    categoryId: string,
+    updates: { name?: string; color?: string; allocated_budget?: number },
+  ) => {
+    console.log("Updating category - payload:", updates);
+
+    const updated = await apiClient.patch<BackendCategory>(
+      `/categories/${categoryId}`,
+      updates,
+    );
+
+    console.log("Category updated - response:", updated);
+
+    return mapBackendCategoryToFrontend(updated);
+  },
+
   deleteCategory: async (categoryId: string): Promise<void> => {
     await apiClient.delete(`/categories/${categoryId}`);
   },

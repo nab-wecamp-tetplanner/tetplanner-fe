@@ -1,5 +1,5 @@
 import React from "react";
-import { Package, X } from "lucide-react";
+import { Package, X, Pencil } from "lucide-react";
 import { formatCurrency } from "../../utils/formatters";
 import type {
   CategorySummary,
@@ -11,12 +11,14 @@ interface CategoryCardsProps {
   categorySummaries: CategorySummary[];
   categories: CustomCategory[];
   onDeleteCategory?: (categoryId: string) => void;
+  onEditCategory?: (category: CustomCategory) => void;
 }
 
 export const CategoryCards: React.FC<CategoryCardsProps> = ({
   categorySummaries,
   categories,
   onDeleteCategory,
+  onEditCategory,
 }) => (
   <div
     className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8"
@@ -34,19 +36,34 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
           key={summary.category}
           className="group bg-card rounded-2xl border border-border p-5 hover:shadow-md transition-all duration-200 cursor-pointer relative"
         >
-          {/* Delete button for custom categories */}
-          {!category.isDefault && onDeleteCategory && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (confirm(`Delete "${category.name}" category?`)) {
-                  onDeleteCategory(category.id);
-                }
-              }}
-              className="absolute top-2 right-2 p-1 rounded-lg hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
-            >
-              <X className="w-3.5 h-3.5 text-destructive" />
-            </button>
+          {/* Edit and Delete buttons for custom categories */}
+          {!category.isDefault && (
+            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onEditCategory && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditCategory(category);
+                  }}
+                  className="p-1 rounded-lg hover:bg-primary/10 transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-primary" />
+                </button>
+              )}
+              {onDeleteCategory && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm(`Delete "${category.name}" category?`)) {
+                      onDeleteCategory(category.id);
+                    }
+                  }}
+                  className="p-1 rounded-lg hover:bg-destructive/10 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5 text-destructive" />
+                </button>
+              )}
+            </div>
           )}
 
           <div className="flex items-center gap-3 mb-3">

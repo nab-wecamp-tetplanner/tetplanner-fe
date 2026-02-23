@@ -188,7 +188,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               {/* Status badge */}
               <div className="hidden md:block shrink-0">
                 {isPurchased ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-accent bg-planner-green-light px-2 py-1 rounded-lg">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-lg">
                     <CheckCircle2 className="w-3 h-3" />
                     Purchased
                   </span>
