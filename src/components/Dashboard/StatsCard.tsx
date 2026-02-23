@@ -19,13 +19,13 @@ export default function StatsCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+      className="bg-white rounded-xl p-5 shadow-sm border border-gray-100"
     >
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <div className="flex items-center gap-2 mb-2">
             <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center"
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: `${color}15` }}
             >
               <div style={{ color }}>{icon}</div>
