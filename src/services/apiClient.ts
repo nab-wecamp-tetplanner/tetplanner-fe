@@ -5,6 +5,7 @@ import type { TodoItem } from "../types/todo.types";
 import type { TetConfig } from "../types/tetConfig.types";
 import type { Category } from "../types/categories.type";
 import type { User } from "../types/auth.types";
+import type { Transaction } from "../types/transaction.types";
 
 interface BackendResponse<T> {
   data: T;
@@ -23,7 +24,7 @@ export class ApiClient {
     }): ApiResponse<string> => {
       return this.post("/auth/signup", data);
     },
-    
+
     login: (data: {
       email: string;
       password: string;
@@ -100,24 +101,25 @@ export class ApiClient {
 
     updateConfig: (
       id: string,
-      data: { 
+      data: {
         name?: string;
         total_budget?: number;
-       }
+      },
     ): ApiResponse<TetConfig> => {
-      return this.patch("/tet-configs/" + id, data);    
+      return this.patch("/tet-configs/" + id, data);
     },
 
     updateBudget: (
       id: string,
       data: {
         total_budget: number;
-      }): ApiResponse<TetConfig> => {
-        return this.patch("/tet-configs/" + id + "/budget", data);
       },
+    ): ApiResponse<TetConfig> => {
+      return this.patch("/tet-configs/" + id + "/budget", data);
+    },
     deleteConfig: (id: string): ApiResponse<void> => {
       return this.delete("/tet-configs/" + id);
-    }
+    },
   };
 
   // Category endpoints
@@ -145,16 +147,15 @@ export class ApiClient {
         name?: string;
         icon?: string;
         allocated_budget?: number;
-      }
-    ) : ApiResponse<Category> => {
+      },
+    ): ApiResponse<Category> => {
       return this.patch("/categories/" + id, data);
     },
 
     delete: (id: string): ApiResponse<string> => {
       return this.delete("/categories/" + id);
-    }
-    
-  }
+    },
+  };
 
   // To-do endpoints
   todos = {
@@ -162,7 +163,7 @@ export class ApiClient {
       title: string;
       priority: "low" | "medium" | "high" | "urgent";
       status: "pending" | "in_progress" | "completed" | "cancelled";
-      deadline: Date;
+      deadline: string;
       is_shopping: boolean;
       estimated_price?: number;
       quantity?: number;
@@ -212,6 +213,26 @@ export class ApiClient {
 
     delete: (id: string): ApiResponse<any> => {
       return this.delete("/todo-items/" + id);
+    },
+  };
+
+  // Transactions endpoints
+  transactions = {
+    getByConfig: (id: string): ApiResponse<Transaction[]> => {
+      return this.get("/budget-transactions?tet_config_id=" + id);
+    },
+
+    create: (data: {
+      amount: string;
+      type: "expense" | "income";
+      note: string;
+      transaction_date: string;
+      category: string | null;
+      recorded_by_user: {
+        name: string;
+      };
+    }): ApiResponse<Transaction> => {
+      return this.post("/budget-transactions", data);
     },
   };
 
