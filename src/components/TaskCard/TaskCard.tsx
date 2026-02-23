@@ -1,6 +1,6 @@
 import React from 'react'
-import { Clock, Flame, MoreHorizontal, ShoppingCart } from 'lucide-react'
-import type { Task } from '../../types/task'
+import { Clock, Flame, MoreHorizontal, ShoppingCart, DollarSign } from 'lucide-react'
+import type { Task, Category } from '../../types/task'
 import { MOCK_MEMBERS } from '../../data/mockTasks'
 import './TaskCard.css'
 
@@ -9,10 +9,14 @@ interface TaskCardProps {
     onDeleteTask?: (taskId: string) => void;
     onClick?: (task: Task) => void;
     isDissolving?: boolean;
+    categories?: Category[];
 }
 
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDissolving }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDissolving, categories }) => {
+
+    /* Resolve category name from UUID */
+    const categoryName = categories?.find(c => c.id === task.category_id)?.name;
 
     const getProgress = () => {
         if (task.subtasks && Object.keys(task.subtasks).length > 0) {
@@ -33,7 +37,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
     const { text: progressText, percent: progressWidth } = getProgress();
 
     const getCategoryColor = () => {
-        switch(task.category_id?.toLowerCase()) {
+        const name = (categoryName || '').toLowerCase();
+        switch(name) {
             case 'design':      return 'tet-tag--rose';
             case 'marketing':   return 'tet-tag--amber';
             case 'product':     return 'tet-tag--jade';
@@ -66,9 +71,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
             <div className="tet-card__body">
                 {/* Header: Tag + Priority */}
                 <div className="tet-card__top">
-                    {task.category_id && (
+                    {task.category_id && categoryName && (
                         <span className={`tet-card__tag ${getCategoryColor()}`}>
-                            {task.category_id}
+                            {categoryName}
                         </span>
                     )}
                     <div className="tet-card__top-right">
@@ -102,12 +107,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                     <span className="tet-card__progress-text">{progressText}</span>
                 </div>
 
-                {/* Footer: Deadline + Assignee */}
+                {/* Footer: Deadline + Price + Assignee */}
                 <div className="tet-card__footer">
                     <div className="tet-card__stats">
                         {task.deadline && (
                             <span className={`tet-card__date ${task.is_overdue ? 'tet-card__date--urgent' : ''}`}>
                                 <Clock size={13} /> {task.deadline}
+                            </span>
+                        )}
+                        {task.estimated_price != null && task.estimated_price > 0 && (
+                            <span className="tet-card__price">
+                                <DollarSign size={12} />
+                                {task.estimated_price.toLocaleString('vi-VN')}
                             </span>
                         )}
                     </div>

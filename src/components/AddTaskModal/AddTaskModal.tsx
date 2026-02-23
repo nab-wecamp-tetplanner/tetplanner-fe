@@ -18,9 +18,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState<TaskPriority>('medium');
     const [isShopping, setIsShopping] = useState(false);
-    const [estimatedPrice, setEstimatedPrice] = useState<number | ''>('');
+    const [estimated_price, setestimated_price] = useState<number | ''>('');
     const [deadline, setDeadline] = useState('');
-    const [categoryId, setCategoryId] = useState('');
+    const [category_id, setcategory_id] = useState('');
     const [categories, setCategories] = useState<Category[]>([]);
     const [subTasks, setSubTasks] = useState<Record<string, boolean>>({});
     const [tempSubtask, setTempSubtask] = useState('');
@@ -34,7 +34,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                 const list = res.data || res || [];
                 setCategories(list);
                 if (list.length > 0) {
-                    setCategoryId((prev) => prev || list[0].id);
+                    setcategory_id((prev) => prev || list[0].id);
                 }
             } catch (error) {
                 console.error('Error loading categories:', error);
@@ -69,13 +69,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
         const taskData = {
         title,
-        category_id: categoryId,
+        category_id: category_id,
         priority,
         deadline: deadline || undefined, 
         subtasks: subTasks,
         status: status || 'pending' as TaskStatus,
         is_shopping: isShopping,
-        estimated_price: estimatedPrice || undefined,
+        estimated_price: estimated_price || undefined,
         assigned_to: assignedTo || undefined,
         }
 
@@ -83,11 +83,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
         setTitle('');
         setPriority('medium');
-        setCategoryId('General');
+        setcategory_id('General');
         setDeadline('');
         setSubTasks({});    
         setIsShopping(false);
-        setEstimatedPrice('');
+        setestimated_price('');
         setAssignedTo('');
         onClose();
     };
@@ -141,8 +141,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     <label className="form-label"><Tag size={14} /> Category</label>
                     <select 
                     className="form-input"
-                    value={categoryId} 
-                    onChange={(e) => setCategoryId(e.target.value)}
+                    value={category_id} 
+                    onChange={(e) => setcategory_id(e.target.value)}
                     >
                     {categories.map(cat => (
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -192,8 +192,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                         <input
                             className="form-input"
                             type="number"
-                            value={estimatedPrice}
-                            onChange={(e) => setEstimatedPrice(e.target.value ? Number(e.target.value) : '')}
+                            value={estimated_price}
+                            onChange={(e) => setestimated_price(e.target.value ? Number(e.target.value) : '')}
                             placeholder="Estimated price"
                             min={0}
                         />
