@@ -1,0 +1,151 @@
+import type {
+  Category,
+  WeeklyTaskData,
+  WeeklyFinanceData,
+} from "../types/dashboard.types";
+
+export const WEEKLY_TASK_DATA: WeeklyTaskData[] = [
+  { week: "Mon", tasksDone: 8, tasksCreated: 5, totalTasks: 24 },
+  { week: "Tue", tasksDone: 12, tasksCreated: 7, totalTasks: 28 },
+  { week: "Wed", tasksDone: 15, tasksCreated: 4, totalTasks: 30 },
+  { week: "Thu", tasksDone: 10, tasksCreated: 8, totalTasks: 32 },
+  { week: "Fri", tasksDone: 18, tasksCreated: 6, totalTasks: 35 },
+  { week: "Sat", tasksDone: 14, tasksCreated: 3, totalTasks: 33 },
+  { week: "Sun", tasksDone: 9, tasksCreated: 5, totalTasks: 31 },
+];
+
+export const WEEKLY_FINANCE_DATA: WeeklyFinanceData[] = [
+  { week: "Mon", income: 450, expense: 320 },
+  { week: "Tue", income: 380, expense: 280 },
+  { week: "Wed", income: 520, expense: 390 },
+  { week: "Thu", income: 410, expense: 340 },
+  { week: "Fri", income: 580, expense: 420 },
+  { week: "Sat", income: 350, expense: 250 },
+  { week: "Sun", income: 290, expense: 180 },
+];
+
+export const CATEGORY_DATA: Category[] = [
+  {
+    id: "house",
+    name: "House",
+    percent: "41,35%",
+    colorClass: "text-purple-500",
+    bgClass: "bg-purple-500",
+    icon: "🏠",
+    transactions: [
+      {
+        id: "h1",
+        iconText: "OR",
+        name: "Electricity",
+        method: "Bank account",
+        date: "2024/04/01",
+        amount: "-$150.00",
+        isIncome: false,
+        iconBg: "bg-planner-purple-light",
+        iconColor: "text-planner-purple",
+      },
+      {
+        id: "h2",
+        iconText: "OR",
+        name: "Housing",
+        method: "Bank account",
+        date: "2024/04/01",
+        amount: "-$750.00",
+        isIncome: false,
+        iconBg: "bg-planner-purple-light",
+        iconColor: "text-planner-purple",
+      },
+    ],
+  },
+  {
+    id: "transport",
+    name: "Transportation",
+    percent: "13,47%",
+    colorClass: "text-blue-500",
+    bgClass: "bg-blue-500",
+    icon: "🚌",
+    transactions: [
+      {
+        id: "t1",
+        iconText: "OR",
+        name: "Gas",
+        method: "Bank account",
+        date: "2024/04/01",
+        amount: "-$50.00",
+        isIncome: false,
+        iconBg: "bg-planner-blue-light",
+        iconColor: "text-planner-blue",
+      },
+      {
+        id: "t2",
+        iconText: "OR",
+        name: "Cleaning",
+        method: "Bank account",
+        date: "2024/04/01",
+        amount: "-$25.00",
+        isIncome: false,
+        iconBg: "bg-planner-blue-light",
+        iconColor: "text-planner-blue",
+      },
+    ],
+  },
+  {
+    id: "groceries",
+    name: "Groceries",
+    percent: "9,97%",
+    colorClass: "text-green-500",
+    bgClass: "bg-green-500",
+    icon: "🛒",
+    transactions: [
+      {
+        id: "g1",
+        iconText: "CM",
+        name: "Carrefour Market",
+        method: "Credit card",
+        date: "2024/03/26",
+        amount: "-$64.33",
+        isIncome: false,
+        iconBg: "bg-planner-green-light",
+        iconColor: "text-planner-green",
+      },
+    ],
+  },
+  {
+    id: "credit",
+    name: "Credit card",
+    percent: "21,51%",
+    colorClass: "text-red-500",
+    bgClass: "bg-red-500",
+    icon: "💳",
+    transactions: [],
+  },
+  {
+    id: "shopping",
+    name: "Shopping",
+    percent: "3,35%",
+    colorClass: "text-indigo-600",
+    bgClass: "bg-indigo-600",
+    icon: "🛍️",
+    transactions: [
+      {
+        id: "s1",
+        iconText: "A",
+        name: "Amazon",
+        method: "Credit card",
+        date: "2024/03/24",
+        amount: "-$147.90",
+        isIncome: false,
+        iconBg: "bg-planner-purple-light",
+        iconColor: "text-planner-purple",
+      },
+    ],
+  },
+];
+
+export const CHART_COLORS: Record<string, string> = {
+  "bg-purple-500": "#a855f7",
+  "bg-blue-500": "#3b82f6",
+  "bg-green-500": "#22c55e",
+  "bg-red-500": "#ef4444",
+  "bg-indigo-600": "#4f46e5",
+};
