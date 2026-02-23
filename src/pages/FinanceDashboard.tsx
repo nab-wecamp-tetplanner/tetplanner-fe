@@ -183,15 +183,14 @@ export default function FinanceDashboard() {
         (sum, item) => sum + item.price * item.quantity,
         0,
       );
-      const config =
-        COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
+      const categoryColor = category.color || "#10b981";
       return {
         category: category.name,
         total,
         itemCount: categoryItems.length,
         icon: category.icon,
-        color: config.tokenColor,
-        bgColor: config.tokenBg,
+        color: categoryColor,
+        bgColor: `${categoryColor}20`,
       };
     });
   }, [items, categories]);

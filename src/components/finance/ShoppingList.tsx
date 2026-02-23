@@ -111,7 +111,17 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           const categoryColor = category?.color || "#94a3b8"; // Default gray
           const isPurchased = item.status === "purchased";
 
-          // THÊM DÒNG NÀY - Calculate total for this item
+          // Debug: log category color
+          if (category) {
+            console.log(
+              `Item "${item.name}" category:`,
+              category.name,
+              "color:",
+              categoryColor,
+            );
+          }
+
+          // Calculate total for this item
           const total = item.price * item.quantity;
 
           return (

@@ -137,6 +137,7 @@ const mapFrontendItemToBackend = (
 
 const mapBackendCategoryToFrontend = (
   cat: BackendCategory,
+  index?: number,
 ): {
   id: string;
   name: string;
@@ -144,14 +145,23 @@ const mapBackendCategoryToFrontend = (
   color: string;
   allocated: number;
   spent: number;
-} => ({
-  id: cat.id, // Already string UUID
-  name: cat.name,
-  icon: cat.icon || "Package",
-  color: cat.color || "#94a3b8", // Use backend color or default gray
-  allocated: cat.allocated_budget || 0,
-  spent: 0,
-});
+} => {
+  // Default colors for categories without color (rotate through palette)
+  const defaultColors = ["#3b82f6", "#ec4899", "#a855f7", "#10b981", "#f59e0b"];
+  const fallbackColor =
+    index !== undefined
+      ? defaultColors[index % defaultColors.length]
+      : "#94a3b8";
+
+  return {
+    id: cat.id, // Already string UUID
+    name: cat.name,
+    icon: cat.icon || "Package",
+    color: cat.color || fallbackColor, // Use color from backend or assign from palette
+    allocated: cat.allocated_budget || 0,
+    spent: 0,
+  };
+};
 
 // ==========================================
 // API FUNCTIONS
@@ -318,7 +328,12 @@ export const financeApi = {
     const categories = await apiClient.get<BackendCategory[]>(
       `/categories?tet_config_id=${tetConfigId}`,
     );
-    return categories.map(mapBackendCategoryToFrontend);
+
+    const mapped = categories.map((cat, index) =>
+      mapBackendCategoryToFrontend(cat, index),
+    );
+
+    return mapped;
   },
 
   addCategory: async (

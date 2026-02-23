@@ -40,20 +40,37 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   ];
 
   const availableColors = [
-    { name: "Blue", value: "planner-blue" },
-    { name: "Pink", value: "planner-pink" },
-    { name: "Purple", value: "planner-purple" },
-    { name: "Green", value: "planner-green" },
-    { name: "Amber", value: "planner-amber" },
+    { name: "Blue", value: "planner-blue", hex: "#3b82f6" },
+    { name: "Pink", value: "planner-pink", hex: "#ec4899" },
+    { name: "Purple", value: "planner-purple", hex: "#a855f7" },
+    { name: "Green", value: "planner-green", hex: "#10b981" },
+    { name: "Amber", value: "planner-amber", hex: "#f59e0b" },
   ];
+
+  // Map icon names to emojis for backend
+  const iconToEmoji: Record<string, string> = {
+    ShoppingCart: "🛒",
+    Gift: "🎁",
+    Sparkles: "✨",
+    Package: "📦",
+    TrendingUp: "📈",
+    Calendar: "📅",
+    CheckCircle2: "✅",
+    Clock: "🕐",
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
+      const selectedColorHex =
+        availableColors.find((c) => c.value === selectedColor)?.hex ||
+        "#3b82f6";
+      const emoji = iconToEmoji[selectedIcon] || "📦";
+
       onAdd({
         name: name.trim(),
-        icon: selectedIcon,
-        color: selectedColor,
+        icon: emoji, // Send emoji instead of component name
+        color: selectedColorHex, // Send hex color instead of name
       });
       setName("");
       setSelectedIcon("Package");

@@ -27,8 +27,7 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
       if (!category) return null;
 
       const Icon = ICON_MAP[category.icon] || Package;
-      const config =
-        COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
+      const categoryColor = category.color || "#10b981";
 
       return (
         <div
@@ -52,12 +51,18 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
 
           <div className="flex items-center gap-3 mb-3">
             <div
-              className={`h-10 w-10 rounded-xl ${config.iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}
+              className="h-10 w-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform"
+              style={{ backgroundColor: `${categoryColor}40` }}
             >
-              <Icon className="w-5 h-5 text-primary-foreground" />
+              <Icon className="w-5 h-5" style={{ color: categoryColor }} />
             </div>
             <span
-              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${config.tokenBg} ${config.tokenColor} border ${config.tokenBorder}`}
+              className="text-xs font-semibold px-2 py-0.5 rounded-full border"
+              style={{
+                backgroundColor: `${categoryColor}20`,
+                color: categoryColor,
+                borderColor: `${categoryColor}40`,
+              }}
             >
               {summary.itemCount}
             </span>
@@ -65,7 +70,7 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
           <p className="text-xs text-muted-foreground font-medium mb-0.5">
             {summary.category}
           </p>
-          <p className={`text-xl font-bold ${config.tokenColor}`}>
+          <p className="text-xl font-bold" style={{ color: categoryColor }}>
             {formatCurrency(summary.total)}
           </p>
         </div>
