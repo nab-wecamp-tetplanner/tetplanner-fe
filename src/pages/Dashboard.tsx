@@ -1,4 +1,3 @@
-import { Header } from "../components/Header";
 import { Calendar } from "lucide-react";
 import { TaskOverview } from "../components/Dashboard/TaskOverview";
 import { BudgetOverview } from "../components/Dashboard/BudgetOverview";
@@ -35,7 +34,7 @@ const PageHeader = () => (
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <main className="mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <PageHeader />
         <TaskOverview />
         <BudgetOverview />

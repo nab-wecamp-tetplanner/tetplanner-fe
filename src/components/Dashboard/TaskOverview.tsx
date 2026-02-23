@@ -9,100 +9,120 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Star, Plus, Bell } from "lucide-react";
-
-const TaskOverviewHeader = () => (
-  <h2 className="mb-5 mt-8 text-2xl text-foreground font-bold">
-    Task Overview
-  </h2>
-);
+import { Bell } from "lucide-react";
+import StatsCard from "./StatsCard";
+import { CheckSquare, ShoppingCart, DollarSign } from "lucide-react";
 
 const TaskQuickStats = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <Card className="bg-linear-to-br from-purple-50 to-purple-200">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium mb-1">
-              Task Completed
-            </p>
-            <p className="text-3xl font-bold text-foreground">08</p>
-          </div>
-          <Star className="w-6 h-6 text-yellow-400" fill="currentColor" />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-white"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M12 7a1 1 0 110-2h.01a1 1 0 110 2H12zm-3.976 1.9a1 1 0 00-.217 1.393l5.25 6.301A1 1 0 0015 14.5V11a1 1 0 10-2 0v2.586l-3.88-4.644a1 1 0 00-1.317-.142z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <span className="text-xs font-medium text-green-600">10+ more</span>
-          <span className="text-xs text-muted-foreground">from last week</span>
-        </div>
-      </Card>
+    // <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    //   <Card className="bg-linear-to-br from-purple-50 to-purple-200">
+    //     <div className="flex items-start justify-between mb-4">
+    //       <div>
+    //         <p className="text-xs text-muted-foreground font-medium mb-1">
+    //           Task Completed
+    //         </p>
+    //         <p className="text-3xl font-bold text-foreground">08</p>
+    //       </div>
+    //       <Star className="w-6 h-6 text-yellow-400" fill="currentColor" />
+    //     </div>
+    //     <div className="flex items-center gap-2">
+    //       <div className="w-8 h-8 rounded-full bg-linear-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+    //         <svg
+    //           className="w-4 h-4 text-white"
+    //           fill="currentColor"
+    //           viewBox="0 0 20 20"
+    //         >
+    //           <path
+    //             fillRule="evenodd"
+    //             d="M12 7a1 1 0 110-2h.01a1 1 0 110 2H12zm-3.976 1.9a1 1 0 00-.217 1.393l5.25 6.301A1 1 0 0015 14.5V11a1 1 0 10-2 0v2.586l-3.88-4.644a1 1 0 00-1.317-.142z"
+    //             clipRule="evenodd"
+    //           />
+    //         </svg>
+    //       </div>
+    //       <span className="text-xs font-medium text-green-600">10+ more</span>
+    //       <span className="text-xs text-muted-foreground">from last week</span>
+    //     </div>
+    //   </Card>
 
-      <Card className="bg-linear-to-br from-blue-50 to-blue-200">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium mb-1">
-              New Task
-            </p>
-            <p className="text-3xl font-bold text-foreground">10</p>
-          </div>
-          <Plus className="w-5 h-5 text-slate-300" />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center"></div>
-          <span className="text-xs font-medium text-green-600">10+ more</span>
-          <span className="text-xs text-muted-foreground">from last week</span>
-        </div>
-      </Card>
+    //   <Card className="bg-linear-to-br from-blue-50 to-blue-200">
+    //     <div className="flex items-start justify-between mb-4">
+    //       <div>
+    //         <p className="text-xs text-muted-foreground font-medium mb-1">
+    //           New Task
+    //         </p>
+    //         <p className="text-3xl font-bold text-foreground">10</p>
+    //       </div>
+    //       <Plus className="w-5 h-5 text-slate-300" />
+    //     </div>
+    //     <div className="flex items-center gap-2">
+    //       <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center"></div>
+    //       <span className="text-xs font-medium text-green-600">10+ more</span>
+    //       <span className="text-xs text-muted-foreground">from last week</span>
+    //     </div>
+    //   </Card>
 
-      <Card className="bg-linear-to-br from-red-50 to-red-200">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-md text-muted-foreground font-medium mb-1">
-              Task in Progress
-            </p>
-            <p className="text-3xl font-bold text-foreground">10</p>
-          </div>
-          <div className="w-5 h-5 text-slate-300">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-              <path
-                fillRule="evenodd"
-                d="M4 5a2 2 0 012-2 1 1 0 000-2 4 4 0 00-4 4v10a4 4 0 004 4h12a4 4 0 004-4V5a4 4 0 00-4-4 1 1 0 000 2 2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-red-400 to-red-600 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-white"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M12 7a1 1 0 110-2h.01a1 1 0 110 2H12zm-3.976 1.9a1 1 0 00-.217 1.393l5.25 6.301A1 1 0 0015 14.5V11a1 1 0 10-2 0v2.586l-3.88-4.644a1 1 0 00-1.317-.142z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <span className="text-xs font-medium text-green-600">08+ more</span>
-          <span className="text-xs text-muted-foreground">from last week</span>
-        </div>
-      </Card>
+    //   <Card className="bg-linear-to-br from-red-50 to-red-200">
+    //     <div className="flex items-start justify-between mb-4">
+    //       <div>
+    //         <p className="text-md text-muted-foreground font-medium mb-1">
+    //           Task in Progress
+    //         </p>
+    //         <p className="text-3xl font-bold text-foreground">10</p>
+    //       </div>
+    //       <div className="w-5 h-5 text-slate-300">
+    //         <svg fill="currentColor" viewBox="0 0 20 20">
+    //           <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+    //           <path
+    //             fillRule="evenodd"
+    //             d="M4 5a2 2 0 012-2 1 1 0 000-2 4 4 0 00-4 4v10a4 4 0 004 4h12a4 4 0 004-4V5a4 4 0 00-4-4 1 1 0 000 2 2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"
+    //             clipRule="evenodd"
+    //           ></path>
+    //         </svg>
+    //       </div>
+    //     </div>
+    //     <div className="flex items-center gap-2">
+    //       <div className="w-8 h-8 rounded-full bg-linear-to-br from-red-400 to-red-600 flex items-center justify-center">
+    //         <svg
+    //           className="w-4 h-4 text-white"
+    //           fill="currentColor"
+    //           viewBox="0 0 20 20"
+    //         >
+    //           <path
+    //             fillRule="evenodd"
+    //             d="M12 7a1 1 0 110-2h.01a1 1 0 110 2H12zm-3.976 1.9a1 1 0 00-.217 1.393l5.25 6.301A1 1 0 0015 14.5V11a1 1 0 10-2 0v2.586l-3.88-4.644a1 1 0 00-1.317-.142z"
+    //             clipRule="evenodd"
+    //           />
+    //         </svg>
+    //       </div>
+    //       <span className="text-xs font-medium text-green-600">08+ more</span>
+    //       <span className="text-xs text-muted-foreground">from last week</span>
+    //     </div>
+    //   </Card>
+    // </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 md:mb-0">
+      <StatsCard
+        title="Công việc"
+        value={40}
+        subtitle={`40% hoàn thành`}
+        icon={<CheckSquare className="w-5 h-5" />}
+        color="#5051f9"
+      />
+      <StatsCard
+        title="Mua sắm"
+        value={45}
+        subtitle={`5 đã mua`}
+        icon={<ShoppingCart className="w-5 h-5" />}
+        color="#1ea7ff"
+      />
+      <StatsCard
+        title="Ngân sách"
+        value={60}
+        subtitle={`70₫ / 100₫`}
+        icon={<DollarSign className="w-5 h-5" />}
+        color="#ff614c"
+      />
+      <Card>Còn 5 ngày nữa đến Tết</Card>
     </div>
   );
 };
@@ -128,11 +148,9 @@ const TaskDoneChart = () => {
   ];
 
   return (
-    <Card className="mb-8">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-serif text-lg text-foreground font-bold">
-          Task Done
-        </h3>
+    <Card className="flex flex-col gap-2">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg text-foreground font-bold">Task Done</h3>
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
@@ -145,11 +163,11 @@ const TaskDoneChart = () => {
         </div>
       </div>
 
-      <div className="w-full h-80">
+      <div className="w-full h-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={monthlyData}
-            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            margin={{ top: 10, right: 10, left: -30, bottom: 0 }}
           >
             <CartesianGrid
               stroke="#e5e7eb"
@@ -216,9 +234,7 @@ const TasksList = () => {
 
   return (
     <div>
-      <h3 className="font-serif text-lg text-foreground font-bold mb-6">
-        Ongoing Task
-      </h3>
+      <h3 className="text-lg text-foreground font-bold mb-6">Ongoing Task</h3>
 
       <div className="space-y-4">
         {tasks.map((task) => (
@@ -275,9 +291,10 @@ const TasksList = () => {
 export const TaskOverview = () => {
   return (
     <section className="mb-16">
-      <TaskOverviewHeader />
-      <TaskQuickStats />
-      <TaskDoneChart />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <TaskQuickStats />
+        <TaskDoneChart />
+      </div>
       <TasksList />
     </section>
   );
