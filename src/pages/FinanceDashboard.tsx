@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, FolderPlus } from "lucide-react";
 import { BudgetOverview } from "../components/finance/BudgetOverview";
 import { CategoryCards } from "../components/finance/CategoryCards";
@@ -59,6 +60,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 );
 
 export default function FinanceDashboard() {
+  const queryClient = useQueryClient();
+  
   // State
   const [tetConfigId, setTetConfigId] = useState<string | null>(null);
   const [items, setItems] = useState<ShoppingItem[]>([]);
@@ -71,36 +74,33 @@ export default function FinanceDashboard() {
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<TimelinePhase | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data on mount
+  // Fetch tet config (cached)
+  const { data: tetConfig, isLoading } = useQuery({
+    queryKey: ['tetConfig'],
+    queryFn: async () => {
+      const configs = await apiClient.tetConfigs.getMyConfigs();
+      if (configs && configs.length > 0) {
+        return configs[0];
+      }
+      return await apiClient.tetConfigs.create({
+        year: 2025,
+        name: `Tết 2025`,
+        total_budget: 5000000,
+      });
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Fetch data when tetConfig is available
   useEffect(() => {
+    if (!tetConfig?.id) return;
+    
     const fetchData = async () => {
       try {
-        setIsLoading(true);
         setError(null);
-
-        const configs = await apiClient.tetConfigs.getMyConfigs();
-        console.log("Existing configs:", configs);
-
-        // Use existing config or create new one
-        let configId: string;
-        if (configs && configs.length > 0) {
-          // Use most recent config
-          configId = configs[0].id;
-          console.log("Using existing config:", configId);
-        } else {
-          // Create new config if none exists
-          const newConfig = await apiClient.tetConfigs.create({
-            year: 2025,
-            name: `Tết 2025`,
-            total_budget: 5000000,
-          });
-          configId = newConfig.id;
-          console.log("Created new config:", configId);
-        }
-
+        const configId = tetConfig.id;
         setTetConfigId(configId);
 
         // Fetch data with fallbacks
@@ -161,13 +161,11 @@ export default function FinanceDashboard() {
       } catch (err) {
         console.error("Failed to fetch finance data:", err);
         setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [tetConfig]);
 
   // Computed values
   const purchasedCount = useMemo(
@@ -291,16 +289,26 @@ export default function FinanceDashboard() {
 
     try {
       const newPurchased = currentStatus !== "purchased";
+      const currentItem = items.find((item) => item.id === itemId);
+      if (!currentItem) {
+        console.error("Item not found:", itemId);
+        return;
+      }
+      
       const result = await financeApi.toggleItemStatus(
         itemId,
         newPurchased,
         tetConfigId,
+        currentItem,
       );
 
       setItems((prev) =>
         prev.map((item) => (item.id === itemId ? result.item : item)),
       );
       setBudget({ total: result.budget.total, used: result.budget.used });
+      
+      // Invalidate cache to refresh data
+      queryClient.invalidateQueries({ queryKey: ['tetConfig'] });
     } catch (err) {
       console.error("Failed to toggle item status:", err);
       alert("Failed to update item. Please try again.");
@@ -317,6 +325,9 @@ export default function FinanceDashboard() {
 
       const budgetData = await financeApi.getBudget(tetConfigId);
       setBudget({ total: budgetData.total, used: budgetData.used });
+      
+      // Invalidate cache to refresh data
+      queryClient.invalidateQueries({ queryKey: ['tetConfig'] });
     } catch (err) {
       console.error("Failed to delete item:", err);
       alert("Failed to delete item. Please try again.");

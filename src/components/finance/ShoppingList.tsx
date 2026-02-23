@@ -39,7 +39,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      const matchesSearch = item.name
+      const matchesSearch = (item.name || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesCategory =

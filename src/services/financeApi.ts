@@ -5,6 +5,16 @@ import type { ShoppingItem, ShoppingCategory } from "../types/shopping.types";
 // TYPES - Backend Structure
 // ==========================================
 
+interface BackendTetConfig {
+  id: string;
+  year: number;
+  name: string;
+  total_budget: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface BackendTodoItem {
   id: string; // UUID
   title: string;
@@ -53,12 +63,12 @@ interface BackendBudgetSummary {
 
 const mapBackendItemToFrontend = (item: BackendTodoItem): ShoppingItem => ({
   id: item.id, // Already string UUID
-  name: item.title,
+  name: item.title || "",
   category: item.category_id || "other",
-  price: item.estimated_price,
-  quantity: item.quantity,
+  price: item.estimated_price || 0,
+  quantity: item.quantity || 1,
   status: item.purchased ? "purchased" : "pending",
-  dueDate: item.deadline,
+  dueDate: item.deadline || new Date().toISOString(),
 });
 
 const mapFrontendItemToBackend = (
@@ -199,16 +209,58 @@ export const financeApi = {
     itemId: string,
     purchased: boolean,
     tetConfigId: string, // Changed to string
+    currentItem: any, // Current item with category and price
   ) => {
-    const updated = await apiClient.patch<BackendTodoItem>(
-      `/todo-items/${itemId}`,
-      { purchased },
-    );
-    const budget = await financeApi.getBudget(tetConfigId);
-    return {
-      item: mapBackendItemToFrontend(updated),
-      budget,
-    };
+    console.log("toggleItemStatus - itemId:", itemId, "purchased:", purchased);
+    console.log("currentItem:", currentItem);
+    try {
+      const payload: any = {
+        status: purchased ? "completed" : "pending",
+      };
+
+      // Backend requires category_id (UUID or null) and estimated_price (number)
+      if (currentItem.category && currentItem.category.includes("-")) {
+        // Valid UUID
+        payload.category_id = currentItem.category;
+      } else {
+        // "other" or invalid - send null
+        payload.category_id = null;
+      }
+
+      if (currentItem.price) {
+        // Convert to number
+        payload.estimated_price =
+          typeof currentItem.price === "string"
+            ? parseFloat(currentItem.price)
+            : currentItem.price;
+      }
+
+      console.log("Sending payload:", payload);
+      const updated = await apiClient.patch<BackendTodoItem>(
+        `/todo-items/${itemId}`,
+        payload,
+      );
+      const budget = await financeApi.getBudget(tetConfigId);
+      return {
+        item: mapBackendItemToFrontend(updated),
+        budget,
+      };
+    } catch (error: any) {
+      console.error("Toggle item status error:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+        fullError: error,
+      });
+      console.error(
+        "DETAILED ERROR MESSAGE:",
+        JSON.stringify(error.response?.data, null, 2),
+      );
+      if (error.response?.data?.message) {
+        console.error("VALIDATION ERRORS:", error.response.data.message);
+      }
+      throw error;
+    }
   },
 
   // Categories
@@ -235,6 +287,37 @@ export const financeApi = {
 
   deleteCategory: async (categoryId: string): Promise<void> => {
     await apiClient.delete(`/categories/${categoryId}`);
+  },
+
+  // Tet Config Management
+  createTetConfig: async (config: {
+    year: number;
+    name: string;
+    total_budget: number;
+  }): Promise<BackendTetConfig> => {
+    return await apiClient.post<BackendTetConfig>("/tet-configs", config);
+  },
+
+  getTetConfigs: async (): Promise<BackendTetConfig[]> => {
+    return await apiClient.get<BackendTetConfig[]>("/tet-configs");
+  },
+
+  getTetConfig: async (id: string): Promise<BackendTetConfig> => {
+    return await apiClient.get<BackendTetConfig>(`/tet-configs/${id}`);
+  },
+
+  updateTetConfig: async (
+    id: string,
+    updates: Partial<{ year: number; name: string; total_budget: number }>,
+  ): Promise<BackendTetConfig> => {
+    return await apiClient.patch<BackendTetConfig>(
+      `/tet-configs/${id}`,
+      updates,
+    );
+  },
+
+  deleteTetConfig: async (id: string): Promise<void> => {
+    await apiClient.delete(`/tet-configs/${id}`);
   },
 };
 
