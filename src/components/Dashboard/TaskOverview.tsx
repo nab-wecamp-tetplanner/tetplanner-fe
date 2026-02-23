@@ -9,7 +9,7 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Star, Plus, Clock, Bell } from "lucide-react";
+import { Star, Plus, Bell } from "lucide-react";
 
 const TaskOverviewHeader = () => (
   <h2 className="mb-5 mt-8 text-2xl text-foreground font-bold">
@@ -49,7 +49,7 @@ const TaskQuickStats = () => {
         </div>
       </Card>
 
-      <Card>
+      <Card className="bg-linear-to-br from-blue-50 to-blue-200">
         <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-xs text-muted-foreground font-medium mb-1">
@@ -66,7 +66,7 @@ const TaskQuickStats = () => {
         </div>
       </Card>
 
-      <Card>
+      <Card className="bg-linear-to-br from-red-50 to-red-200">
         <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-md text-muted-foreground font-medium mb-1">
