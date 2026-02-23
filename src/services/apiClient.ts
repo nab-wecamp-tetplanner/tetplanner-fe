@@ -16,12 +16,8 @@ export class ApiClient {
   }
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    try {
-      const response = await api.get<T>(url, config);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get<T>(url, config);
+    return response.data;
   }
 
   public async post<T>(

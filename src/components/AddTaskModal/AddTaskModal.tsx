@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import type { SubTask, Task, TaskPriority, TaskStatus } from "../../types/task";
+import React, { useEffect, useState } from "react";
+import type { Category, Task, TaskPriority, TaskStatus } from "../../types/task";
 import './AddTaskModal.css';
 import { Calendar, CheckSquare, Flag, Plus, ShoppingCart, Tag, Trash2, User, X } from "lucide-react";
 import { MOCK_MEMBERS } from "../../data/mockTasks";
+import { todoService } from "../../services/todoService";
 
 interface AddTaskModalProps {
   isOpen: boolean;
@@ -19,23 +20,43 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
     const [isShopping, setIsShopping] = useState(false);
     const [estimatedPrice, setEstimatedPrice] = useState<number | ''>('');
     const [deadline, setDeadline] = useState('');
-    const [categoryId, setCategoryId] = useState('General');
-    const [subTasks, setSubTasks] = useState<SubTask[]>([]);
+    const [categoryId, setCategoryId] = useState('');
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [subTasks, setSubTasks] = useState<Record<string, boolean>>({});
     const [tempSubtask, setTempSubtask] = useState('');
     const [assignedTo, setAssignedTo] = useState<string>('');
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const res: any = await todoService.getCategories();
+                const list = res.data || res || [];
+                setCategories(list);
+                if (list.length > 0) {
+                    setCategoryId((prev) => prev || list[0].id);
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     if(!isOpen) return null;
 
     const addSubtask = () => {
         const trimmedSubtask = tempSubtask.trim();
-        if(trimmedSubtask) {
-            setSubTasks([...subTasks, { id: Date.now().toString(), text: trimmedSubtask, isCompleted: false }]);
+        if(trimmedSubtask && !(trimmedSubtask in subTasks)) {
+            setSubTasks({ ...subTasks, [trimmedSubtask]: false });
             setTempSubtask("");
         }
     };
 
-    const removeSubtask = (id: string) => {
-        setSubTasks(subTasks.filter(st => st.id !== id));
+    const removeSubtask = (key: string) => {
+        const updated = { ...subTasks };
+        delete updated[key];
+        setSubTasks(updated);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -51,7 +72,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         category_id: categoryId,
         priority,
         deadline: deadline || undefined, 
-        sub_tasks: subTasks,
+        subtasks: subTasks,
         status: status || 'pending' as TaskStatus,
         is_shopping: isShopping,
         estimated_price: estimatedPrice || undefined,
@@ -64,7 +85,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         setPriority('medium');
         setCategoryId('General');
         setDeadline('');
-        setSubTasks([]);    
+        setSubTasks({});    
         setIsShopping(false);
         setEstimatedPrice('');
         setAssignedTo('');
@@ -123,9 +144,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     value={categoryId} 
                     onChange={(e) => setCategoryId(e.target.value)}
                     >
-                    <option value="Design">Design</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Development">Development</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
                     </select>
                 </div>
                 <div className="form-group">
@@ -197,12 +218,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     </button>
                 </div>
                 {/* Subtasks List */}
-                {subTasks.length > 0 && (
+                {Object.keys(subTasks).length > 0 && (
                     <ul className="subtask-list">
-                        {subTasks.map(st => (
-                            <li key={st.id} className="subtask-item">
-                                <span>• {st.text}</span>
-                                <button type="button" className="btn-remove-subtask" onClick={() => removeSubtask(st.id)} title="Remove">
+                        {Object.keys(subTasks).map(key => (
+                            <li key={key} className="subtask-item">
+                                <span>• {key}</span>
+                                <button type="button" className="btn-remove-subtask" onClick={() => removeSubtask(key)} title="Remove">
                                     <Trash2 size={14} />
                                 </button>
                             </li>

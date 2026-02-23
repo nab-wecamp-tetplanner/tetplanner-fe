@@ -7,17 +7,18 @@ import './TaskCard.css'
 interface TaskCardProps {
     task: Task;
     onDeleteTask?: (taskId: string) => void;
-    onClick?: () => void;
-    isDisssolving?: boolean;
+    onClick?: (task: Task) => void;
+    isDissolving?: boolean;
 }
 
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDisssolving }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDissolving }) => {
 
     const getProgress = () => {
-        if (task.sub_tasks && task.sub_tasks.length > 0) {
-            const completed = task.sub_tasks.filter(st => st.isCompleted).length;
-            const total = task.sub_tasks.length;
+        if (task.subtasks && Object.keys(task.subtasks).length > 0) {
+            const values = Object.values(task.subtasks);
+            const total = values.length;
+            const completed = values.filter(Boolean).length;
             return { text: `${completed}/${total}`, percent: `${Math.round((completed / total) * 100)}%` };
         }
         switch(task.status) {
@@ -53,10 +54,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
 
     return (
         <div 
-            className={`tet-card ${isHighPriority ? 'tet-card--gold' : ''} ${isDisssolving ? 'tet-card--dissolving' : ''}`}
+            className={`tet-card ${isHighPriority ? 'tet-card--gold' : ''} ${isDissolving ? 'tet-card--dissolving' : ''}`}
             draggable="true" 
             onDragStart={(e) => e.dataTransfer.setData('taskId', task.id)} 
-            onClick={onClick}
+            onClick={() => onClick && onClick(task)}
         >
             {/* Gold trim corner for high priority */}
             {isHighPriority && <div className="tet-card__gold-trim"></div>}

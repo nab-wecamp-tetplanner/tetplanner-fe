@@ -91,7 +91,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
                         task={task} 
                         onDeleteTask={onDeleteTask} 
                         onClick={() => onTaskClick && onTaskClick(task)}
-                        isDisssolving={dissolvingTaskId === task.id}
+                        isDissolving={dissolvingTaskId === task.id}
                     />
                 ))
             ) : (

@@ -1,4 +1,3 @@
-import React from 'react'
 import { NavLink } from "react-router-dom";
 import ThemeSelector from '../ThemeSelector/ThemeSelector';
 import { ZodiacMascot } from '../Decoratives/Decoratives';

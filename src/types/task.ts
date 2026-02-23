@@ -2,12 +2,6 @@
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
-export interface SubTask {
-    id: string;
-    text: string;
-    isCompleted: boolean;
-}
-
 export interface Task {
     id: string;
     title: string;
@@ -25,7 +19,7 @@ export interface Task {
     tet_config_id?: string;
     timeline_phase_id?: string;
     category_id?: string;
-    sub_tasks?: SubTask[];
+    subtasks?: Record<string, boolean>;
 }
 
 export interface TimelinePhase {
@@ -46,6 +40,11 @@ export interface TetConfig {
     created_at?: string;
     deleted_at?: string;
     owner_id?: string;
+}
+
+export interface Category {
+    id: string;
+    name: string;
 }
 
 export interface ManagePhasesModalProps {

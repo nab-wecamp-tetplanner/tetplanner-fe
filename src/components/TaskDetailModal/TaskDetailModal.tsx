@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./TaskDetailModal.css";
-import type { Task, SubTask } from "../../types/task";
+import type { Task } from "../../types/task";
 import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare, User } from "lucide-react";
 import { MOCK_MEMBERS } from "../../data/mockTasks";
 
@@ -25,60 +25,62 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onUpdateTask: (updatedTask: Task) => void;
 }
-
 const TaskDetailModal = ({
   task,
   isOpen,
   onClose,
   onUpdateTask,
 }: TaskDetailModalProps) => {
-  if (!isOpen || !task) return null;
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [newSubtaskText, setNewSubtaskText] = useState("");
 
-  const toggleSubtask = (subtaskId: string) => {
-    const updatedSubtasks =
-      task.sub_tasks?.map((st: SubTask) =>
-        st.id === subtaskId ? { ...st, isCompleted: !st.isCompleted } : st,
-      ) || [];
+  if (!isOpen || !task) return null;
 
-    const isAllCompleted =
-      updatedSubtasks.length > 0 && updatedSubtasks.every((st) => st.isCompleted);
+  const currentSubtasks: Record<string, boolean> = (task.subtasks as Record<string, boolean>) || {};
+
+  const toggleSubtask = (subtaskTitle: string) => {
+    const updatedSubtasks = {
+      ...currentSubtasks,
+      [subtaskTitle]: !currentSubtasks[subtaskTitle] // Đổi true thành false, false thành true
+    };
+
+    const subtaskValues = Object.values(updatedSubtasks);
+    const isAllCompleted = subtaskValues.length > 0 && subtaskValues.every(status => status === true);
+    
     const newStatus = isAllCompleted ? "completed" : task.status;
 
-    onUpdateTask({ ...task, sub_tasks: updatedSubtasks, status: newStatus });
+    onUpdateTask({ ...task, subtasks: updatedSubtasks, status: newStatus });
   };
 
-  const completedCount =
-    task.sub_tasks?.filter((st: SubTask) => st.isCompleted).length || 0;
-  const totalCount = task.sub_tasks?.length || 0;
-  const progress =
-    totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+  const subtaskValuesForProgress = Object.values(currentSubtasks);
+  const totalCount = subtaskValuesForProgress.length;
+  const completedCount = subtaskValuesForProgress.filter(Boolean).length; 
+  const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
 
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSubtaskText.trim()) return;
+    const title = newSubtaskText.trim();
+    if (!title) return;
 
-    const newSubtask: SubTask = {
-      id: `subtask-${Date.now()}`,
-      text: newSubtaskText,
-      isCompleted: false,
+    const updatedSubtasks = {
+      ...currentSubtasks,
+      [title]: false 
     };
 
     const newStatus = task.status === "completed" ? "in_progress" : task.status;
+    
     onUpdateTask({
       ...task,
-      sub_tasks: [...(task.sub_tasks || []), newSubtask],
+      subtasks: updatedSubtasks,
       status: newStatus,
     });
+    
     setNewSubtaskText("");
   };
 
-  const handleDeleteSubtask = (subtaskId: string) => {
-    const updatedSubtasks =
-      task.sub_tasks?.filter((st) => st.id !== subtaskId) || [];
-    onUpdateTask({ ...task, sub_tasks: updatedSubtasks });
+  const handleDeleteSubtask = (subtaskKey: string) => {
+    const updatedSubtasks = { ...currentSubtasks };
+    delete updatedSubtasks[subtaskKey];
+    onUpdateTask({ ...task, subtasks: updatedSubtasks });
   };
 
   const status = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.pending;
@@ -156,28 +158,28 @@ const TaskDetailModal = ({
           </div>
 
           <div className="tdm-subtask-list">
-            {task.sub_tasks && task.sub_tasks.length > 0 ? (
-              task.sub_tasks.map((st, idx) => (
+            {Object.keys(currentSubtasks).length > 0 ? (
+              Object.entries(currentSubtasks).map(([title, completed], idx: number) => (
                 <div
-                  key={st.id}
-                  className={`tdm-subtask ${st.isCompleted ? "tdm-subtask--done" : ""}`}
+                  key={title}
+                  className={`tdm-subtask ${completed ? "tdm-subtask--done" : ""}`}
                   style={{ animationDelay: `${idx * 0.04}s` }}
-                  onClick={() => toggleSubtask(st.id)}
+                  onClick={() => toggleSubtask(title)}
                 >
                   <label className="tdm-checkbox">
                     <input
                       type="checkbox"
-                      checked={st.isCompleted}
+                      checked={completed}
                       readOnly
                     />
                     <span className="tdm-checkmark" />
                   </label>
-                  <span className="tdm-subtask-text">{st.text}</span>
+                  <span className="tdm-subtask-text">{title}</span>
                   <button
                     className="tdm-del"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteSubtask(st.id);
+                      handleDeleteSubtask(title);
                     }}
                     aria-label="Delete subtask"
                   >
