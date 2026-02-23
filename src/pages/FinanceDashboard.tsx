@@ -61,7 +61,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
 export default function FinanceDashboard() {
   const queryClient = useQueryClient();
-  
+
   // State
   const [tetConfigId, setTetConfigId] = useState<string | null>(null);
   const [items, setItems] = useState<ShoppingItem[]>([]);
@@ -74,11 +74,12 @@ export default function FinanceDashboard() {
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<TimelinePhase | null>(null);
+  const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch tet config (cached)
   const { data: tetConfig, isLoading } = useQuery({
-    queryKey: ['tetConfig'],
+    queryKey: ["tetConfig"],
     queryFn: async () => {
       const configs = await apiClient.tetConfigs.getMyConfigs();
       if (configs && configs.length > 0) {
@@ -96,7 +97,7 @@ export default function FinanceDashboard() {
   // Fetch data when tetConfig is available
   useEffect(() => {
     if (!tetConfig?.id) return;
-    
+
     const fetchData = async () => {
       try {
         setError(null);
@@ -130,9 +131,9 @@ export default function FinanceDashboard() {
         try {
           // Fetch timeline phases for this tet config
           phasesData = await apiClient.get<TimelinePhase[]>(
-            `/timeline-phases/tet-config/${configId}`
+            `/timeline-phases/tet-config/${configId}`,
           );
-          
+
           setPhases(phasesData || []);
           if (phasesData && phasesData.length > 0) {
             setDefaultPhaseId(phasesData[0].id);
@@ -155,7 +156,7 @@ export default function FinanceDashboard() {
             isDefault: cat.is_system || false, // Use is_system from backend
           }),
         );
-        
+
         // Use ONLY backend categories (including system categories from backend)
         setCategories(backendCategories);
       } catch (err) {
@@ -284,6 +285,35 @@ export default function FinanceDashboard() {
     }
   };
 
+  const handleEditItem = async (updatedItem: Omit<ShoppingItem, "id">) => {
+    if (!tetConfigId || !editingItem) return;
+
+    try {
+      await financeApi.updateItem(
+        editingItem.id,
+        updatedItem,
+        tetConfigId,
+        updatedItem.timelinePhaseId,
+      );
+
+      // Refetch all data to update UI
+      const [budgetData, itemsData] = await Promise.all([
+        financeApi.getBudget(tetConfigId),
+        financeApi.getItems(tetConfigId),
+      ]);
+
+      setBudget({ total: budgetData.total, used: budgetData.used });
+      setItems(itemsData);
+
+      setEditingItem(null);
+    } catch (err: any) {
+      console.error("Failed to update item:", err);
+      alert(
+        `Failed to update item: ${err.response?.data?.message || err.message}`,
+      );
+    }
+  };
+
   const handleToggleStatus = async (itemId: string, currentStatus: string) => {
     if (!tetConfigId) return;
 
@@ -294,7 +324,9 @@ export default function FinanceDashboard() {
         console.error("Item not found:", itemId);
         return;
       }
-      
+
+
+
       const result = await financeApi.toggleItemStatus(
         itemId,
         newPurchased,
@@ -302,16 +334,32 @@ export default function FinanceDashboard() {
         currentItem,
       );
 
-      setItems((prev) =>
-        prev.map((item) => (item.id === itemId ? result.item : item)),
-      );
+      console.log("Toggle result:", result);
+      console.log("Toggle result item ID:", result.item.id);
+      console.log("Original item ID:", itemId);
+      console.log("IDs match:", result.item.id === itemId);
+
+      setItems((prev) => {
+        const updated = prev.map((item) => {
+          if (item.id === itemId) {
+            console.log("Updating item:", item.id, "→", result.item);
+            return result.item;
+          }
+          return item;
+        });
+        console.log("Updated items:", updated);
+        return updated;
+      });
       setBudget({ total: result.budget.total, used: result.budget.used });
-      
+
       // Invalidate cache to refresh data
-      queryClient.invalidateQueries({ queryKey: ['tetConfig'] });
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: ["tetConfig"] });
+    } catch (err: any) {
       console.error("Failed to toggle item status:", err);
-      alert("Failed to update item. Please try again.");
+      const errorMessage =
+        err.response?.data?.message ||
+        "Failed to update item. Please try again.";
+      alert(errorMessage);
     }
   };
 
@@ -325,9 +373,9 @@ export default function FinanceDashboard() {
 
       const budgetData = await financeApi.getBudget(tetConfigId);
       setBudget({ total: budgetData.total, used: budgetData.used });
-      
+
       // Invalidate cache to refresh data
-      queryClient.invalidateQueries({ queryKey: ['tetConfig'] });
+      queryClient.invalidateQueries({ queryKey: ["tetConfig"] });
     } catch (err) {
       console.error("Failed to delete item:", err);
       alert("Failed to delete item. Please try again.");
@@ -453,11 +501,13 @@ export default function FinanceDashboard() {
           items={items}
           categories={categories}
           onAddItem={() => setIsAddItemModalOpen(true)}
+          onEditItem={(item) => setEditingItem(item)}
           onToggleStatus={handleToggleStatus}
           onDeleteItem={handleDeleteItem}
         />
       </main>
 
+      {/* Add Item Modal */}
       <AddItemModal
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
@@ -466,6 +516,20 @@ export default function FinanceDashboard() {
         phases={phases}
         defaultPhaseId={defaultPhaseId}
       />
+
+      {/* Edit Item Modal */}
+      {editingItem && (
+        <AddItemModal
+          key={editingItem.id}
+          isOpen={!!editingItem}
+          onClose={() => setEditingItem(null)}
+          onAdd={handleEditItem}
+          categories={categories}
+          phases={phases}
+          defaultPhaseId={defaultPhaseId}
+          initialData={editingItem}
+        />
+      )}
 
       <AddCategoryModal
         isOpen={isAddCategoryModalOpen}

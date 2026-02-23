@@ -92,3 +92,24 @@ export const COLOR_CONFIG: Record<
     tokenBorder: "border-planner-amber/20",
   },
 };
+
+// Generate consistent color based on category name/id
+export const getCategoryColor = (categoryId: string | null): string => {
+  if (!categoryId || categoryId === "") return "planner-blue";
+
+  const colors = [
+    "planner-green",
+    "planner-pink",
+    "planner-purple",
+    "planner-blue",
+    "planner-amber",
+  ];
+
+  // Simple hash function for consistent color assignment
+  let hash = 0;
+  for (let i = 0; i < categoryId.length; i++) {
+    hash = categoryId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  return colors[Math.abs(hash) % colors.length];
+};

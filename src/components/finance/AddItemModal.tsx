@@ -10,6 +10,7 @@ interface AddItemModalProps {
   categories: CustomCategory[];
   phases: TimelinePhase[];
   defaultPhaseId?: string | null;
+  initialData?: ShoppingItem;
 }
 
 export const AddItemModal: React.FC<AddItemModalProps> = ({
@@ -19,6 +20,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   categories,
   phases,
   defaultPhaseId,
+  initialData,
 }) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -27,14 +29,32 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   const [phase, setPhase] = useState("");
   const [dueDate, setDueDate] = useState("");
 
+  // Populate form when modal opens or initialData changes
   useEffect(() => {
-    if (isOpen && categories.length > 0) {
-      setCategory(categories[0].id);
+    if (!isOpen) return;
+
+    if (initialData) {
+      // Edit mode - populate with existing data
+      setName(initialData.name || "");
+      setPrice(initialData.price?.toString() || "");
+      setQuantity(initialData.quantity?.toString() || "1");
+      setCategory(initialData.category || "");
+      setPhase(initialData.timelinePhaseId || "");
+      // Convert ISO date to YYYY-MM-DD format
+      const dateValue = initialData.dueDate
+        ? initialData.dueDate.split("T")[0]
+        : "";
+      setDueDate(dateValue);
+    } else {
+      // Add mode - reset to defaults
+      setName("");
+      setPrice("");
+      setQuantity("1");
+      setCategory(categories.length > 0 ? categories[0].id : "");
+      setPhase(defaultPhaseId || "");
+      setDueDate("");
     }
-    if (isOpen && defaultPhaseId) {
-      setPhase(defaultPhaseId);
-    }
-  }, [isOpen, categories, defaultPhaseId]);
+  }, [isOpen, initialData?.id]); // Only depend on isOpen and item ID
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,18 +65,24 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
       price: parseFloat(price),
       quantity: parseInt(quantity) || 1,
       category: category || categories[0]?.id || "other",
-      status: "pending",
+      status: initialData?.status || "pending", // Preserve status when editing
       dueDate,
       timelinePhaseId: phase,
     });
 
-    // Reset form
-    setName("");
-    setPrice("");
-    setQuantity("1");
-    setCategory(categories[0]?.id || "");
-    setPhase(defaultPhaseId || "");
-    setDueDate("");
+    onClose();
+  };
+
+  const handleClose = () => {
+    // Reset form when closing
+    if (!initialData) {
+      setName("");
+      setPrice("");
+      setQuantity("1");
+      setCategory(categories[0]?.id || "");
+      setPhase(defaultPhaseId || "");
+      setDueDate("");
+    }
     onClose();
   };
 
@@ -67,10 +93,10 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
       <div className="bg-card rounded-2xl border border-border shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h2 className="font-serif text-xl text-foreground">
-            Add shopping item
+            {initialData ? "Edit shopping item" : "Add shopping item"}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1 hover:bg-muted rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-muted-foreground" />
@@ -182,7 +208,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-muted transition-colors font-medium text-sm"
             >
               Cancel
@@ -191,7 +217,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
               type="submit"
               className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm"
             >
-              Add item
+              {initialData ? "Save changes" : "Add item"}
             </button>
           </div>
         </form>

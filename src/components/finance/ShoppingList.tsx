@@ -15,12 +15,17 @@ import type {
   ShoppingCategory,
   CustomCategory,
 } from "../../types/shopping.types";
-import { ICON_MAP, COLOR_CONFIG } from "../../constants/finance";
+import {
+  ICON_MAP,
+  COLOR_CONFIG,
+  getCategoryColor,
+} from "../../constants/finance";
 
 interface ShoppingListProps {
   items: ShoppingItem[];
   categories: CustomCategory[];
   onAddItem: () => void;
+  onEditItem: (item: ShoppingItem) => void;
   onToggleStatus: (itemId: string, currentStatus: string) => void;
   onDeleteItem: (itemId: string) => void;
 }
@@ -29,6 +34,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   items,
   categories,
   onAddItem,
+  onEditItem,
   onToggleStatus,
   onDeleteItem,
 }) => {
@@ -100,13 +106,13 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       {/* Items */}
       <div className="divide-y divide-border">
         {filteredItems.map((item) => {
-          const category = categories.find((c) => c.name === item.category);
+          const category = categories.find((c) => c.id === item.category);
           const Icon = category ? ICON_MAP[category.icon] || Package : Package;
-          const config = category
-            ? COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"]
-            : COLOR_CONFIG["planner-green"];
-          const total = item.price * item.quantity;
+          const categoryColor = category?.color || "#94a3b8"; // Default gray
           const isPurchased = item.status === "purchased";
+
+          // THÊM DÒNG NÀY - Calculate total for this item
+          const total = item.price * item.quantity;
 
           return (
             <div
@@ -125,9 +131,10 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
               {/* Category icon */}
               <div
-                className={`shrink-0 h-9 w-9 rounded-lg ${config.tokenBg} flex items-center justify-center`}
+                className="shrink-0 h-9 w-9 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: `${categoryColor}20` }}
               >
-                <Icon className={`w-4 h-4 ${config.tokenColor}`} />
+                <Icon className="w-4 h-4" style={{ color: categoryColor }} />
               </div>
 
               {/* Info */}
@@ -138,11 +145,17 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                   >
                     {item.name}
                   </span>
-                  <span
-                    className={`text-xs px-1.5 py-0.5 rounded ${config.tokenBg} ${config.tokenColor} font-medium`}
-                  >
-                    {item.category}
-                  </span>
+                  {category && (
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded font-medium"
+                      style={{
+                        backgroundColor: `${categoryColor}20`,
+                        color: categoryColor,
+                      }}
+                    >
+                      {category.name}
+                    </span>
+                  )}
                 </div>
                 {item.notes && (
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -184,7 +197,10 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
               {/* Actions */}
               <div className="flex items-center gap-0.5 shrink-0">
-                <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+                <button
+                  onClick={() => onEditItem(item)}
+                  className="p-1.5 hover:bg-muted rounded-lg transition-colors"
+                >
                   <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
                 <button

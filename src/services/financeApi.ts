@@ -35,6 +35,7 @@ interface BackendCategory {
   id: string; // UUID
   name: string;
   icon?: string;
+  color?: string; // Hex color from backend
   is_system?: boolean;
   allocated_budget?: number;
   tet_config_id: string; // UUID
@@ -64,11 +65,15 @@ interface BackendBudgetSummary {
 const mapBackendItemToFrontend = (item: BackendTodoItem): ShoppingItem => ({
   id: item.id, // Already string UUID
   name: item.title || "",
-  category: item.category_id || "other",
+  // Handle both category_id (PATCH) and category.id (GET/POST)
+  category: item.category_id || (item as any).category?.id || "",
   price: item.estimated_price || 0,
   quantity: item.quantity || 1,
   status: item.purchased ? "purchased" : "pending",
   dueDate: item.deadline || new Date().toISOString(),
+  // Handle both timeline_phase_id (PATCH) and timeline_phase.id (GET/POST)
+  timelinePhaseId:
+    item.timeline_phase_id || (item as any).timeline_phase?.id || undefined,
 });
 
 const mapFrontendItemToBackend = (
@@ -77,22 +82,54 @@ const mapFrontendItemToBackend = (
   timelinePhaseId?: string, // Add timeline phase ID
   isUpdate: boolean = false, // Add flag to distinguish create vs update
 ): Partial<BackendTodoItem> => {
-  const payload: any = {
-    title: item.name,
-    estimated_price: item.price,
-    quantity: item.quantity,
-    deadline: item.dueDate,
-    category_id:
-      item.category && item.category.includes("-") ? item.category : undefined,
-    tet_config_id: tetConfigId,
-    is_shopping: true,
-    status: "pending",
-    timeline_phase_id: timelinePhaseId || null, // Use provided phase ID
-  };
+  const payload: any = {};
 
-  // Only include 'purchased' for updates, not creates
+  // Always include these fields
+  if (item.name !== undefined) payload.title = item.name;
+  if (item.price !== undefined) {
+    payload.estimated_price = parseFloat(item.price.toString());
+  }
+  if (item.quantity !== undefined) payload.quantity = item.quantity;
+  if (item.dueDate !== undefined) payload.deadline = item.dueDate;
+
+  // Handle category_id
+  if (item.category !== undefined) {
+    const categoryValue =
+      item.category && item.category !== "other" && item.category.includes("-")
+        ? item.category
+        : null;
+
+    console.log("Category mapping:", {
+      input: item.category,
+      isOther: item.category === "other",
+      hasHyphen: item.category?.includes("-"),
+      output: categoryValue,
+    });
+
+    payload.category_id = categoryValue;
+  }
+
+  // Handle timeline_phase_id (allow update)
+  if (item.timelinePhaseId !== undefined) {
+    const phaseValue =
+      item.timelinePhaseId && item.timelinePhaseId !== ""
+        ? item.timelinePhaseId
+        : null;
+    payload.timeline_phase_id = phaseValue;
+  }
+
+  // Only include these on CREATE, not UPDATE
+  if (!isUpdate) {
+    payload.tet_config_id = tetConfigId;
+    payload.is_shopping = true;
+    // timeline_phase_id already handled above
+  }
+
+  // Include status field
   if (isUpdate && item.status !== undefined) {
-    payload.purchased = item.status === "purchased";
+    payload.status = item.status === "purchased" ? "completed" : "pending";
+  } else if (!isUpdate) {
+    payload.status = "pending";
   }
 
   return payload;
@@ -111,7 +148,7 @@ const mapBackendCategoryToFrontend = (
   id: cat.id, // Already string UUID
   name: cat.name,
   icon: cat.icon || "Package",
-  color: "planner-blue",
+  color: cat.color || "#94a3b8", // Use backend color or default gray
   allocated: cat.allocated_budget || 0,
   spent: 0,
 });
@@ -178,7 +215,16 @@ export const financeApi = {
       "/todo-items",
       backendItem,
     );
-    return mapBackendItemToFrontend(created);
+
+    console.log("POST response:", created);
+    console.log("POST response category:", (created as any).category);
+    console.log("POST response category_id:", created.category_id);
+
+    const mapped = mapBackendItemToFrontend(created);
+    console.log("Mapped result:", mapped);
+    console.log("Mapped category:", mapped.category);
+
+    return mapped;
   },
 
   updateItem: async (
@@ -193,10 +239,14 @@ export const financeApi = {
       timelinePhaseId,
       true, // isUpdate = true for updates
     );
-    const updated = await apiClient.patch<BackendTodoItem>(
-      `/todo-items/${itemId}`,
-      backendUpdates,
-    );
+
+    const response = await apiClient.patch<{
+      todo_item: BackendTodoItem;
+      budget: any;
+    }>(`/todo-items/${itemId}`, backendUpdates);
+
+    // Extract todo_item from response
+    const updated = response.todo_item;
     return mapBackendItemToFrontend(updated);
   },
 
@@ -205,60 +255,59 @@ export const financeApi = {
   },
 
   // Toggle purchased (2 API calls: PATCH + GET budget)
+  // Toggle purchased (2 API calls: PATCH + GET budget)
   toggleItemStatus: async (
     itemId: string,
     purchased: boolean,
-    tetConfigId: string, // Changed to string
-    currentItem: any, // Current item with category and price
+    tetConfigId: string,
+    currentItem: ShoppingItem, // Changed type to ShoppingItem
   ) => {
-    console.log("toggleItemStatus - itemId:", itemId, "purchased:", purchased);
-    console.log("currentItem:", currentItem);
     try {
+      // Convert empty string to null for category_id
+      const categoryId =
+        currentItem.category && currentItem.category !== ""
+          ? currentItem.category
+          : null;
+
       const payload: any = {
         status: purchased ? "completed" : "pending",
-      };
-
-      // Backend requires category_id (UUID or null) and estimated_price (number)
-      if (currentItem.category && currentItem.category.includes("-")) {
-        // Valid UUID
-        payload.category_id = currentItem.category;
-      } else {
-        // "other" or invalid - send null
-        payload.category_id = null;
-      }
-
-      if (currentItem.price) {
-        // Convert to number
-        payload.estimated_price =
+        category_id: categoryId,
+        estimated_price:
           typeof currentItem.price === "string"
             ? parseFloat(currentItem.price)
-            : currentItem.price;
-      }
+            : currentItem.price,
+        quantity: currentItem.quantity || 1,
+      };
 
-      console.log("Sending payload:", payload);
-      const updated = await apiClient.patch<BackendTodoItem>(
-        `/todo-items/${itemId}`,
-        payload,
-      );
+      console.log("Toggle payload:", payload);
+      console.log("Toggle - current item before:", currentItem);
+
+      const response = await apiClient.patch<{
+        todo_item: BackendTodoItem;
+        budget: any;
+      }>(`/todo-items/${itemId}`, payload);
+
+      console.log("Toggle PATCH response:", response);
+      console.log("Toggle todo_item:", response.todo_item);
+
+      // Extract todo_item from wrapped response
+      const updated = response.todo_item;
+      console.log("Extracted todo_item category:", (updated as any).category);
+      console.log("Extracted todo_item category_id:", updated.category_id);
+
+      const mapped = mapBackendItemToFrontend(updated);
+      console.log("Toggle mapped item:", mapped);
+
       const budget = await financeApi.getBudget(tetConfigId);
       return {
-        item: mapBackendItemToFrontend(updated),
+        item: mapped,
         budget,
       };
     } catch (error: any) {
-      console.error("Toggle item status error:", {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
-        fullError: error,
-      });
       console.error(
-        "DETAILED ERROR MESSAGE:",
-        JSON.stringify(error.response?.data, null, 2),
+        "Failed to toggle item status:",
+        error.response?.data || error.message,
       );
-      if (error.response?.data?.message) {
-        console.error("VALIDATION ERRORS:", error.response.data.message);
-      }
       throw error;
     }
   },
@@ -276,12 +325,23 @@ export const financeApi = {
     tetConfigId: string, // Changed to string
     category: { name: string; icon: string; color: string; allocated: number },
   ) => {
-    const created = await apiClient.post<BackendCategory>("/categories", {
+    const payload = {
       name: category.name,
       icon: category.icon,
+      color: category.color,
       allocated_budget: category.allocated,
       tet_config_id: tetConfigId,
-    });
+    };
+
+    console.log("Creating category - payload:", payload);
+
+    const created = await apiClient.post<BackendCategory>(
+      "/categories",
+      payload,
+    );
+
+    console.log("Category created - response:", created);
+
     return mapBackendCategoryToFrontend(created);
   },
 
