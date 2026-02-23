@@ -85,7 +85,7 @@ const TaskDetailModal = ({
 
   const status = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.pending;
   const priority = PRIORITY_CONFIG[task.priority ?? "medium"] ?? PRIORITY_CONFIG.medium;
-
+  console.log("Dữ liệu Subtasks nhận được:", task.title, typeof task.subtasks, task.subtasks);
   return (
     <div className="tdm-overlay" onClick={onClose}>
       <div className="tdm-modal" onClick={(e) => e.stopPropagation()}>
