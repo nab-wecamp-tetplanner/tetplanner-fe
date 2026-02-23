@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { create } from 'domain';
 import apiClient from './apiClient';
 
 export const todoService = {
@@ -8,9 +7,7 @@ export const todoService = {
     },
 
     getTimelinePhases: (tetConfigId: string) => {
-        return apiClient.get('/timeline-phases', {
-            params: { tet_config_id: tetConfigId }
-        });
+        return apiClient.get(`/timeline-phases/tet-config/${tetConfigId}`);
     },
 
     createTimelinePhase: (data: any) => {
@@ -26,7 +23,6 @@ export const todoService = {
         });
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     addTodoItem: (data: any) => {
         return apiClient.post('/todo-items', data);
     },
