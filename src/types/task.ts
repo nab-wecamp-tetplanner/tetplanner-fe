@@ -53,4 +53,6 @@ export interface ManagePhasesModalProps {
     phases: any[];
     configId: string;
     onPhaseCreated: (newPhase: any) => void;
+    activePhaseId: string;
+    onSelectPhase: (phaseId: string) => void;
 }

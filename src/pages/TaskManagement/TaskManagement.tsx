@@ -504,16 +504,16 @@ const TaskManagement: React.FC = () => {
         /> 
 
         <ManagePhasesModal 
-        isOpen={isPhaseModalOpen}
-        onClose={() => setIsPhaseModalOpen(false)}
-        phases={phases} // Pass current phases list for display
-        configId={activeConfigId}
-        onPhaseCreated={(newPhase) => {
-            // On successful creation, automatically add it to the phases list
+          isOpen={isPhaseModalOpen}
+          onClose={() => setIsPhaseModalOpen(false)}
+          phases={phases}
+          configId={activeConfigId}
+          activePhaseId={activePhaseId}
+          onSelectPhase={setActivePhaseId}
+          onPhaseCreated={(newPhase) => {
             setPhases(prev => [...prev, newPhase]);
-            // Optional: Switch filter to the newly created phase
             setActivePhaseId(newPhase.id); 
-        }}
+          }}
         />
     </div>
     )
