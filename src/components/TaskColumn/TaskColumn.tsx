@@ -1,6 +1,6 @@
 import React from 'react'
 import './TaskColumn.css'
-import type { Task, TaskStatus } from '../../types/task'
+import type { Task, TaskStatus, Category } from '../../types/task'
 import { Plus, MoreHorizontal } from 'lucide-react'
 import TaskCard from '../TaskCard/TaskCard'
 
@@ -13,9 +13,10 @@ interface TaskColumnProps {
     onAddTask: () => void;
     onTaskClick?: (task: Task) => void;
     onCelebrate?: (x: number, y: number) => void;
+    categories?: Category[];
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask, onDeleteTask, onAddTask, onTaskClick, onCelebrate }) => {
+const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTask, onDeleteTask, onAddTask, onTaskClick, onCelebrate, categories }) => {
 
     const [isOver, setIsOver] = React.useState(false);
     const [dissolvingTaskId, setDissolvingTaskId] = React.useState<string | null>(null);
@@ -92,6 +93,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
                         onDeleteTask={onDeleteTask} 
                         onClick={() => onTaskClick && onTaskClick(task)}
                         isDissolving={dissolvingTaskId === task.id}
+                        categories={categories}
                     />
                 ))
             ) : (

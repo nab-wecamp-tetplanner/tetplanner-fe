@@ -23,19 +23,12 @@ export const todoService = {
         });
     },
 
-    getTodoItemsByPhase: (phaseId: string) => {
-        return apiClient.get(`/todo-items/phase/${phaseId}`);
-    },
-
     addTodoItem: (data: any) => {
         return apiClient.post('/todo-items', data);
     },
 
-    updateTodoItemStatus: (id: string, status: string) => {
-        return apiClient.patch(`/todo-items/${id}`, { status });
-    },
-
     updateTodoItem: (id: string, data: any) => {
+        console.log(`3 Updating task ${id} with data:`, data);
         return apiClient.patch(`/todo-items/${id}`, data);
     },
 

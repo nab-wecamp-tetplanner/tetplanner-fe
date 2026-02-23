@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useMemo } from 'react'
-import type { TetConfig, Task, TaskStatus} from '../../types/task'
+import type { TetConfig, Task, TaskStatus, Category } from '../../types/task'
 import { todoService } from '../../services/todoService';
 import { MOCK_MEMBERS, TIMELINE_PHASES, MOCK_INITIAL_TASKS } from '../../data/mockTasks';
 import './TaskManagement.css'
@@ -35,6 +35,7 @@ const TaskManagement: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -43,6 +44,12 @@ const TaskManagement: React.FC = () => {
                 const configList = configRes.data || [];
                 
                 setConfigs(configList);
+
+                // Fetch categories
+                try {
+                    const catRes: any = await todoService.getCategories();
+                    setCategories(catRes.data || catRes || []);
+                } catch { /* categories are optional */ }
 
                 
                 if (configList.length > 0) {
@@ -138,7 +145,7 @@ const TaskManagement: React.FC = () => {
             if (isHardDelete) {
                 await todoService.deleteTodoItem(taskId);
             } else {
-                await todoService.updateTodoItemStatus(taskId, 'cancelled' as TaskStatus);
+                await todoService.updateTodoItem(taskId, { status: 'cancelled' as TaskStatus });
             }
         } catch (error) {
             console.error("Error updating task status:", error);
@@ -147,32 +154,25 @@ const TaskManagement: React.FC = () => {
         }
     };
 
-    // const handleMoveTask = async(taskId: string, newStatus: TaskStatus) => {
-    //     const backupTasks = [...todoItems];
+    const handleMoveTask = async(taskId: string, newStatus: TaskStatus) => {
+        const backupTasks = [...todoItems];
         
-    //     setTodoItems(prev => prev.map(task =>
-    //         task.id === taskId ? { ...task, status: newStatus } : task
-    //     ));
-
-    //     // API call to update status
-    //     try {
-    //         await todoService.updateTodoItemStatus(taskId, newStatus);
-    //     } catch (error) {
-    //         console.error("Error updating task status:", error);
-    //         setTodoItems(backupTasks); 
-    //         alert("Failed to move task. Please try again.");
-    //     }
-    // }
-
-    //MOCK
-    const handleMoveTask = (taskId: string, newStatus: TaskStatus) => {
         setTodoItems(prev => prev.map(task =>
             task.id === taskId ? { ...task, status: newStatus } : task
         ));
-        if (newStatus === 'completed') {
-            handleCelebrate(window.innerWidth / 2, window.innerHeight / 2);
+
+        try {
+            console.log(`1 Moving task ${taskId} to status ${newStatus}`);
+            await todoService.updateTodoItem(taskId, { status: newStatus });
+            console.log(`2 Successfully moved task ${taskId} to status ${newStatus}`);
+        } catch (error) {
+            console.error("Error updating task status:", error);
+            setTodoItems(backupTasks); 
+            alert("Failed to move task. Please try again.");
         }
     }
+
+    
     const handleAddTask = async(taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => {
         // API call to create new task
         let newTask: Task;
@@ -456,6 +456,7 @@ const TaskManagement: React.FC = () => {
                     onAddTask={() => handleOpenModal(column.id)}
                     onTaskClick={handleOpenTaskDetail}
                     onCelebrate={handleCelebrate}
+                    categories={categories}
                 />
             ))} 
             </div>
