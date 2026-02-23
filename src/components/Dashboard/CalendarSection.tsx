@@ -153,15 +153,16 @@ const CalendarSection = () => {
   };
 
   return (
-    <div className="bg-slate-900 text-white rounded-2xl p-6 overflow-hidden w-full lg:max-w-[50%]">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden w-full lg:max-w-[50%]">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="bg-blue-200 text-slate-900 font-bold text-lg rounded-full w-12 h-12 flex items-center justify-center">
+          <div className="bg-indigo-500 text-white font-bold text-lg rounded-full w-12 h-12 flex items-center justify-center shadow-sm">
             {currentDate.getDate()}
           </div>
           <div>
-            <p className="text-sm text-slate-400">
+            <h3 className="text-lg font-bold text-foreground">Calendar</h3>
+            <p className="text-xs text-muted-foreground">
               {currentDate.toLocaleDateString("en-US", {
                 month: "long",
                 year: "numeric",
@@ -170,56 +171,56 @@ const CalendarSection = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-            <ChevronLeft className="w-5 h-5" />
+          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           </button>
-          <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
-            <ChevronRight className="w-5 h-5" />
+          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
       </div>
 
       {/* Events List */}
-      <div className="space-y-6 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800">
+      <div className="space-y-6 max-h-150 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {events.map((dayEvents) => (
           <div key={`${dayEvents.date}-${dayEvents.month}`}>
             {/* Date Header */}
-            <div className="flex items-center gap-3 mb-4 sticky top-0 bg-slate-900 py-2">
-              <div className="text-xl font-bold text-white min-w-fit">
+            <div className="flex items-center gap-3 mb-4 sticky top-0 bg-white py-2">
+              <div className="text-xl font-bold text-foreground min-w-fit">
                 {dayEvents.date}
               </div>
-              <div className="text-xs font-semibold text-slate-400 uppercase min-w-fit">
+              <div className="text-xs font-semibold text-muted-foreground uppercase min-w-fit">
                 {dayEvents.month === 2 ? "FEB" : "MAR"}, {dayEvents.dayName}
               </div>
-              <div className="flex-1 h-px bg-slate-700"></div>
+              <div className="flex-1 h-px bg-gray-200"></div>
             </div>
 
             {/* Events */}
             <div className="space-y-2 ml-6">
               {dayEvents.events.map((event, idx) => (
-                <div key={idx} className="flex items-start gap-3">
+                <div key={idx} className="flex items-start gap-3 group">
                   {/* Color dot */}
                   <div
                     className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${getColorDot(event.color)}`}
                   ></div>
 
                   {/* Event content */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-300">
+                  <div className="flex-1 min-w-0 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <p className="text-sm font-medium text-foreground">
                       {event.type === "all-day" ? "All day" : event.time}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       {event.location || event.title}
                     </p>
                     {event.title &&
                       event.type === "all-day" &&
                       event.title !== event.location && (
-                        <p className="text-xs text-slate-300 mt-1">
+                        <p className="text-xs text-foreground mt-1">
                           {event.title}
                         </p>
                       )}
                     {event.type === "timed" && event.title && (
-                      <p className="text-xs text-slate-300 mt-1">
+                      <p className="text-xs text-foreground mt-1">
                         {event.title}
                       </p>
                     )}
@@ -230,7 +231,7 @@ const CalendarSection = () => {
 
             {/* Divider */}
             {dayEvents !== events[events.length - 1] && (
-              <div className="h-px bg-slate-700 my-4"></div>
+              <div className="h-px bg-gray-200 my-4"></div>
             )}
           </div>
         ))}
