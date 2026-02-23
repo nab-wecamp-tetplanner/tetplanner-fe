@@ -3,7 +3,7 @@ import { Check, CirclePlus, X, Trash2 } from "lucide-react";
 import type { TodoItem } from "../../types/todo.types";
 import apiClient from "../../services/apiClient";
 import type { TetConfig } from "../../types/tetConfig.types";
-import type { Timeline } from "../../types/timeline.types";
+// import type { Timeline } from "../../types/timeline.types";
 import { useLoading } from "../../contexts/LoadingContext";
 
 interface TaskInfo extends TetConfig {
@@ -16,11 +16,11 @@ export default function TaskListWidget({
   tetConfigs: string[];
 }) {
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const [, setExpandedTasks] = useState<string[]>([]);
+  // const [, setExpandedTasks] = useState<string[]>([]);
   const [tasksByConfig, setTasksByConfig] = useState<Record<string, TaskInfo>>(
     {},
   );
-  const [timelines, setTimelines] = useState<Timeline[]>([]);
+  // const [timelines, setTimelines] = useState<Timeline[]>([]);
   const { showLoading, hideLoading } = useLoading();
 
   /**
@@ -84,13 +84,13 @@ export default function TaskListWidget({
     return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   }, [tasksByConfig]);
 
-  const toggleExpand = (id: string) => {
-    setExpandedTasks((prev) =>
-      prev.includes(id)
-        ? prev.filter((taskId) => taskId !== id)
-        : [...prev, id],
-    );
-  };
+  // const toggleExpand = (id: string) => {
+  //   setExpandedTasks((prev) =>
+  //     prev.includes(id)
+  //       ? prev.filter((taskId) => taskId !== id)
+  //       : [...prev, id],
+  //   );
+  // };
 
   /**
    * Updates task status by mapping boolean toggle to TodoItem status enum.
