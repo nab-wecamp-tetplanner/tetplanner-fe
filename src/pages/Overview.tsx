@@ -12,6 +12,7 @@ import HeroSection from "../components/Overview/HeroSection";
 import type { TetConfig } from "../types/tetConfig.types";
 import type { TodoItem } from "../types/todo.types";
 import { useLoading } from "../contexts/LoadingContext";
+import { useAppStore } from "../stores/useAppStore";
 
 export interface FullConfigData extends TetConfig {
   total_budget: number;
@@ -24,6 +25,7 @@ export interface FullConfigData extends TetConfig {
 export default function Overview() {
   const [data, setData] = useState<FullConfigData[]>([]);
   const { showLoading, hideLoading } = useLoading();
+  const configId = useAppStore((state) => state.configId);
 
   /**
    * Orchestrates parallel data fetching for all configurations, 
@@ -31,7 +33,7 @@ export default function Overview() {
    */
   const fetchAllOverviewData = useCallback(async () => {
     try {
-      // showLoading();
+      showLoading();
       
       const myConfigs: TetConfig[] = await apiClient.tetConfigs.getMyConfigs();
 
@@ -39,8 +41,8 @@ export default function Overview() {
         myConfigs.map(async (config) => {
           // Fetch budget and tasks concurrently for each config ID
           const [budgetSummary, taskItems] = await Promise.all([
-            apiClient.tetConfigs.getBudgetSummary(config.id),
-            apiClient.todos.getAll({ tetConfigId: config.id }),
+            apiClient.tetConfigs.getBudgetSummary(configId || config.id),
+            apiClient.todos.getAll({ tetConfigId: configId || config.id }),
           ]);
 
           return {
@@ -57,11 +59,11 @@ export default function Overview() {
     } finally {
       hideLoading();
     }
-  }, [showLoading, hideLoading]);
+  }, [configId]);
 
   useEffect(() => {
     fetchAllOverviewData();
-  }, [fetchAllOverviewData]);
+  }, [configId]);
 
   const handleDeleteConfigAction = useCallback(async (configId: string) => {
     if (window.confirm("Are you sure you want to delete this configuration?")) {

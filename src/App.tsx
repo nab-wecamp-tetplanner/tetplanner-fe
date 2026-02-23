@@ -15,6 +15,7 @@ import Register from "./pages/Auth/RegisterPage";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LoadingProvider } from "./contexts/LoadingContext";
+import ConfigGuard from "./routes/ConfigGuard";
 
 const queryClient = new QueryClient();
 
@@ -53,12 +54,14 @@ export default function App() {
 
                 {/* Protected Routes  */}
                 <Route element={<ProtectedRoute />}>
-                  <Route path="/" element={<Overview />} />
-                  <Route path="/task" element={<TaskManagement />} />
-                  <Route path="/calendar" element={<CalendarPage />} />
-                  <Route path="/finance" element={<FinanceDashboard />} />
-                  <Route path="/transaction" element={<Transaction />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route element={<ConfigGuard />}>
+                    <Route path="/" element={<Overview />} />
+                    <Route path="/task" element={<TaskManagement />} />
+                    <Route path="/calendar" element={<CalendarPage />} />
+                    <Route path="/finance" element={<FinanceDashboard />} />
+                    <Route path="/transaction" element={<Transaction />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                  </Route>
                 </Route>
               </Routes>
             </BrowserRouter>
