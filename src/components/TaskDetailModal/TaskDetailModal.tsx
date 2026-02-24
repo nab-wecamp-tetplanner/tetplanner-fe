@@ -102,13 +102,21 @@ const TaskDetailModal = ({
 
   const handleDeleteSubtask = async(subtaskKey: string) => {
     const updatedSubtasks = { ...currentSubtasks };
+    console.log(`Deleting subtask "${subtaskKey}"`);
     delete updatedSubtasks[subtaskKey];
-    onUpdateTask({ ...task, subtasks: updatedSubtasks }, true);
+
+    const subtaskValues = Object.values(updatedSubtasks);
+    const isAllCompleted = subtaskValues.length > 0 && subtaskValues.every(status => status === true);
+    const newStatus = isAllCompleted ? "completed" : (task.status === "completed" && subtaskValues.length > 0 ? "in_progress" : task.status);
+
+    onUpdateTask({ ...task, subtasks: updatedSubtasks, status: newStatus }, true);
+
     try {
+      console.log(`Calling API to delete subtask "${subtaskKey}" for task ${task.id}`);
       await todoService.deleteSubtask(task.id, subtaskKey);
     } catch (error) {
       console.error("Error deleting subtask:", error);
-      alert("Failed to delete subtask. Please try again.");
+      alert("Xóa việc nhỏ thất bại. Vui lòng thử lại!");
     }
   };
 

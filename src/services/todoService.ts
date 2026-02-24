@@ -44,7 +44,7 @@ export const todoService = {
     // DELETE /todo-items/{id}/subtasks - Remove a subtask by name
     deleteSubtask: (taskId: string, subtaskName: string) => {
         return apiClient.delete(`/todo-items/${taskId}/subtasks`, {
-            params: { name: subtaskName } 
+            data: { name: subtaskName } 
         });
     },
 
