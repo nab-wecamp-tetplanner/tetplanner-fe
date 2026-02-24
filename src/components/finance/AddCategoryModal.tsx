@@ -56,6 +56,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     };
     return colorMap[hex] || "planner-blue";
   };
+  const AISchedulerCard(),
 
   // Load initial data when modal opens
   useEffect(() => {

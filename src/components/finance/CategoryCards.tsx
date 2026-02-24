@@ -5,7 +5,7 @@ import type {
   CategorySummary,
   CustomCategory,
 } from "../../types/shopping.types";
-import { ICON_MAP, COLOR_CONFIG } from "../../constants/finance";
+import { ICON_MAP } from "../../constants/finance";
 
 interface CategoryCardsProps {
   categorySummaries: CategorySummary[];

@@ -15,11 +15,7 @@ import type {
   ShoppingCategory,
   CustomCategory,
 } from "../../types/shopping.types";
-import {
-  ICON_MAP,
-  COLOR_CONFIG,
-  getCategoryColor,
-} from "../../constants/finance";
+import { ICON_MAP } from "../../constants/finance";
 
 interface ShoppingListProps {
   items: ShoppingItem[];

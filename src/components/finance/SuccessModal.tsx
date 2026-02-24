@@ -1,3 +1,4 @@
+import React from "react";
 import { CheckCircle2, X } from "lucide-react";
 
 interface SuccessModalProps {
@@ -6,7 +7,7 @@ interface SuccessModalProps {
   message: string;
 }
 
-const SuccessModal: React.FC<SuccessModalProps> = ({
+export const SuccessModal: React.FC<SuccessModalProps> = ({
   isOpen,
   onClose,
   message,

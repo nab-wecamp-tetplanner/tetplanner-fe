@@ -11,6 +11,7 @@ import { TimelinePhasesSection } from "../components/finance/TimelinePhasesSecti
 import { DEFAULT_CATEGORIES } from "../constants/finance";
 import financeApi from "../services/financeApi";
 import apiClient from "../services/apiClient";
+import { SuccessModal } from "../components/finance/SuccessModal";
 import type {
   ShoppingItem,
   Budget,
@@ -111,6 +112,13 @@ export default function FinanceDashboard() {
   const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(
     null,
   );
+  const [successModal, setSuccessModal] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: "",
+  });
 
   // 1. Lấy danh sách kế hoạch
   const { data: configs } = useQuery({
@@ -188,6 +196,10 @@ export default function FinanceDashboard() {
       try {
         await financeApi.updateBudget(tetConfigId, Number(newBudgetStr));
         setBudget((prev) => ({ ...prev, total: Number(newBudgetStr) }));
+        setSuccessModal({
+          isOpen: true,
+          message: "Cập nhật ngân sách thành công!",
+        });
         alert("Cập nhật thành công!");
       } catch (err) {
         alert("Lỗi cập nhật ngân sách.");
@@ -204,6 +216,10 @@ export default function FinanceDashboard() {
         newItem.timelinePhaseId || defaultPhaseId,
       );
       setItems((prev) => [...prev, created]);
+      setSuccessModal({
+        isOpen: true,
+        message: "Đã thêm món đồ vào danh sách mua sắm!",
+      });
       const budgetData = await financeApi.getBudget(tetConfigId);
       setBudget({ total: budgetData.total, used: budgetData.used });
       setIsAddItemModalOpen(false);
@@ -228,6 +244,10 @@ export default function FinanceDashboard() {
       setBudget({ total: budgetData.total, used: budgetData.used });
       setItems(itemsData);
       setEditingItem(null);
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật món đồ thành công!",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -240,6 +260,10 @@ export default function FinanceDashboard() {
       setItems((prev) => prev.filter((i) => i.id !== itemId));
       const budgetData = await financeApi.getBudget(tetConfigId!);
       setBudget({ total: budgetData.total, used: budgetData.used });
+      setSuccessModal({
+        isOpen: true,
+        message: "Đã xóa món đồ khỏi danh sách!",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -258,6 +282,10 @@ export default function FinanceDashboard() {
       );
       setItems((prev) => prev.map((i) => (i.id === itemId ? res.item : i)));
       setBudget({ total: res.budget.total, used: res.budget.used });
+      setSuccessModal({
+        isOpen: true,
+        message: "Đã cập nhật trạng thái món đồ!",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -268,6 +296,10 @@ export default function FinanceDashboard() {
     try {
       const created = await financeApi.addCategory(tetConfigId, newCat);
       setCategories((prev) => [...prev, created]);
+      setSuccessModal({
+        isOpen: true,
+        message: "Đã thêm danh mục mới!",
+      });
       setIsAddCategoryModalOpen(false);
     } catch (err) {
       console.error(err);
@@ -285,6 +317,10 @@ export default function FinanceDashboard() {
         prev.map((c) => (c.id === category.id ? { ...c, ...updates } : c)),
       );
       setEditingCategory(null);
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật danh mục thành công!",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -308,6 +344,7 @@ export default function FinanceDashboard() {
         tet_config_id: tetConfigId,
       });
       setPhases((prev) => [...prev, res]);
+      setSuccessModal({ isOpen: true, message: "Đã thêm giai đoạn mới!" });
       setIsAddPhaseModalOpen(false);
     } catch (err) {
       console.error(err);
@@ -325,6 +362,10 @@ export default function FinanceDashboard() {
         prev.map((p) => (p.id === editingPhase.id ? res : p)),
       );
       setEditingPhase(null);
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật giai đoạn thành công!",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -417,6 +458,12 @@ export default function FinanceDashboard() {
       </main>
 
       {/* MODALS */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        message={successModal.message}
+      />
+
       <AddItemModal
         isOpen={isAddItemModalOpen || !!editingItem}
         onClose={() => {

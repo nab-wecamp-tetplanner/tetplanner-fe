@@ -1,6 +1,6 @@
 import React from "react";
 import { TrendingUp, CheckCircle2, Pencil, AlertTriangle } from "lucide-react";
-import { ProgressRing } from "../ProgressRing";
+import { ProgressRing } from "./ProgressRing";
 import { formatCurrency } from "../../utils/formatters";
 import type { Budget } from "../../types/shopping.types";
 
@@ -75,7 +75,7 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({
                     Remaining
                   </p>
                   <p
-                    className={`text-lg font-bold ${isOverBudget ? "text-destructive" : "text-accent"}`}
+                    className={`text-lg font-bold ${isOverBudget ? "text-destructive" : "text-planner-amber"}`}
                   >
                     {formatCurrency(remaining)}
                   </p>
