@@ -463,7 +463,6 @@ export default function CalendarPage() {
 
   const calendarEvents = useMemo(() => {
     return tasks.map((t) => {
-      // Tương tự bảng màu của planner
       let color = "#3b82f6"; // planner-blue
       if (t.status === "done") color = "#10b981"; // planner-green
       else if (t.priority === "High") color = "#ec4899"; // planner-pink

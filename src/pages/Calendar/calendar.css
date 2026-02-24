@@ -11,6 +11,49 @@
   color: #0f172a; /* text-slate-900 */
   text-transform: capitalize;
 }
+/* ==========================================
+   HEADER & TITLE (FIX LAYOUT SHIFT)
+   ========================================== */
+.custom-calendar-container .fc-toolbar {
+  margin-bottom: 2rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+/* Chia header làm 3 phần bằng nhau tuyệt đối để không bị xô đẩy lẫn nhau */
+.custom-calendar-container .fc-toolbar-chunk {
+  flex: 1 1 0 !important; 
+}
+
+/* Khối bên trái (thường là Prev/Next/Today) */
+.custom-calendar-container .fc-toolbar-chunk:first-child {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Khối ở giữa (Title tháng/năm) */
+.custom-calendar-container .fc-toolbar-chunk:nth-child(2) {
+  display: flex;
+  justify-content: center;
+}
+
+/* Khối bên phải (Nút Month/Week/Day) */
+.custom-calendar-container .fc-toolbar-chunk:last-child {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Style cho Title */
+.fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #0f172a; /* text-slate-900 */
+  text-transform: capitalize;
+  min-width: 250px; /* Đặt chiều rộng tối thiểu để chữ dài ra không đẩy layout */
+  text-align: center;
+}
 
 /* ==========================================
    BUTTONS (Nút Tháng/Tuần/Ngày)
@@ -21,10 +64,11 @@
   color: #64748b !important; /* text-slate-500 */
   font-weight: 600 !important;
   text-transform: capitalize !important;
-  padding: 0.4rem 1rem !important;
+  padding: 2px 1rem !important;
   border-radius: 0.5rem !important;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
   transition: all 0.2s ease-in-out !important;
+  margin: 4px;
 }
 
 /* Trạng thái Hover của nút */

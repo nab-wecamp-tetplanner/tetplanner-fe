@@ -1,47 +1,32 @@
-.fc .fc-toolbar-title {
-  font-size: 18px !important;
-  font-weight: 700;
-  color: #1e293b;
-}
-.fc .fc-button-primary {
-  background-color: #f0873b !important; 
+/* Custom lại thanh hiển thị Event */
+.fc-v-event, .fc-h-event {
+  background-color: var(--event-bg, #3b82f6) !important;
   border: none !important;
-  border-radius: 10px !important;
-  padding: 4px !important;
-  box-shadow: 0 4px 6px -1px rgba(253, 186, 116, 0.5); 
-}
-.fc .fc-button-group {
-  gap: 8px; 
-}
-.fc .fc-col-header-cell-cushion {
-  font-size: 10px;
-  font-weight: 800;
-  color: #1e293b;
-  text-transform: uppercase;
-}
-.fc .fc-daygrid-day-number {
-  font-size: 13px;
-  font-weight: 500;
-  color: #64748b;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: auto;
-}
-.fc .fc-day-today .fc-daygrid-day-number {
-  background-color: #f97316 !important;
-  color: white !important;
-  border-radius: 50%;
-}
-.fc-daygrid-event-dot {
-  border-color: #3b82f6 !important;
-  border-width: 3px !important;
+  border-left: 3px solid var(--event-border, #2563eb) !important; /* Tạo vạch nhấn bên trái */
+  padding: 1px 4px !important;
+  margin: 1px 2px !important;
+  border-radius: 4px !important;
+  display: block !important;
 }
 
-.fc .fc-event,
-.fc .fc-daygrid-event,
-.fc .fc-daygrid-dot-event {
-  cursor: pointer !important;
+/* Chỉnh text trong task cho cực nhỏ và gọn */
+.fc-event-title {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+
+.fc .fc-daygrid-day-number {
+  margin: 2px 4px !important;
+  font-size: 11px !important;
+}
+
+/* Hiệu ứng khi ô ngày được chọn/hover */
+.fc-daygrid-day.fc-day-selected {
+  background-color: rgba(249, 115, 22, 0.1) !important;
+}
+

@@ -1,190 +1,109 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import { useMemo, useState } from "react";
-import { X } from "lucide-react"; // Import icon nút đóng
+import interactionPlugin from "@fullcalendar/interaction";
+import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import "./calendarWidget.css";
-import type { FullConfigData } from "../../../pages/Overview";
-import type { TodoItem } from "../../../types/todo.types"; // Thêm import type TodoItem
+import type { TodoItem } from "../../../types/todo.types";
+import { useAppStore } from "../../../stores/useAppStore";
+import { useLoading } from "../../../contexts/LoadingContext";
+import apiClient from "../../../services/apiClient";
+interface Task {
+  id: string;
+  title: string;
+  deadline: string;
+  priority: "high" | "medium" | "low" | "urgent";
+  status: "pending" | "completed" | "canceled";
+}
 
-const CalendarWidget = ({ tasks: configs }: { tasks: FullConfigData[] }) => {
-  const [selectedTask, setSelectedTask] = useState<{
-    task: TodoItem;
-    configName: string;
-  } | null>(null);
+const CalendarWidget = () => {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [dayTasks, setDayTasks] = useState<TodoItem[]>([]);
+  const [tasks, setTasks] = useState<TodoItem[]>([]);
+  const {showLoading, hideLoading} = useLoading();
+  const configId = useAppStore((state) => state.configId);
+  
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        if (!configId) return;
+        showLoading();
+        const data = await apiClient.todos.getAll({
+          tetConfigId: configId
+        });
+        setTasks(data);
+      } catch (e) { 
+        throw new Error("Error in fetching data");
+      } 
+      finally{
+        hideLoading();
+      }
+    }
+    fetchTasks();
+  }, [configId])
 
+  // Giả sử đây là danh sách task từ project Travello hoặc Tết Planner của Ngọc
   const events = useMemo(() => {
-    return configs.flatMap((config) =>
-      config.tasks.map((task) => {
-        const getEventColor = () => {
-          if (task.status === "completed") return "#10b981";
-          switch (task.priority) {
-            case "urgent":
-              return "#ef4444";
-            case "high":
-              return "#f59e0b";
-            case "medium":
-              return "#3b82f6";
-            case "low":
-              return "#94a3b8";
-            default:
-              return "#64748b";
-          }
-        };
+    return tasks.map(task => ({
+      id: task.id,
+      title: task.title,
+      start: task.deadline?.split("T")[0],
+      extendedProps: { ...task },
+      backgroundColor: task.priority === 'urgent' ? '#fee2e2' : task.priority === 'high' ? '#ffedd5' : '#dcfce7',
+      borderColor: task.priority === 'urgent' ? '#ef4444' : task.priority === 'high' ? '#f59e0b' : '#10b981',
+    }));
+  }, [tasks]);
 
-        return {
-          id: task.id,
-          title: task.title,
-          start: task.deadline,
-          display: "dot",
-          color: getEventColor(),
-          extendedProps: {
-            task: task, // Truyền toàn bộ dữ liệu task vào extendedProps để hiển thị ở modal
-            configName: config.name,
-          },
-        };
-      }),
-    );
-  }, [configs]);
+  useEffect(() => {
+    console.log("Events: ", events)
+  }, [events])
+
+  const handleDateClick = (arg: { dateStr: string }) => {
+    const tasksInDay = events.filter(e => e.start === arg.dateStr).map(e => e.extendedProps);
+    setSelectedDate(arg.dateStr);
+    setDayTasks(tasksInDay as TodoItem[]);
+  };
 
   return (
-    <>
-      <div className="p-4 bg-white rounded-2xl shadow-xl max-w-sm relative">
+    <div className="w-full">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-4">
         <FullCalendar
-          plugins={[dayGridPlugin]}
+          plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
-          headerToolbar={{
-            left: "title",
-            center: "",
-            right: "prev,next",
-          }}
+          headerToolbar={{ left: "title", right: "prev,next" }}
           events={events}
-          dayHeaderFormat={{ weekday: "short" }}
-          titleFormat={{ month: "short", year: "numeric" }}
+          dateClick={handleDateClick}
+          dayMaxEvents={2} // Nếu > 2 task sẽ hiện "+ more" thay vì làm nát layout
+          moreLinkContent={(args) => <span className="text-[9px] font-bold text-slate-400">+{args.num} more</span>}
+          eventDidMount={(info) => {
+            // Inject CSS variables để thanh màu đẹp hơn
+            info.el.style.setProperty('--event-bg', info.event.backgroundColor);
+            info.el.style.setProperty('--event-border', info.event.borderColor);
+          }}
           height="auto"
-          fixedWeekCount={false}
-          eventMouseEnter={(info) => {
-            info.el.title = `${info.event.title} (${info.event.extendedProps.task.priority})`;
-          }}
-          // Bắt sự kiện click vào task trên lịch
-          eventClick={(info) => {
-            setSelectedTask({
-              task: info.event.extendedProps.task,
-              configName: info.event.extendedProps.configName,
-            });
-          }}
         />
       </div>
 
-      {/* Modal Hiển thị chi tiết Task */}
-      {selectedTask && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl w-[400px] shadow-xl animate-in fade-in zoom-in duration-200">
-            {/* Header Modal */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-bold text-lg text-slate-800 leading-tight">
-                  {selectedTask.task.title}
-                </h3>
-                <p className="text-xs text-slate-400 font-medium mt-1">
-                  Thuộc sự kiện: <span className="text-slate-600">{selectedTask.configName}</span>
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedTask(null)}
-                className="p-1 hover:bg-slate-100 rounded-full transition-colors shrink-0"
-              >
-                <X size={20} className="text-slate-400" />
-              </button>
+      {/* Modal Detail khi click vào ngày */}
+      {selectedDate && (
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-[320px] shadow-2xl animate-in zoom-in duration-150">
+            <div className="p-4 flex justify-between items-center border-b border-slate-50">
+              <h3 className="font-bold text-slate-800 text-sm">Date {selectedDate}</h3>
+              <button onClick={() => setSelectedDate(null)} className="p-1 hover:bg-slate-100 rounded-full"><X size={16}/></button>
             </div>
-
-            {/* Nội dung chi tiết */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl">
-                {/* Trạng thái */}
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                    Status
-                  </span>
-                  <span
-                    className={`text-xs font-bold uppercase px-2 py-1 rounded-md ${
-                      selectedTask.task.status === "completed"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-slate-200 text-slate-700"
-                    }`}
-                  >
-                    {selectedTask.task.status}
-                  </span>
+            <div className="p-3 space-y-2">
+              {dayTasks.length > 0 ? dayTasks.map(t => (
+                <div key={t.id} className="p-2 bg-slate-50 rounded-lg border border-slate-200 ">
+                  <p className="text-xs font-bold text-slate-700">{t.title}</p>
+                  <p className="text-[10px] text-slate-500 uppercase">{t.priority}</p>
                 </div>
-
-                {/* Mức độ ưu tiên */}
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                    Priority
-                  </span>
-                  <span
-                    className={`text-xs font-bold uppercase px-2 py-1 rounded-md ${
-                      {
-                        low: "bg-green-100 text-green-600",
-                        medium: "bg-yellow-100 text-yellow-600",
-                        high: "bg-red-100 text-red-600",
-                        urgent: "bg-purple-100 text-purple-600",
-                      }[selectedTask.task.priority || "medium"]
-                    }`}
-                  >
-                    {selectedTask.task.priority}
-                  </span>
-                </div>
-              </div>
-
-              {/* Deadline */}
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Deadline
-                </span>
-                <p className="text-sm font-medium text-slate-700">
-                  {new Date(selectedTask.task.deadline).toLocaleString("vi-VN", {
-                    dateStyle: "full",
-                    timeStyle: "short",
-                  })}
-                </p>
-              </div>
-
-              {/* Thông tin Shopping (Nếu có) */}
-              {selectedTask.task.is_shopping && (
-                <div className="border-t border-slate-100 pt-4 mt-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase">
-                      Shopping Task
-                    </span>
-                    {selectedTask.task.purchased && (
-                      <span className="bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase">
-                        Purchased
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Số lượng: <strong className="text-slate-700">{selectedTask.task.quantity || 1}</strong></span>
-                    {selectedTask.task.estimated_price && (
-                      <span className="text-slate-500">Dự kiến: <strong className="text-slate-700">{selectedTask.task.estimated_price.toLocaleString()} đ</strong></span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6">
-               <button
-                  onClick={() => setSelectedTask(null)}
-                  className="w-full py-2 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800 transition-all text-sm"
-                >
-                  Đóng
-                </button>
+              )) : <p className="text-center py-4 text-xs text-slate-400">No task!</p>}
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

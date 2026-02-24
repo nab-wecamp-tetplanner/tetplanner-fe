@@ -5,16 +5,13 @@ import apiClient from "../../services/apiClient";
 import type { TetConfig } from "../../types/tetConfig.types";
 // import type { Timeline } from "../../types/timeline.types";
 import { useLoading } from "../../contexts/LoadingContext";
+import { useAppStore } from "../../stores/useAppStore";
 
 interface TaskInfo extends TetConfig {
   tasks: TodoItem[];
 }
 
-export default function TaskListWidget({
-  tetConfigs,
-}: {
-  tetConfigs: string[];
-}) {
+export default function TaskListWidget() {
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   // const [, setExpandedTasks] = useState<string[]>([]);
   const [tasksByConfig, setTasksByConfig] = useState<Record<string, TaskInfo>>(
@@ -22,6 +19,7 @@ export default function TaskListWidget({
   );
   // const [timelines, setTimelines] = useState<Timeline[]>([]);
   const { showLoading, hideLoading } = useLoading();
+  const configId = useAppStore((state) => state.configId);  
 
   /**
    * Fetches todos for all provided configuration IDs.
@@ -30,32 +28,24 @@ export default function TaskListWidget({
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        // Parallel fetch for all config IDs
-        const results = await Promise.all(
-          tetConfigs.map(async (configId) => {
+        if (!configId) return;
+        showLoading();
             // Fetch Config details and Tasks simultaneously for each ID
-            const [config, configData, taskItems] = await Promise.all([
-              apiClient.tetConfigs.getConfigById(configId),
-              apiClient.tetConfigs.getBudgetSummary(configId),
-              apiClient.todos.getAll({ tetConfigId: configId }),
-            ]);
+        const [config, configData, taskItems] = await Promise.all([
+          apiClient.tetConfigs.getConfigById(configId),
+          apiClient.tetConfigs.getBudgetSummary(configId),
+          apiClient.todos.getAll({ tetConfigId: configId }),
+        ]);
 
-            return {
-              configId,
-              data: {
-                ...configData,
-                tasks: taskItems,
-                ...config,
-              } as TaskInfo,
-            };
-          }),
-        );
-
+    
         // Convert array results back to a Record object
-        const newTasksByConfig: Record<string, TaskInfo> = {};
-        results.forEach((item) => {
-          newTasksByConfig[item.configId] = item.data;
-        });
+        const newTasksByConfig: Record<string, TaskInfo> = {
+          [configId]: {
+            ...configData,
+            tasks: taskItems,
+            ...config,
+          },
+        };
 
         setTasksByConfig(newTasksByConfig);
       } catch (error) {
@@ -63,8 +53,8 @@ export default function TaskListWidget({
       }
     };
 
-    if (tetConfigs.length > 0) fetchAllData();
-  }, [tetConfigs]);
+    fetchAllData();
+  }, [configId]);
 
   /**
    * Derives completion percentage based on the 'status' field.
@@ -185,7 +175,7 @@ export default function TaskListWidget({
       is_shopping: is_shopping,
       estimated_price: estimated_price,
       quantity: quantity,
-      tet_config_id: tetConfigs[0],
+      tet_config_id: configId ?? "",
       timeline_phase_id: "c5c00fee-7d49-40f3-a18f-c0c467b67598",
       category_id: "56e8e6c4-f139-4735-8439-2325445cd185",
     };
