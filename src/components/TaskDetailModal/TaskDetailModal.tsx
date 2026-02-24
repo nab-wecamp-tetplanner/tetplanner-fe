@@ -3,6 +3,7 @@ import "./TaskDetailModal.css";
 import type { Task } from "../../types/task";
 import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare, User } from "lucide-react";
 import { MOCK_MEMBERS } from "../../data/mockTasks";
+import { todoService } from "../../services/todoService";
 
 /* ── Status / Priority lookup ── */
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -23,7 +24,7 @@ interface TaskDetailModalProps {
   task: Task | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateTask: (updatedTask: Task) => void;
+  onUpdateTask: (updatedTask: Task, skipApi?: boolean) => void;
 }
 const TaskDetailModal = ({
   task,
@@ -37,18 +38,31 @@ const TaskDetailModal = ({
 
   const currentSubtasks: Record<string, boolean> = (task.subtasks as Record<string, boolean>) || {};
 
-  const toggleSubtask = (subtaskTitle: string) => {
+  const toggleSubtask = async(subtaskTitle: string) => {
+
+    const newValue = !currentSubtasks[subtaskTitle];
+
     const updatedSubtasks = {
       ...currentSubtasks,
-      [subtaskTitle]: !currentSubtasks[subtaskTitle] // Đổi true thành false, false thành true
+      [subtaskTitle]: newValue
     };
 
     const subtaskValues = Object.values(updatedSubtasks);
     const isAllCompleted = subtaskValues.length > 0 && subtaskValues.every(status => status === true);
-    
-    const newStatus = isAllCompleted ? "completed" : task.status;
+    let newStatus = isAllCompleted ? "completed" : task.status;
+    if(task.status === "completed" && !isAllCompleted) {
+      newStatus = "in_progress";
+    }
+    console.log(`Toggling subtask "${subtaskTitle}" to ${newValue}. New status: ${newStatus}`);
+    onUpdateTask({ ...task, subtasks: updatedSubtasks, status: newStatus }, true);
 
-    onUpdateTask({ ...task, subtasks: updatedSubtasks, status: newStatus });
+    try {
+      await todoService.addOrUpdateSubtask(task.id, { name: subtaskTitle, done: newValue });
+    }
+    catch (error) {
+      console.error("Error updating subtask:", error);
+      alert("Failed to update subtask. Please try again.");
+    }
   };
 
   const subtaskValuesForProgress = Object.values(currentSubtasks);
@@ -56,7 +70,7 @@ const TaskDetailModal = ({
   const completedCount = subtaskValuesForProgress.filter(Boolean).length; 
   const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
 
-  const handleAddSubtask = (e: React.FormEvent) => {
+  const handleAddSubtask = async(e: React.FormEvent) => {
     e.preventDefault();
     const title = newSubtaskText.trim();
     if (!title) return;
@@ -66,21 +80,36 @@ const TaskDetailModal = ({
       [title]: false 
     };
 
-    const newStatus = task.status === "completed" ? "in_progress" : task.status;
-    
+    const subtaskValues = Object.values(updatedSubtasks);
+    const isAllCompleted = subtaskValues.length > 0 && subtaskValues.every(status => status === true);
+    const newStatus = isAllCompleted ? "completed" : (task.status === "completed" ? "in_progress" : task.status);    
     onUpdateTask({
       ...task,
       subtasks: updatedSubtasks,
       status: newStatus,
-    });
-    
+    }, true);
     setNewSubtaskText("");
+    
+    try{
+      await todoService.addOrUpdateSubtask(task.id,
+        { name: title, done: false }
+      );
+    } catch (error) {
+      console.error("Error updating subtasks:", error);
+      alert("Failed to update subtasks. Please try again.");
+    } 
   };
 
-  const handleDeleteSubtask = (subtaskKey: string) => {
+  const handleDeleteSubtask = async(subtaskKey: string) => {
     const updatedSubtasks = { ...currentSubtasks };
     delete updatedSubtasks[subtaskKey];
-    onUpdateTask({ ...task, subtasks: updatedSubtasks });
+    onUpdateTask({ ...task, subtasks: updatedSubtasks }, true);
+    try {
+      await todoService.deleteSubtask(task.id, subtaskKey);
+    } catch (error) {
+      console.error("Error deleting subtask:", error);
+      alert("Failed to delete subtask. Please try again.");
+    }
   };
 
   const status = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.pending;
