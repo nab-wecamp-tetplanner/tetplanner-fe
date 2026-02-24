@@ -29,7 +29,6 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const res: any = await todoService.getCategories();
                 const list = res.data || res || [];
                 setCategories(list);
