@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, FolderPlus } from "lucide-react";
+import { Plus, FolderPlus, ChevronDown, Check, LayoutGrid } from "lucide-react";
 import { BudgetOverview } from "../components/finance/BudgetOverview";
 import { CategoryCards } from "../components/finance/CategoryCards";
 import { ShoppingList } from "../components/finance/ShoppingList";
@@ -8,68 +8,101 @@ import { AddItemModal } from "../components/finance/AddItemModal";
 import { AddCategoryModal } from "../components/finance/AddCategoryModal";
 import { AddPhaseModal } from "../components/finance/AddPhaseModal";
 import { TimelinePhasesSection } from "../components/finance/TimelinePhasesSection";
-import { DEFAULT_CATEGORIES, COLOR_CONFIG } from "../constants/finance";
+import { DEFAULT_CATEGORIES } from "../constants/finance";
 import financeApi from "../services/financeApi";
 import apiClient from "../services/apiClient";
 import type {
   ShoppingItem,
   Budget,
-  CategorySummary,
   CustomCategory,
 } from "../types/shopping.types";
 import type { TimelinePhase } from "../types/timeline.types";
 
-interface PageHeaderProps {
-  onAddItem: () => void;
-  onAddCategory: () => void;
-}
+// --- Component PlanSelector ---
+const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const selectedPlan = configs.find((c: any) => c.id === selectedId);
 
-const PageHeader: React.FC<PageHeaderProps> = ({
-  onAddItem,
-  onAddCategory,
-}) => (
-  <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
-    <div>
-      <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
-        Budget Planner
-      </p>
-      <h1 className="text-4xl font-serif text-foreground mb-1">
-        Shopping Manager
-      </h1>
-      <p className="text-muted-foreground text-sm">
-        Theo dõi chi tiêu và quản lý ngân sách mua sắm Tết
-      </p>
-    </div>
-    <div className="mt-4 md:mt-0 flex items-center gap-2">
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      )
+        setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
       <button
-        onClick={onAddCategory}
-        className="inline-flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-3 px-4 py-2 bg-card border border-border rounded-2xl shadow-sm hover:bg-muted/50 transition-all"
       >
-        <FolderPlus className="w-4 h-4" />
-        Add category
+        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <LayoutGrid className="w-4 h-4" />
+        </div>
+        <div className="text-left hidden sm:block">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground leading-none mb-1">
+            Kế hoạch
+          </p>
+          <p className="text-sm font-bold text-foreground leading-none">
+            {selectedPlan
+              ? `${selectedPlan.name} (${selectedPlan.year})`
+              : "Chọn kế hoạch"}
+          </p>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-muted-foreground ml-2 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
       </button>
-      <button
-        onClick={onAddItem}
-        className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm"
-      >
-        <Plus className="w-4 h-4" />
-        Add item
-      </button>
+
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-2xl shadow-xl z-50 py-2 animate-in fade-in zoom-in duration-200">
+          {configs.map((config: any) => (
+            <button
+              key={config.id}
+              onClick={() => {
+                onSelect(config.id);
+                setIsOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted transition-colors text-left"
+            >
+              <span
+                className={`text-sm ${selectedId === config.id ? "font-bold text-primary" : "text-foreground"}`}
+              >
+                {config.name} ({config.year})
+              </span>
+              {selectedId === config.id && (
+                <Check className="w-4 h-4 text-primary" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 export default function FinanceDashboard() {
   const queryClient = useQueryClient();
 
   // State
-  const [tetConfigId, setTetConfigId] = useState<string | null>(null);
+  const [tetConfigId, setTetConfigId] = useState<string | null>(
+    localStorage.getItem("tetConfigId"),
+  );
+  const [allConfigs, setAllConfigs] = useState<any[]>([]);
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
   const [categories, setCategories] =
     useState<CustomCategory[]>(DEFAULT_CATEGORIES);
   const [phases, setPhases] = useState<TimelinePhase[]>([]);
   const [defaultPhaseId, setDefaultPhaseId] = useState<string | null>(null);
+
+  // Modals state
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
@@ -78,264 +111,109 @@ export default function FinanceDashboard() {
   const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(
     null,
   );
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch tet config (cached)
-  const { data: tetConfig, isLoading } = useQuery({
-    queryKey: ["tetConfig"],
+  // 1. Lấy danh sách kế hoạch
+  const { data: configs } = useQuery({
+    queryKey: ["allTetConfigs"],
     queryFn: async () => {
-      const configs = await apiClient.tetConfigs.getMyConfigs();
-      if (configs && configs.length > 0) {
-        return configs[0];
+      const data = await financeApi.getTetConfigs();
+      if (data && data.length > 0) {
+        setAllConfigs(data);
+        if (!tetConfigId) {
+          const firstId = data[0].id;
+          setTetConfigId(firstId);
+          localStorage.setItem("tetConfigId", firstId);
+        }
       }
-      return await apiClient.tetConfigs.create({
-        year: 2025,
-        name: `Tết 2025`,
-        total_budget: 5000000,
-      });
+      return data;
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
-  // Fetch data when tetConfig is available
+  // 2. Tải dữ liệu chính
   useEffect(() => {
-    if (!tetConfig?.id) return;
+    if (!tetConfigId) return;
 
     const fetchData = async () => {
       try {
-        setError(null);
-        const configId = tetConfig.id;
-        setTetConfigId(configId);
-
-        // Log tetConfigId before each API call
-        console.log(
-          "[FinanceDashboard] Fetching budget with tetConfigId:",
-          configId,
-        );
-        let budgetData = { total: 5000000, used: 0 };
-        let itemsData: ShoppingItem[] = [];
-        let categoriesData: any[] = [];
-        let phasesData: TimelinePhase[] = [];
-
-        try {
-          budgetData = await financeApi.getBudget(configId);
-        } catch (err) {
-          console.warn("Failed to fetch budget:", err);
-        }
-
-        console.log(
-          "[FinanceDashboard] Fetching items with tetConfigId:",
-          configId,
-        );
-        try {
-          itemsData = await financeApi.getItems(configId);
-        } catch (err) {
-          console.warn("Failed to fetch items:", err);
-        }
-
-        console.log(
-          "[FinanceDashboard] Fetching categories with tetConfigId:",
-          configId,
-        );
-        try {
-          categoriesData = await financeApi.getCategories(configId);
-        } catch (err) {
-          console.warn("Failed to fetch categories:", err);
-        }
-
-        console.log(
-          "[FinanceDashboard] Fetching timeline phases with tetConfigId:",
-          configId,
-        );
-        try {
-          // Fetch timeline phases for this tet config
-          phasesData = await apiClient.get<TimelinePhase[]>(
-            `/timeline-phases/tet-config/${configId}`,
-          );
-
-          setPhases(phasesData || []);
-          if (phasesData && phasesData.length > 0) {
-            setDefaultPhaseId(phasesData[0].id);
-          }
-        } catch (err: any) {
-          console.warn("Failed to fetch timeline phases:", err);
-          setPhases([]);
-        }
+        const configId = tetConfigId;
+        const [budgetData, itemsData, categoriesData, phasesData] =
+          await Promise.all([
+            financeApi.getBudget(configId),
+            financeApi.getItems(configId),
+            financeApi.getCategories(configId),
+            apiClient.get<TimelinePhase[]>(
+              `/timeline-phases/tet-config/${configId}`,
+            ),
+          ]);
 
         setBudget({ total: budgetData.total, used: budgetData.used });
         setItems(itemsData);
+        setPhases(phasesData || []);
+        if (phasesData && phasesData.length > 0)
+          setDefaultPhaseId(phasesData[0].id);
 
-        // Map backend categories to frontend format
         const backendCategories: CustomCategory[] = categoriesData.map(
           (cat) => ({
             id: cat.id,
             name: cat.name,
             icon: cat.icon || "Package",
             color: cat.color || "planner-blue",
-            isDefault: cat.is_system || false, // Use is_system from backend
+            isDefault: cat.is_system || false,
+            allocated: cat.allocated,
           }),
         );
-
-        // Use ONLY backend categories (including system categories from backend)
         setCategories(backendCategories);
       } catch (err) {
         console.error("Failed to fetch finance data:", err);
-        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
       }
     };
-
     fetchData();
-  }, [tetConfig]);
+  }, [tetConfigId]);
 
-  // Computed values
-  const purchasedCount = useMemo(
-    () => items.filter((i) => i.status === "purchased").length,
-    [items],
-  );
+  // --- HANDLERS (KHÔI PHỤC LẠI ĐẦY ĐỦ) ---
 
-  const categorySummaries = useMemo<CategorySummary[]>(() => {
-    return categories.map((category) => {
-      const categoryItems = items.filter(
-        (item) => item.category === category.id,
-      );
-      const total = categoryItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0,
-      );
-      const categoryColor = category.color || "#10b981";
-      return {
-        category: category.name,
-        total,
-        itemCount: categoryItems.length,
-        icon: category.icon,
-        color: categoryColor,
-        bgColor: `${categoryColor}20`,
-      };
-    });
-  }, [items, categories]);
+  const handlePlanChange = (id: string) => {
+    setTetConfigId(id);
+    localStorage.setItem("tetConfigId", id);
+    queryClient.invalidateQueries({ queryKey: ["allTetConfigs"] });
+  };
 
-  // Handlers
-  const handleAddCategory = async (
-    newCategory: Omit<CustomCategory, "id" | "isDefault">,
-  ) => {
+  const handleEditTotalBudget = async () => {
     if (!tetConfigId) return;
-
-    try {
-      // Call API to create category
-      const created = await financeApi.addCategory(tetConfigId, {
-        name: newCategory.name,
-        icon: newCategory.icon,
-        color: newCategory.color,
-        allocated: newCategory.allocated || 0,
-      });
-
-      // Add to local state
-      setCategories((prev) => [...prev, created]);
-    } catch (error) {
-      console.error("Failed to add category:", error);
-      alert("Failed to add category. Please try again.");
-    }
-  };
-
-  const handleEditCategory = async (
-    category: CustomCategory,
-    updates: Omit<CustomCategory, "id" | "isDefault">,
-  ) => {
-    try {
-      await financeApi.updateCategory(category.id, {
-        name: updates.name,
-        color: updates.color,
-        allocated_budget: updates.allocated,
-      });
-
-      // Update local state
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === category.id
-            ? {
-                ...cat,
-                name: updates.name,
-                color: updates.color,
-                allocated: updates.allocated,
-              }
-            : cat,
-        ),
-      );
-    } catch (error) {
-      console.error("Failed to edit category:", error);
-      alert("Failed to edit category. Please try again.");
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId: string) => {
-    try {
-      await financeApi.deleteCategory(categoryId);
-      setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
-    } catch (error) {
-      console.error("Failed to delete category:", error);
-      alert("Failed to delete category. Please try again.");
+    const newBudgetStr = prompt(
+      "Nhập ngân sách tổng mới (VND):",
+      budget.total.toString(),
+    );
+    if (newBudgetStr && !isNaN(Number(newBudgetStr))) {
+      try {
+        await financeApi.updateBudget(tetConfigId, Number(newBudgetStr));
+        setBudget((prev) => ({ ...prev, total: Number(newBudgetStr) }));
+        alert("Cập nhật thành công!");
+      } catch (err) {
+        alert("Lỗi cập nhật ngân sách.");
+      }
     }
   };
 
   const handleAddItem = async (newItem: Omit<ShoppingItem, "id">) => {
-    if (!tetConfigId) return;
-
-    const phaseId = newItem.timelinePhaseId || defaultPhaseId;
-    if (!phaseId) {
-      alert("Please create a timeline phase first!");
-      return;
-    }
-
+    if (!tetConfigId || !defaultPhaseId) return;
     try {
-      let mappedItem = { ...newItem };
-
-      // Map default category to backend UUID
-      if (newItem.category && !newItem.category.includes("-")) {
-        const defaultCat = DEFAULT_CATEGORIES.find(
-          (c) => c.id === newItem.category,
-        );
-        if (defaultCat) {
-          const backendCat = categories.find(
-            (c) =>
-              c.name.toLowerCase() === defaultCat.name.toLowerCase() &&
-              !c.isDefault,
-          );
-          if (backendCat) {
-            mappedItem.category = backendCat.id;
-          } else {
-            const created = await financeApi.addCategory(tetConfigId, {
-              name: defaultCat.name,
-              icon: defaultCat.icon,
-              color: defaultCat.color,
-              allocated: 0,
-            });
-            mappedItem.category = created.id;
-          }
-        }
-      }
-
       const created = await financeApi.addItem(
         tetConfigId,
-        mappedItem,
-        phaseId,
+        newItem,
+        newItem.timelinePhaseId || defaultPhaseId,
       );
       setItems((prev) => [...prev, created]);
-
       const budgetData = await financeApi.getBudget(tetConfigId);
       setBudget({ total: budgetData.total, used: budgetData.used });
-
       setIsAddItemModalOpen(false);
-    } catch (err: any) {
-      console.error("Failed to add item:", err);
-      alert(
-        `Failed to add item: ${err.response?.data?.message || err.message}`,
-      );
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleEditItem = async (updatedItem: Omit<ShoppingItem, "id">) => {
     if (!tetConfigId || !editingItem) return;
-
     try {
       await financeApi.updateItem(
         editingItem.id,
@@ -343,240 +221,214 @@ export default function FinanceDashboard() {
         tetConfigId,
         updatedItem.timelinePhaseId,
       );
-
-      // Refetch all data to update UI
       const [budgetData, itemsData] = await Promise.all([
         financeApi.getBudget(tetConfigId),
         financeApi.getItems(tetConfigId),
       ]);
-
       setBudget({ total: budgetData.total, used: budgetData.used });
       setItems(itemsData);
-
       setEditingItem(null);
-    } catch (err: any) {
-      console.error("Failed to update item:", err);
-      alert(
-        `Failed to update item: ${err.response?.data?.message || err.message}`,
-      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!confirm("Xóa mục này?")) return;
+    try {
+      await financeApi.deleteItem(itemId);
+      setItems((prev) => prev.filter((i) => i.id !== itemId));
+      const budgetData = await financeApi.getBudget(tetConfigId!);
+      setBudget({ total: budgetData.total, used: budgetData.used });
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleToggleStatus = async (itemId: string, currentStatus: string) => {
     if (!tetConfigId) return;
-
     try {
-      const newPurchased = currentStatus !== "purchased";
-      const currentItem = items.find((item) => item.id === itemId);
-      if (!currentItem) {
-        console.error("Item not found:", itemId);
-        return;
-      }
-
-      const result = await financeApi.toggleItemStatus(
+      const currentItem = items.find((i) => i.id === itemId);
+      if (!currentItem) return;
+      const res = await financeApi.toggleItemStatus(
         itemId,
-        newPurchased,
+        currentStatus !== "purchased",
         tetConfigId,
         currentItem,
       );
-
-      console.log("Toggle result:", result);
-      console.log("Toggle result item ID:", result.item.id);
-      console.log("Original item ID:", itemId);
-      console.log("IDs match:", result.item.id === itemId);
-
-      setItems((prev) => {
-        const updated = prev.map((item) => {
-          if (item.id === itemId) {
-            console.log("Updating item:", item.id, "→", result.item);
-            return result.item;
-          }
-          return item;
-        });
-        console.log("Updated items:", updated);
-        return updated;
-      });
-      setBudget({ total: result.budget.total, used: result.budget.used });
-
-      // Invalidate cache to refresh data
-      queryClient.invalidateQueries({ queryKey: ["tetConfig"] });
-    } catch (err: any) {
-      console.error("Failed to toggle item status:", err);
-      const errorMessage =
-        err.response?.data?.message ||
-        "Failed to update item. Please try again.";
-      alert(errorMessage);
-    }
-  };
-
-  const handleDeleteItem = async (itemId: string) => {
-    if (!tetConfigId) return;
-    if (!confirm("Are you sure you want to delete this item?")) return;
-
-    try {
-      await financeApi.deleteItem(itemId);
-      setItems((prev) => prev.filter((item) => item.id !== itemId));
-
-      const budgetData = await financeApi.getBudget(tetConfigId);
-      setBudget({ total: budgetData.total, used: budgetData.used });
-
-      // Invalidate cache to refresh data
-      queryClient.invalidateQueries({ queryKey: ["tetConfig"] });
+      setItems((prev) => prev.map((i) => (i.id === itemId ? res.item : i)));
+      setBudget({ total: res.budget.total, used: res.budget.used });
     } catch (err) {
-      console.error("Failed to delete item:", err);
-      alert("Failed to delete item. Please try again.");
+      console.error(err);
     }
   };
 
-  // Timeline Phase Handlers
-  const handleAddPhase = async (
-    phaseData: Omit<TimelinePhase, "id" | "tet_config_id">,
-  ) => {
+  const handleAddCategory = async (newCat: any) => {
     if (!tetConfigId) return;
-
     try {
-      const newPhase = await apiClient.post("/timeline-phases", {
-        ...phaseData,
+      const created = await financeApi.addCategory(tetConfigId, newCat);
+      setCategories((prev) => [...prev, created]);
+      setIsAddCategoryModalOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditCategory = async (category: CustomCategory, updates: any) => {
+    try {
+      await financeApi.updateCategory(category.id, {
+        name: updates.name,
+        color: updates.color,
+        allocated_budget: updates.allocated,
+      });
+      setCategories((prev) =>
+        prev.map((c) => (c.id === category.id ? { ...c, ...updates } : c)),
+      );
+      setEditingCategory(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm("Xóa danh mục này?")) return;
+    try {
+      await financeApi.deleteCategory(id);
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddPhase = async (data: any) => {
+    if (!tetConfigId) return;
+    try {
+      const res = await apiClient.post("/timeline-phases", {
+        ...data,
         tet_config_id: tetConfigId,
       });
-
-      setPhases((prev) => [...prev, newPhase]);
-
-      if (phases.length === 0) {
-        setDefaultPhaseId(newPhase.id);
-      }
-
+      setPhases((prev) => [...prev, res]);
       setIsAddPhaseModalOpen(false);
-    } catch (err: any) {
-      console.error("Failed to create phase:", err);
-      alert(
-        `Failed to create phase: ${err.response?.data?.message || err.message}`,
-      );
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleUpdatePhase = async (
-    phaseData: Omit<TimelinePhase, "id" | "tet_config_id">,
-  ) => {
+  const handleUpdatePhase = async (data: any) => {
     if (!editingPhase) return;
-
     try {
-      const updatedPhase = await apiClient.patch(
+      const res = await apiClient.patch(
         `/timeline-phases/${editingPhase.id}`,
-        phaseData,
+        data,
       );
-
       setPhases((prev) =>
-        prev.map((p) => (p.id === editingPhase.id ? updatedPhase : p)),
+        prev.map((p) => (p.id === editingPhase.id ? res : p)),
       );
-
-      setIsAddPhaseModalOpen(false);
       setEditingPhase(null);
-    } catch (err: any) {
-      console.error("Failed to update phase:", err);
-      alert(
-        `Failed to update phase: ${err.response?.data?.message || err.message}`,
-      );
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleDeletePhase = async (phaseId: string) => {
-    if (!confirm("Are you sure you want to delete this timeline phase?"))
-      return;
+  const categorySummaries = useMemo(() => {
+    return categories.map((cat) => {
+      const catItems = items.filter((i) => i.category === cat.id);
+      return {
+        category: cat.name,
+        total: catItems.reduce((s, i) => s + i.price * i.quantity, 0),
+        itemCount: catItems.length,
+        icon: cat.icon,
+        color: cat.color,
+        bgColor: `${cat.color}20`,
+      };
+    });
+  }, [items, categories]);
 
-    try {
-      await apiClient.delete(`/timeline-phases/${phaseId}`);
-
-      setPhases((prev) => prev.filter((p) => p.id !== phaseId));
-
-      if (defaultPhaseId === phaseId && phases.length > 1) {
-        const remainingPhases = phases.filter((p) => p.id !== phaseId);
-        setDefaultPhaseId(remainingPhases[0]?.id || null);
-      }
-    } catch (err: any) {
-      console.error("Failed to delete phase:", err);
-      alert(
-        `Failed to delete phase: ${err.response?.data?.message || err.message}`,
-      );
-    }
-  };
+  const purchasedCount = items.filter((i) => i.status === "purchased").length;
 
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {/* Error banner */}
-        {error && (
-          <div className="mb-6 bg-destructive/10 border border-destructive/30 rounded-xl p-4 flex items-center justify-between">
-            <p className="text-destructive text-sm font-medium">{error}</p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
+          <div>
+            <p className="text-sm font-medium text-primary mb-1 uppercase">
+              Budget Planner
+            </p>
+            <h1 className="text-4xl font-serif text-foreground mb-1">
+              Shopping Manager
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Quản lý chi tiêu Tết
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <PlanSelector
+              configs={allConfigs}
+              selectedId={tetConfigId}
+              onSelect={handlePlanChange}
+            />
             <button
-              onClick={() => window.location.reload()}
-              className="text-destructive hover:underline text-sm font-medium"
+              onClick={() => setIsAddCategoryModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-xl hover:bg-muted text-sm font-medium"
             >
-              Retry
+              <FolderPlus className="w-4 h-4" /> Category
+            </button>
+            <button
+              onClick={() => setIsAddItemModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:opacity-90 text-sm font-medium shadow-sm"
+            >
+              <Plus className="w-4 h-4" /> Add Item
             </button>
           </div>
-        )}
+        </div>
 
-        <PageHeader
-          onAddItem={() => setIsAddItemModalOpen(true)}
-          onAddCategory={() => setIsAddCategoryModalOpen(true)}
-        />
         <BudgetOverview
           budget={budget}
           itemCount={items.length}
           purchasedCount={purchasedCount}
+          onEditBudget={handleEditTotalBudget}
         />
 
         <TimelinePhasesSection
           phases={phases}
           onAddPhase={() => setIsAddPhaseModalOpen(true)}
-          onEditPhase={(phase) => {
-            setEditingPhase(phase);
+          onEditPhase={(p) => {
+            setEditingPhase(p);
             setIsAddPhaseModalOpen(true);
           }}
-          onDeletePhase={handleDeletePhase}
+          onDeletePhase={(id) => apiClient.delete(`/timeline-phases/${id}`)}
         />
 
         <CategoryCards
           categorySummaries={categorySummaries}
           categories={categories}
           onDeleteCategory={handleDeleteCategory}
-          onEditCategory={(category) => setEditingCategory(category)}
+          onEditCategory={setEditingCategory}
         />
 
         <ShoppingList
           items={items}
           categories={categories}
           onAddItem={() => setIsAddItemModalOpen(true)}
-          onEditItem={(item) => setEditingItem(item)}
+          onEditItem={setEditingItem}
           onToggleStatus={handleToggleStatus}
           onDeleteItem={handleDeleteItem}
         />
       </main>
 
-      {/* Add Item Modal */}
+      {/* MODALS */}
       <AddItemModal
-        isOpen={isAddItemModalOpen}
-        onClose={() => setIsAddItemModalOpen(false)}
-        onAdd={handleAddItem}
+        isOpen={isAddItemModalOpen || !!editingItem}
+        onClose={() => {
+          setIsAddItemModalOpen(false);
+          setEditingItem(null);
+        }}
+        onAdd={editingItem ? handleEditItem : handleAddItem}
         categories={categories}
         phases={phases}
         defaultPhaseId={defaultPhaseId}
+        initialData={editingItem || undefined}
       />
-
-      {/* Edit Item Modal */}
-      {editingItem && (
-        <AddItemModal
-          key={editingItem.id}
-          isOpen={!!editingItem}
-          onClose={() => setEditingItem(null)}
-          onAdd={handleEditItem}
-          categories={categories}
-          phases={phases}
-          defaultPhaseId={defaultPhaseId}
-          initialData={editingItem}
-        />
-      )}
 
       <AddCategoryModal
         isOpen={isAddCategoryModalOpen || !!editingCategory}
@@ -584,19 +436,16 @@ export default function FinanceDashboard() {
           setIsAddCategoryModalOpen(false);
           setEditingCategory(null);
         }}
-        onAdd={(categoryData) => {
-          if (editingCategory) {
-            handleEditCategory(editingCategory, categoryData);
-            setEditingCategory(null);
-          } else {
-            handleAddCategory(categoryData);
-          }
-        }}
+        onAdd={(data) =>
+          editingCategory
+            ? handleEditCategory(editingCategory, data)
+            : handleAddCategory(data)
+        }
         initialData={editingCategory || undefined}
       />
 
       <AddPhaseModal
-        isOpen={isAddPhaseModalOpen}
+        isOpen={isAddPhaseModalOpen || !!editingPhase}
         onClose={() => {
           setIsAddPhaseModalOpen(false);
           setEditingPhase(null);

@@ -11,25 +11,24 @@ import {
   Clock,
   Edit2,
   Trash2,
-} from "lucide-react";
-import { transactionApi } from "../services/transactionService";
-import { financeApi } from "../services/financeApi";
-import type { TransactionResponse } from "../services/transactionService";
-import {
   Sparkles,
   Package,
   ShoppingCart,
   Gift,
   type LucideIcon,
 } from "lucide-react";
+import { transactionApi } from "../services/transactionService";
+import { financeApi } from "../services/financeApi";
+import type { TransactionResponse } from "../services/transactionService";
+import { AddTransactionModal } from "../components/transaction/AddTransactionModal"; // Import Modal thêm/sửa
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles: Sparkles,
   Package: Package,
   ShoppingCart: ShoppingCart,
   Gift: Gift,
-  // Thêm các icon khác tương ứng với dữ liệu backend
 };
+
 // ==========================================
 // TYPES & CONSTANTS
 // ==========================================
@@ -50,6 +49,7 @@ const ACTION_CARDS = [
     title: "Add income",
     description: "Create an income manually",
     icon: Plus,
+    type: "income", // Thêm type để nhận diện
     tokenBg: "bg-planner-green-light",
     iconBg: "bg-planner-green",
   },
@@ -57,6 +57,7 @@ const ACTION_CARDS = [
     title: "Add expense",
     description: "Create an expense manually",
     icon: Minus,
+    type: "expense", // Thêm type để nhận diện
     tokenBg: "bg-planner-pink-light",
     iconBg: "bg-planner-pink",
   },
@@ -64,6 +65,7 @@ const ACTION_CARDS = [
     title: "Transfer money",
     description: "Select the amount and make a transfer",
     icon: ArrowLeftRight,
+    type: "transfer", // Thêm type để nhận diện
     tokenBg: "bg-planner-blue-light",
     iconBg: "bg-planner-blue",
   },
@@ -127,12 +129,49 @@ export default function Transaction() {
     localStorage.getItem("tetConfigId") || "",
   );
   const [allConfigs, setAllConfigs] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]); // Lưu danh sách danh mục để lấy màu
+  const [categories, setCategories] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 1. Tải dữ liệu ban đầu (Configs & Categories)
+  // States cho Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] =
+    useState<TransactionType | null>(null);
+  const [modalDefaultType, setModalDefaultType] = useState<
+    "income" | "expense"
+  >("expense");
+
+  // Hàm tải danh sách giao dịch (để gọi lại sau khi thêm/sửa/xóa)
+  // Cập nhật hàm fetchTxns bên trong component Transaction
+  const fetchTxns = async (configId: string, silent = false) => {
+    if (!configId) return;
+
+    // Chỉ hiện loading nếu không phải là refresh ngầm
+    if (!silent) setLoading(true);
+
+    try {
+      const data = await transactionApi.getAll(configId);
+      const mapped = (data || []).map((t: TransactionResponse) => ({
+        id: t.id,
+        name: t.note || t.category?.name || "Transaction",
+        categoryId: t.category?.id || (t as any).category_id,
+        categoryName: t.category?.name,
+        date: t.transaction_date?.slice(0, 10),
+        amount: Number(t.amount),
+        isIncome: t.type === "income",
+        iconText: t.category?.icon || "Package",
+      }));
+      setTransactions(mapped);
+    } catch (err) {
+      console.error("Lỗi fetch transactions:", err);
+    } finally {
+      // Luôn tắt loading ở cuối
+      setLoading(false);
+    }
+  };
+
+  // 1. Tải dữ liệu ban đầu
   useEffect(() => {
     const initData = async () => {
       try {
@@ -144,9 +183,11 @@ export default function Transaction() {
           setTetConfigId(currentId);
           localStorage.setItem("tetConfigId", currentId);
 
-          // Tải categories để lấy mapping màu sắc
           const catsData = await financeApi.getCategories(currentId);
           setCategories(catsData);
+
+          // Tải giao dịch
+          fetchTxns(currentId);
         }
       } catch (err) {
         console.error("Lỗi khởi tạo dữ liệu:", err);
@@ -155,32 +196,49 @@ export default function Transaction() {
     initData();
   }, [tetConfigId]);
 
-  // 2. Tải giao dịch khi tetConfigId thay đổi
-  useEffect(() => {
-    if (!tetConfigId) return;
-    const fetchTxns = async () => {
-      setLoading(true);
-      try {
-        const data = await transactionApi.getAll(tetConfigId);
-        const mapped = (data || []).map((t: TransactionResponse) => ({
-          id: t.id,
-          name: t.note || t.category?.name || "Transaction",
-          categoryId: t.category?.id || t.category_id,
-          categoryName: t.category?.name,
-          date: t.transaction_date?.slice(0, 10),
-          amount: Number(t.amount),
-          isIncome: t.type === "income",
-          iconText: t.category?.icon || "💰",
-        }));
-        setTransactions(mapped);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+  // API HANDLERS
+  const handleOpenAddModal = (type: "income" | "expense") => {
+    setEditingTransaction(null);
+    setModalDefaultType(type);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (txn: TransactionType) => {
+    setEditingTransaction(txn);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa giao dịch này?")) return;
+    try {
+      await transactionApi.delete(id);
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error("Lỗi khi xóa:", err);
+    }
+  };
+
+  const handleSaveTransaction = async (formData: any) => {
+    try {
+      if (editingTransaction) {
+        await transactionApi.update(editingTransaction.id, formData);
+      } else {
+        await transactionApi.create({
+          ...formData,
+          tet_config_id: tetConfigId,
+        });
       }
-    };
-    fetchTxns();
-  }, [tetConfigId]);
+
+      // GỌI REFRESH NGẦM Ở ĐÂY (silent = true)
+      // Người dùng vẫn thấy danh sách cũ, sau đó dữ liệu mới sẽ tự ghi đè lên mà không bị nháy Loading
+      await fetchTxns(tetConfigId, true);
+
+      setIsModalOpen(false);
+      setEditingTransaction(null);
+    } catch (err) {
+      console.error("Lỗi khi lưu:", err);
+    }
+  };
 
   const filtered = useMemo(() => {
     return transactions.filter(
@@ -231,6 +289,11 @@ export default function Transaction() {
           {ACTION_CARDS.map((action) => (
             <div
               key={action.title}
+              onClick={() => {
+                if (action.type !== "transfer") {
+                  handleOpenAddModal(action.type as "income" | "expense");
+                }
+              }}
               className="group bg-card rounded-2xl border border-border p-5 flex items-center gap-4 hover:shadow-md cursor-pointer transition-all"
             >
               <div
@@ -252,7 +315,7 @@ export default function Transaction() {
 
         <QuickStats transactions={transactions} />
 
-        {/* TRANSACTION HISTORY LIST (SHOPPING LIST UI) */}
+        {/* TRANSACTION HISTORY LIST */}
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -360,10 +423,16 @@ export default function Transaction() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-0.5 shrink-0">
-                      <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+                      <button
+                        onClick={() => handleOpenEditModal(txn)}
+                        className="p-1.5 hover:bg-muted rounded-lg transition-colors"
+                      >
                         <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
-                      <button className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors">
+                      <button
+                        onClick={() => handleDeleteTransaction(txn.id)}
+                        className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors"
+                      >
                         <Trash2 className="w-3.5 h-3.5 text-destructive" />
                       </button>
                     </div>
@@ -374,6 +443,16 @@ export default function Transaction() {
           </div>
         </div>
       </main>
+
+      {/* Modal Thêm/Sửa giao dịch */}
+      <AddTransactionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveTransaction}
+        categories={categories}
+        initialData={editingTransaction}
+        defaultType={modalDefaultType}
+      />
     </div>
   );
 }

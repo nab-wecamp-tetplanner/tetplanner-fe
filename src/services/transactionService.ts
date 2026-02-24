@@ -37,10 +37,22 @@ export const transactionApi = {
   },
 
   // Cập nhật giao dịch theo ID
-  update: (transactionId: string, data: { note?: string; amount?: number }) => {
+
+  update: (
+    id: string,
+    data: {
+      note?: string;
+      amount?: number;
+      category_id?: string;
+      transaction_date?: string;
+    },
+  ) => {
     return apiClient.patch<TransactionResponse>(
-      `/budget-transactions/${transactionId}`,
+      `/budget-transactions/${id}`,
       data,
     );
+  },
+  delete: (id: string) => {
+    return apiClient.delete(`/budget-transactions/${id}`);
   },
 };
