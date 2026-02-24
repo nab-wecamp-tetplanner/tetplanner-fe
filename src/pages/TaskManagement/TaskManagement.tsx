@@ -599,6 +599,7 @@ const TaskManagement: React.FC = () => {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         configId={activeConfigId}
+        isOwner={true}
       />
 
       <ManagePhasesModal
