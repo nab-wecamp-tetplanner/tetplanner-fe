@@ -1,0 +1,52 @@
+/* CSS Nút bấm biến hình */
+.morph-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  /* Hiệu ứng chuyển động mượt mà như bơ */
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* 1. Trạng thái bình thường (Chữ nhật - Màu đỏ) */
+.morph-btn.idle {
+  width: 90px;
+  background-color: #dc2626;
+  border-radius: 8px;
+}
+.morph-btn.idle:hover {
+  background-color: #b91c1c;
+}
+
+/* 2. Trạng thái đang tải (Co thành hình tròn - Đỏ nhạt) */
+.morph-btn.loading {
+  width: 40px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  padding: 0;
+  pointer-events: none; /* Khóa không cho bấm double */
+}
+
+/* 3. Trạng thái thành công (Phình to ra - Xanh lá mượt) */
+.morph-btn.success {
+  width: 110px;
+  background-color: #10b981;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* Hiệu ứng xoay tròn cho icon loading */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.icon-spin {
+  animation: spin 1s linear infinite;
+}

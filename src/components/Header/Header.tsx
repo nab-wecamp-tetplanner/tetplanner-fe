@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import apiClient from "../../services/apiClient";
 import type { TetConfig } from "../../types/tetConfig.types";
 import { useAppStore } from "../../stores/useAppStore"; //
+import InvitationBell from "../InvitationBell/InvitationBell";
 
 type NavItem = {
   name: string;
@@ -107,6 +108,9 @@ const Header = () => {
                   {currentUser?.email}
                 </p>
               </div>
+
+              {/* Invitation Notifications */}
+              <InvitationBell />
 
               {/* Settings */}
               <button

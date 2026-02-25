@@ -166,7 +166,7 @@ const ganttTasks = useMemo(() => {
       const phaseStart = phase.start_date ? new Date(phase.start_date) : new Date();
       let phaseEnd = phase.end_date ? new Date(phase.end_date) : new Date(phaseStart.getTime() + 86400000 * 7);
       if (phaseEnd.getTime() < phaseStart.getTime()) {
-        phaseEnd = new Date(phaseStart.getTime() + 86400000); 
+        phaseEnd = new Date(phaseStart.getTime() + 86400000);
       }
 
       const totalTasks = phase.tasks?.length || 0;
@@ -336,6 +336,7 @@ const ganttTasks = useMemo(() => {
         deadline: task.end.toISOString(),
       };
 
+
       await onUpdateTask(extended.id, updatedTodo);
     }
   };
@@ -348,6 +349,11 @@ const ganttTasks = useMemo(() => {
   };
 
   if (!overviewConfig || ganttTasks.length === 0) {
+    return (
+      <div className="p-10 text-center text-muted-foreground font-medium">
+        No tasks available to show on Timeline.
+      </div>
+    );
     return (
       <div className="p-10 text-center text-muted-foreground font-medium">
         No tasks available to show on Timeline.

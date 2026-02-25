@@ -14,6 +14,7 @@ import Login from "./pages/Auth/LoginPage";
 import Register from "./pages/Auth/RegisterPage";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
 import { ThemeProvider } from "./context/ThemeContext";
+import { ToastProvider } from "./context/ToastContext";
 import { LoadingProvider } from "./contexts/LoadingContext";
 import ConfigGuard from "./routes/ConfigGuard";
 import TimelineModule from "./pages/Timeline";
@@ -25,6 +26,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <ToastProvider>
         <LoadingProvider>
           <AuthProvider>
             <BrowserRouter>
@@ -69,6 +71,7 @@ export default function App() {
             </BrowserRouter>
           </AuthProvider>
         </LoadingProvider>
+        </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

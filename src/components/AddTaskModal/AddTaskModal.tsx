@@ -1,60 +1,83 @@
-import React, { useState } from "react";
-import type { SubTask, Task, TaskPriority, TaskStatus } from "../../types/task";
+import React, { useEffect, useState } from "react";
+import type { Category, Member, Task, TaskPriority, TaskStatus } from "../../types/task";
 import './AddTaskModal.css';
 import { Calendar, CheckSquare, Flag, Plus, ShoppingCart, Tag, Trash2, User, X } from "lucide-react";
-import { MOCK_MEMBERS } from "../../data/mockTasks";
+
+import { todoService } from "../../services/todoService";
+import { useToast } from "../../hooks/useToast";
 
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   status: TaskStatus;
   onSave: (taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => void;
+  members?: Member[];
 }
 
 
-const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, onSave }) => {
+const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, onSave, members = [] }) => {
     
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState<TaskPriority>('medium');
     const [isShopping, setIsShopping] = useState(false);
-    const [estimatedPrice, setEstimatedPrice] = useState<number | ''>('');
+    const [estimated_price, setestimated_price] = useState<number | ''>('');
     const [deadline, setDeadline] = useState('');
-    const [categoryId, setCategoryId] = useState('General');
-    const [subTasks, setSubTasks] = useState<SubTask[]>([]);
+    const [category_id, setcategory_id] = useState('');
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [subTasks, setSubTasks] = useState<Record<string, boolean>>({});
     const [tempSubtask, setTempSubtask] = useState('');
     const [assignedTo, setAssignedTo] = useState<string>('');
+    const toast = useToast();
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res: any = await todoService.getCategories();
+                const list = res || [];
+                setCategories(list);
+                if (list.length > 0) {
+                    setcategory_id((prev) => prev || list[0].id);
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     if(!isOpen) return null;
 
     const addSubtask = () => {
         const trimmedSubtask = tempSubtask.trim();
-        if(trimmedSubtask) {
-            setSubTasks([...subTasks, { id: Date.now().toString(), text: trimmedSubtask, isCompleted: false }]);
+        if(trimmedSubtask && !(trimmedSubtask in subTasks)) {
+            setSubTasks({ ...subTasks, [trimmedSubtask]: false });
             setTempSubtask("");
         }
     };
 
-    const removeSubtask = (id: string) => {
-        setSubTasks(subTasks.filter(st => st.id !== id));
+    const removeSubtask = (key: string) => {
+        const updated = { ...subTasks };
+        delete updated[key];
+        setSubTasks(updated);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if(!title.trim()) {
-            alert("Task title cannot be empty.");
+            toast.warning("Task title cannot be empty.");
             return;
         }
 
         const taskData = {
         title,
-        category_id: categoryId,
+        category_id: category_id,
         priority,
         deadline: deadline || undefined, 
-        sub_tasks: subTasks,
+        subtasks: subTasks,
         status: status || 'pending' as TaskStatus,
         is_shopping: isShopping,
-        estimated_price: estimatedPrice || undefined,
+        estimated_price: estimated_price || undefined,
         assigned_to: assignedTo || undefined,
         }
 
@@ -62,11 +85,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
         setTitle('');
         setPriority('medium');
-        setCategoryId('General');
+        setcategory_id('General');
         setDeadline('');
-        setSubTasks([]);    
+        setSubTasks({});    
         setIsShopping(false);
-        setEstimatedPrice('');
+        setestimated_price('');
         setAssignedTo('');
         onClose();
     };
@@ -99,7 +122,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
             <div className="form-group">
                 <label className="form-label"><User size={14} /> Assigned To</label>
                 <div className="assignee-picker">
-                    {MOCK_MEMBERS.map(member => (
+                    {members.map(member => (
                         <button
                             key={member.id}
                             type="button"
@@ -120,12 +143,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     <label className="form-label"><Tag size={14} /> Category</label>
                     <select 
                     className="form-input"
-                    value={categoryId} 
-                    onChange={(e) => setCategoryId(e.target.value)}
+                    value={category_id} 
+                    onChange={(e) => setcategory_id(e.target.value)}
                     >
-                    <option value="Design">Design</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Development">Development</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
                     </select>
                 </div>
                 <div className="form-group">
@@ -171,8 +194,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                         <input
                             className="form-input"
                             type="number"
-                            value={estimatedPrice}
-                            onChange={(e) => setEstimatedPrice(e.target.value ? Number(e.target.value) : '')}
+                            value={estimated_price}
+                            onChange={(e) => setestimated_price(e.target.value ? Number(e.target.value) : '')}
                             placeholder="Estimated price"
                             min={0}
                         />
@@ -197,12 +220,12 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                     </button>
                 </div>
                 {/* Subtasks List */}
-                {subTasks.length > 0 && (
+                {Object.keys(subTasks).length > 0 && (
                     <ul className="subtask-list">
-                        {subTasks.map(st => (
-                            <li key={st.id} className="subtask-item">
-                                <span>• {st.text}</span>
-                                <button type="button" className="btn-remove-subtask" onClick={() => removeSubtask(st.id)} title="Remove">
+                        {Object.keys(subTasks).map(key => (
+                            <li key={key} className="subtask-item">
+                                <span>• {key}</span>
+                                <button type="button" className="btn-remove-subtask" onClick={() => removeSubtask(key)} title="Remove">
                                     <Trash2 size={14} />
                                 </button>
                             </li>
