@@ -6,6 +6,7 @@ import type { TetConfig } from "../types/tetConfig.types";
 import type { Category } from "../types/categories.type";
 import type { User } from "../types/auth.types";
 import type { Transaction } from "../types/transaction.types";
+import type { Timeline } from "../types/timeline.types";
 
 interface BackendResponse<T> {
   data: T;
@@ -198,7 +199,7 @@ export class ApiClient {
         title?: string;
         priority?: "low" | "medium" | "high" | "urgent";
         status?: "pending" | "in_progress" | "completed" | "cancelled";
-        deadline?: Date;
+        deadline?: string;
         is_shopping?: boolean;
         estimated_price?: number;
         quantity?: number;
@@ -234,6 +235,13 @@ export class ApiClient {
     }): ApiResponse<Transaction> => {
       return this.post("/budget-transactions", data);
     },
+  };
+
+  // Timeline phases endpoints
+  timelinePhases = {
+    getByConfigId: (id: string): ApiResponse<Timeline[]> => {
+      return this.get("/timeline-phases/tet-config/" + id);
+    }
   };
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

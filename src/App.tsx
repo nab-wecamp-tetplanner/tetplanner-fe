@@ -16,6 +16,8 @@ import VerifyOTP from "./pages/Auth/VerifyOTP";
 import { ThemeProvider } from "./context/ThemeContext";
 import { LoadingProvider } from "./contexts/LoadingContext";
 import ConfigGuard from "./routes/ConfigGuard";
+import TimelineModule from "./pages/Timeline";
+import PlanningOverview from "./pages/TimelineView/PlanningOverview";
 
 const queryClient = new QueryClient();
 
@@ -57,7 +59,7 @@ export default function App() {
                   <Route element={<ConfigGuard />}>
                     <Route path="/" element={<Overview />} />
                     <Route path="/task" element={<TaskManagement />} />
-                    <Route path="/calendar" element={<CalendarPage />} />
+                    <Route path="/calendar" element={<PlanningOverview />} />
                     <Route path="/finance" element={<FinanceDashboard />} />
                     <Route path="/transaction" element={<Transaction />} />
                     <Route path="/dashboard" element={<Dashboard />} />

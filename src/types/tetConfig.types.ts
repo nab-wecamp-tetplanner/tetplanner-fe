@@ -4,7 +4,7 @@ export interface TetConfig {
     name: string;
     total_budget: number;
     created_at: string;
-    deleted_at: string | null;
+    deleted_at: string;
     owner: {
         id: string;
     };

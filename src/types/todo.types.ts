@@ -13,9 +13,9 @@ export interface TodoItem {
   estimated_price?: number;
   quantity?: number;
   purchased: boolean;
-  assigned_to: string | null;
+  assigned_to?: string;
   created_at: string;
-  deleted_at: string | null;
+  deleted_at?: string;
   tet_config: BaseReference;
   timeline_phase: BaseReference;
   category: BaseReference;
