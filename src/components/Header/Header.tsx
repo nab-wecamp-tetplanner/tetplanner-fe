@@ -51,7 +51,7 @@ const navItems: NavItem[] = [
 
 const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthContext();
-  const [showSettings, setShowSettings] = useState(false);
+  // const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
 
@@ -110,7 +110,6 @@ const Header = () => {
           alt="Tết Planner Logo"
           className="w-13 h-13 transition-transform duration-300 hover:scale-110"
         />
-        {/* <div className="w-6 h-6 bg-primary rounded-sm transform rotate-45 transition-colors duration-300"></div> */}
         <span className="font-bold text-text-main text-lg transition-colors duration-300">
           Tết Planner
         </span>
@@ -140,22 +139,35 @@ const Header = () => {
         {isAuthenticated ? (
           <>
             <div className="relative group">
-              <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-main border border-accent rounded-lg hover:bg-accent transition-colors">
-                Plan
-                <ChevronDown size={16} className="group-hover:hidden" />
-                <ChevronUp size={16} className="hidden group-hover:inline" />
+              <button className="w-48 flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-main border border-accent rounded-lg hover:bg-accent transition-colors">
+                <span className="flex-1 truncate">
+                  {configs.find((c) => c.id === configId)?.name ||
+                    "Select Config"}
+                </span>
+                <ChevronDown
+                  size={16}
+                  className="group-hover:hidden flex-shrink-0"
+                />
+                <ChevronUp
+                  size={16}
+                  className="hidden group-hover:inline flex-shrink-0"
+                />
               </button>
               <div className="absolute left-0 mt-2 w-48 bg-(--bg) border border-accent rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="p-2">
-                  <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-accent rounded transition-colors">
-                    Free Plan
-                  </button>
-                  <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-accent rounded transition-colors">
-                    Pro Plan
-                  </button>
-                  <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-accent rounded transition-colors">
-                    Premium Plan
-                  </button>
+                  {configs.map((config) => (
+                    <button
+                      key={config.id}
+                      onClick={() => setConfigId(config.id)}
+                      className={`w-full text-left px-4 py-2.5 text-sm rounded transition-colors ${
+                        configId === config.id
+                          ? "bg-accent text-text-main font-semibold"
+                          : "text-text-main hover:bg-accent"
+                      }`}
+                    >
+                      {config.name}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -293,14 +305,6 @@ const Header = () => {
                 </div>
               </div>
             </div>
-
-            {/* Logout */}
-            <button
-              onClick={logout}
-              className="ml-2 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
-            >
-              Đăng xuất
-            </button>
           </>
         ) : (
           <div className="flex items-center gap-3 ml-2 pl-4 border-l border-accent transition-colors duration-300">
