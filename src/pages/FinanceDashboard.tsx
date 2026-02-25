@@ -12,6 +12,7 @@ import { DEFAULT_CATEGORIES } from "../constants/finance";
 import financeApi from "../services/financeApi";
 import apiClient from "../services/apiClient";
 import { SuccessModal } from "../components/finance/SuccessModal";
+import { DeleteConfirmationModal } from "../components/finance/DeleteConfirmationModal";
 import type {
   ShoppingItem,
   Budget,
@@ -118,6 +119,17 @@ export default function FinanceDashboard() {
   }>({
     isOpen: false,
     message: "",
+  });
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
   });
 
   // 1. Lấy danh sách kế hoạch
@@ -253,22 +265,6 @@ export default function FinanceDashboard() {
     }
   };
 
-  const handleDeleteItem = async (itemId: string) => {
-    if (!confirm("Xóa mục này?")) return;
-    try {
-      await financeApi.deleteItem(itemId);
-      setItems((prev) => prev.filter((i) => i.id !== itemId));
-      const budgetData = await financeApi.getBudget(tetConfigId!);
-      setBudget({ total: budgetData.total, used: budgetData.used });
-      setSuccessModal({
-        isOpen: true,
-        message: "Đã xóa món đồ khỏi danh sách!",
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleToggleStatus = async (itemId: string, currentStatus: string) => {
     if (!tetConfigId) return;
     try {
@@ -326,16 +322,6 @@ export default function FinanceDashboard() {
     }
   };
 
-  const handleDeleteCategory = async (id: string) => {
-    if (!confirm("Xóa danh mục này?")) return;
-    try {
-      await financeApi.deleteCategory(id);
-      setCategories((prev) => prev.filter((c) => c.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleAddPhase = async (data: any) => {
     if (!tetConfigId) return;
     try {
@@ -370,14 +356,81 @@ export default function FinanceDashboard() {
       console.error(err);
     }
   };
+  const handleDeleteItem = (itemId: string) => {
+    setDeleteModal({
+      isOpen: true,
+      title: "Delete Item",
+      message:
+        "Are you sure you want to remove this item from your shopping list?",
+      onConfirm: async () => {
+        try {
+          await financeApi.deleteItem(itemId);
+          setItems((prev) => prev.filter((i) => i.id !== itemId));
+          const budgetData = await financeApi.getBudget(tetConfigId!);
+          setBudget({ total: budgetData.total, used: budgetData.used });
+          setSuccessModal({
+            isOpen: true,
+            message: "Item deleted successfully!",
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    });
+  };
+
+  // For Categories
+  const handleDeleteCategory = (id: string) => {
+    const cat = categories.find((c) => c.id === id);
+    setDeleteModal({
+      isOpen: true,
+      title: "Delete Category",
+      message: `Are you sure you want to delete "${cat?.name}"? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          await financeApi.deleteCategory(id);
+          setCategories((prev) => prev.filter((c) => c.id !== id));
+          setSuccessModal({ isOpen: true, message: "Category deleted!" });
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    });
+  };
+
+  // Add this new handler for Phases
+  const handleDeletePhase = (id: string) => {
+    const phase = phases.find((p) => p.id === id);
+    setDeleteModal({
+      isOpen: true,
+      title: "Delete Phase",
+      message: `Delete phase "${phase?.name}"? Items linked to this phase might lose their timing info.`,
+      onConfirm: async () => {
+        try {
+          await apiClient.delete(`/timeline-phases/${id}`);
+          setPhases((prev) => prev.filter((p) => p.id !== id));
+          setSuccessModal({ isOpen: true, message: "Phase deleted!" });
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    });
+  };
 
   const categorySummaries = useMemo(() => {
     return categories.map((cat) => {
+      // Lấy tất cả items thuộc category này
       const catItems = items.filter((i) => i.category === cat.id);
+
+      // LOGIC MỚI: Chỉ lọc những item có status là "purchased" để tính tổng tiền
+      const purchasedTotal = catItems
+        .filter((i) => i.status === "purchased")
+        .reduce((s, i) => s + i.price * i.quantity, 0);
+
       return {
         category: cat.name,
-        total: catItems.reduce((s, i) => s + i.price * i.quantity, 0),
-        itemCount: catItems.length,
+        total: purchasedTotal, // Bây giờ total chỉ tính các món đã mua
+        itemCount: catItems.length, // Vẫn giữ nguyên số lượng để user biết có bao nhiêu món trong list
         icon: cat.icon,
         color: cat.color,
         bgColor: `${cat.color}20`,
@@ -437,7 +490,7 @@ export default function FinanceDashboard() {
             setEditingPhase(p);
             setIsAddPhaseModalOpen(true);
           }}
-          onDeletePhase={(id) => apiClient.delete(`/timeline-phases/${id}`)}
+          onDeletePhase={handleDeletePhase}
         />
 
         <CategoryCards
@@ -454,6 +507,14 @@ export default function FinanceDashboard() {
           onEditItem={setEditingItem}
           onToggleStatus={handleToggleStatus}
           onDeleteItem={handleDeleteItem}
+        />
+
+        <DeleteConfirmationModal
+          isOpen={deleteModal.isOpen}
+          title={deleteModal.title}
+          message={deleteModal.message}
+          onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+          onConfirm={deleteModal.onConfirm}
         />
       </main>
 

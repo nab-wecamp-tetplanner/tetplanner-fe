@@ -9,9 +9,13 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  FolderOpen,
+  CircleDollarSign,
+  Palette,
+  Layout,
 } from "lucide-react";
 import type { CustomCategory } from "../../types/shopping.types";
-import { ICON_MAP, COLOR_CONFIG } from "../../constants/finance";
+import { ICON_MAP } from "../../constants/finance";
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -33,7 +37,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 
   const isEditMode = !!initialData;
 
-  // Emoji to icon name mapping (reverse of iconToEmoji)
   const emojiToIconName: Record<string, string> = {
     "🛒": "ShoppingCart",
     "🎁": "Gift",
@@ -45,7 +48,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     "🕐": "Clock",
   };
 
-  // Hex to color name mapping (reverse lookup)
   const getColorNameFromHex = (hex: string): string => {
     const colorMap: Record<string, string> = {
       "#3b82f6": "planner-blue",
@@ -53,11 +55,15 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
       "#a855f7": "planner-purple",
       "#10b981": "planner-green",
       "#f59e0b": "planner-amber",
+      "#14b8a6": "planner-teal",
+      "#6366f1": "planner-indigo",
+      "#f43f5e": "planner-rose",
+      "#f97316": "planner-orange",
+      "#64748b": "planner-slate",
     };
     return colorMap[hex] || "planner-blue";
   };
 
-  // Load initial data when modal opens
   useEffect(() => {
     if (isOpen && initialData) {
       setName(initialData.name);
@@ -65,7 +71,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
       setSelectedColor(getColorNameFromHex(initialData.color));
       setAllocatedBudget(initialData.allocated?.toString() || "");
     } else if (isOpen && !initialData) {
-      // Reset for add mode
       setName("");
       setSelectedIcon("Package");
       setSelectedColor("planner-blue");
@@ -90,9 +95,13 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     { name: "Purple", value: "planner-purple", hex: "#a855f7" },
     { name: "Green", value: "planner-green", hex: "#10b981" },
     { name: "Amber", value: "planner-amber", hex: "#f59e0b" },
+    { name: "Teal", value: "planner-teal", hex: "#14b8a6" },
+    { name: "Indigo", value: "planner-indigo", hex: "#6366f1" },
+    { name: "Rose", value: "planner-rose", hex: "#f43f5e" },
+    { name: "Orange", value: "planner-orange", hex: "#f97316" },
+    { name: "Slate", value: "planner-slate", hex: "#64748b" },
   ];
 
-  // Map icon names to emojis for backend
   const iconToEmoji: Record<string, string> = {
     ShoppingCart: "🛒",
     Gift: "🎁",
@@ -118,13 +127,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
         color: selectedColorHex,
         allocated: allocatedBudget ? parseFloat(allocatedBudget) : undefined,
       });
-
-      if (!isEditMode) {
-        setName("");
-        setSelectedIcon("Package");
-        setSelectedColor("planner-blue");
-        setAllocatedBudget("");
-      }
       onClose();
     }
   };
@@ -132,75 +134,79 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-2xl border border-border shadow-xl max-w-md w-full">
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <h2 className="font-serif text-xl text-foreground">
-            {isEditMode ? "Edit category" : "Add new category"}
-          </h2>
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+      <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl max-w-[400px] w-full overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div className="flex items-center justify-between p-6 border-b border-border bg-muted/20">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <FolderOpen className="w-5 h-5" />
+            </div>
+            <h2 className="font-serif text-xl text-foreground">
+              {isEditMode ? "Edit Category" : "Add Category"}
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-muted rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-full transition-colors"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
-          {/* Category Name */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Category name
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Name Field */}
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Layout className="w-4 h-4 text-primary" /> Category name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Electronics, Clothing"
-              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+              placeholder="e.g., Electronics..."
+              className="w-full px-4 py-2.5 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               autoFocus
             />
           </div>
 
-          {/* Allocated Budget */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Allocated budget (optional)
+          {/* Budget Field */}
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <CircleDollarSign className="w-4 h-4 text-planner-green" />{" "}
+              Allocated budget
+              <span className="ml-1 text-xs text-muted-foreground font-normal">(optional)</span>
             </label>
             <input
               type="number"
               value={allocatedBudget}
               onChange={(e) => setAllocatedBudget(e.target.value)}
-              placeholder="0"
-              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+              placeholder="Amount (VND)"
+              className="w-full px-4 py-2.5 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-green/20 transition-all"
             />
           </div>
 
-          {/* Icon Selection - Only show in add mode */}
+          {/* Icon Selection */}
           {!isEditMode && (
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Choose icon
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Sparkles className="w-4 h-4 text-planner-amber" /> Choose icon
               </label>
               <div className="grid grid-cols-4 gap-2">
                 {availableIcons.map((iconItem) => {
                   const Icon = iconItem.icon;
                   const isSelected = selectedIcon === iconItem.name;
-                  const config = COLOR_CONFIG[selectedColor];
                   return (
                     <button
                       key={iconItem.name}
                       type="button"
                       onClick={() => setSelectedIcon(iconItem.name)}
-                      className={`p-3 rounded-xl border-2 transition-all ${
+                      className={`p-2.5 rounded-2xl border-2 transition-all flex items-center justify-center ${
                         isSelected
-                          ? `${config.iconBg} border-${selectedColor}`
-                          : "border-border hover:border-primary/50"
+                          ? `bg-primary/10 border-primary text-primary`
+                          : "border-border bg-background text-muted-foreground hover:border-primary/50"
                       }`}
                     >
-                      <Icon
-                        className={`w-6 h-6 mx-auto ${isSelected ? "text-primary-foreground" : "text-muted-foreground"}`}
-                      />
+                      <Icon className="w-5 h-5" />
                     </button>
                   );
                 })}
@@ -208,28 +214,30 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             </div>
           )}
 
-          {/* Color Selection */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Choose color
+          {/* New Color Picker Style (image_15f18f.png) */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Palette className="w-4 h-4 text-planner-purple" /> Choose color
             </label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {availableColors.map((colorItem) => {
-                const config = COLOR_CONFIG[colorItem.value];
                 const isSelected = selectedColor === colorItem.value;
                 return (
                   <button
                     key={colorItem.value}
                     type="button"
                     onClick={() => setSelectedColor(colorItem.value)}
-                    className={`flex-1 p-3 rounded-xl border-2 transition-all ${config.tokenBg} ${
+                    className={`group relative h-12 w-full rounded-2xl border-2 transition-all flex items-center justify-center ${
                       isSelected
-                        ? `border-${colorItem.value} ring-2 ring-${colorItem.value}/30`
-                        : "border-transparent"
+                        ? "border-[#334155] shadow-sm"
+                        : "border-transparent hover:border-slate-200"
                     }`}
+                    style={{ backgroundColor: colorItem.hex + "15" }} // Tinted background
                   >
+                    {/* Inner solid circle */}
                     <div
-                      className={`h-6 w-6 rounded-full ${config.iconBg} mx-auto`}
+                      className={`h-5 w-5 rounded-full transition-transform ${isSelected ? "scale-110" : "scale-100 group-hover:scale-105"}`}
+                      style={{ backgroundColor: colorItem.hex }}
                     />
                   </button>
                 );
@@ -237,38 +245,21 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             </div>
           </div>
 
-          {/* Preview */}
-          <div className="bg-muted rounded-xl p-4">
-            <p className="text-xs text-muted-foreground mb-2">Preview</p>
-            <div className="flex items-center gap-3">
-              <div
-                className={`h-10 w-10 rounded-xl ${COLOR_CONFIG[selectedColor].iconBg} flex items-center justify-center`}
-              >
-                {React.createElement(ICON_MAP[selectedIcon] || Package, {
-                  className: "w-5 h-5 text-primary-foreground",
-                })}
-              </div>
-              <span className="font-medium text-foreground">
-                {name || "Category name"}
-              </span>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-2">
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
+              className="flex-1 py-3.5 border border-border text-foreground rounded-2xl hover:bg-muted transition-all font-bold text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim()}
-              className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3.5 bg-primary text-primary-foreground rounded-2xl hover:opacity-90 transition-all font-bold text-sm shadow-lg disabled:opacity-50"
             >
-              {isEditMode ? "Save changes" : "Add category"}
+              {isEditMode ? "Save Changes" : "Add Category"}
             </button>
           </div>
         </form>

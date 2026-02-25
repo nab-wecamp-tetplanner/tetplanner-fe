@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import {
+  X,
+  ShoppingBag,
+  Tag,
+  Banknote,
+  Hash,
+  Layers,
+  Clock,
+  Calendar,
+  ChevronDown, // Added for the dropdown indicator
+} from "lucide-react";
 import type { ShoppingItem, CustomCategory } from "../../types/shopping.types";
 import type { TimelinePhase } from "../../types/timeline.types";
 
@@ -29,24 +39,20 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   const [phase, setPhase] = useState("");
   const [dueDate, setDueDate] = useState("");
 
-  // Populate form when modal opens or initialData changes
   useEffect(() => {
     if (!isOpen) return;
 
     if (initialData) {
-      // Edit mode - populate with existing data
       setName(initialData.name || "");
       setPrice(initialData.price?.toString() || "");
       setQuantity(initialData.quantity?.toString() || "1");
       setCategory(initialData.category || "");
       setPhase(initialData.timelinePhaseId || "");
-      // Convert ISO date to YYYY-MM-DD format
       const dateValue = initialData.dueDate
         ? initialData.dueDate.split("T")[0]
         : "";
       setDueDate(dateValue);
     } else {
-      // Add mode - reset to defaults
       setName("");
       setPrice("");
       setQuantity("1");
@@ -54,7 +60,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
       setPhase(defaultPhaseId || "");
       setDueDate("");
     }
-  }, [isOpen, initialData?.id]); // Only depend on isOpen and item ID
+  }, [isOpen, initialData?.id]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +71,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
       price: parseFloat(price),
       quantity: parseInt(quantity) || 1,
       category: category || categories[0]?.id || "other",
-      status: initialData?.status || "pending", // Preserve status when editing
+      status: initialData?.status || "pending",
       dueDate,
       timelinePhaseId: phase,
     });
@@ -74,7 +80,6 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   };
 
   const handleClose = () => {
-    // Reset form when closing
     if (!initialData) {
       setName("");
       setPrice("");
@@ -89,24 +94,31 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-2xl border border-border shadow-xl max-w-md w-full">
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <h2 className="font-serif text-xl text-foreground">
-            {initialData ? "Edit shopping item" : "Add shopping item"}
-          </h2>
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+      <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-300">
+        {/* Header Section */}
+        <div className="flex items-center justify-between p-6 border-b border-border bg-muted/20">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <h2 className="font-serif text-2xl text-foreground">
+              {initialData ? "Edit Item" : "Add Item"}
+            </h2>
+          </div>
           <button
             onClick={handleClose}
-            className="p-1 hover:bg-muted rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-full transition-colors"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-8 space-y-5">
           {/* Item Name */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Tag className="w-4 h-4 text-primary" />
               Item name *
             </label>
             <input
@@ -114,16 +126,17 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Sticky rice cake"
-              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+              className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               autoFocus
               required
             />
           </div>
 
           {/* Price & Quantity */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Banknote className="w-4 h-4 text-planner-green" />
                 Price (VND) *
               </label>
               <input
@@ -131,93 +144,102 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="150000"
-                className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-green/20 transition-all"
                 required
                 min="0"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Hash className="w-4 h-4 text-planner-amber" />
                 Quantity
               </label>
               <input
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-amber/20 transition-all"
                 min="1"
               />
             </div>
           </div>
 
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+          {/* Category Dropdown with Chevron */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Layers className="w-4 h-4 text-planner-purple" />
               Category
             </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
-            >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-purple/20 transition-all appearance-none cursor-pointer pr-10"
+              >
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            </div>
           </div>
 
-          {/* Timeline Phase */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+          {/* Timeline Phase Dropdown with Chevron */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Clock className="w-4 h-4 text-planner-blue" />
               Timeline Phase *
             </label>
-            <select
-              value={phase}
-              onChange={(e) => setPhase(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
-              required
-            >
-              {phases.length === 0 && (
-                <option value="">No phases available - create one first</option>
-              )}
-              {phases.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({new Date(p.start_date).toLocaleDateString()} -{" "}
-                  {new Date(p.end_date).toLocaleDateString()})
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={phase}
+                onChange={(e) => setPhase(e.target.value)}
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-blue/20 transition-all appearance-none cursor-pointer pr-10"
+                required
+              >
+                {phases.length === 0 && (
+                  <option value="">No phases available</option>
+                )}
+                {phases.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            </div>
           </div>
 
           {/* Due Date */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Calendar className="w-4 h-4 text-planner-pink" />
               Due date
             </label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+              className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-pink/20 transition-all"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-muted transition-colors font-medium text-sm"
+              className="flex-1 px-6 py-4 border border-border text-foreground rounded-2xl hover:bg-muted transition-all font-bold text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm"
+              className="flex-1 px-6 py-4 bg-primary text-primary-foreground rounded-2xl hover:opacity-90 transition-all font-bold text-sm shadow-lg shadow-primary/20"
             >
-              {initialData ? "Save changes" : "Add item"}
+              {initialData ? "Save Changes" : "Add Item"}
             </button>
           </div>
         </form>

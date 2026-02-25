@@ -31,12 +31,18 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
       const Icon = ICON_MAP[category.icon] || Package;
       const categoryColor = category.color || "#10b981";
 
+      // Tính toán dữ liệu ngân sách
+      const allocated = category.allocated || 0;
+      const spent = summary.total;
+      const percentage = allocated > 0 ? (spent / allocated) * 100 : 0;
+      const isOverBudget = allocated > 0 && spent > allocated;
+
       return (
         <div
           key={summary.category}
-          className="group bg-card rounded-2xl border border-border p-5 hover:shadow-md transition-all duration-200 cursor-pointer relative"
+          className="group bg-card rounded-2xl border border-border p-5 hover:shadow-md transition-all duration-200 cursor-pointer relative overflow-hidden"
         >
-          {/* Edit and Delete buttons for custom categories */}
+          {/* Giữ nguyên nút Sửa/Xóa gốc */}
           {!category.isDefault && (
             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               {onEditCategory && (
@@ -54,9 +60,9 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (confirm(`Delete "${category.name}" category?`)) {
-                      onDeleteCategory(category.id);
-                    }
+                    // if (confirm(`Delete "${category.name}" category?`)) {
+                    //   onDeleteCategory(category.id);
+                    // }
                   }}
                   className="p-1 rounded-lg hover:bg-destructive/10 transition-colors"
                 >
@@ -66,6 +72,7 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
             </div>
           )}
 
+          {/* Giữ nguyên phần Icon & Badge gốc */}
           <div className="flex items-center gap-3 mb-3">
             <div
               className="h-10 w-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform"
@@ -84,12 +91,38 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
               {summary.itemCount}
             </span>
           </div>
+
+          {/* Giữ nguyên Tên danh mục */}
           <p className="text-xs text-muted-foreground font-medium mb-0.5">
             {summary.category}
           </p>
-          <p className="text-xl font-bold" style={{ color: categoryColor }}>
-            {formatCurrency(summary.total)}
-          </p>
+
+          {/* Giữ nguyên Giá tiền và thêm label nhỏ nếu có budget */}
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-xl font-bold" style={{ color: categoryColor }}>
+              {formatCurrency(spent)}
+            </p>
+            {allocated > 0 && (
+              <span
+                className={`text-[9px] font-bold ${isOverBudget ? "text-destructive" : "text-muted-foreground"}`}
+              >
+                {Math.round(percentage)}%
+              </span>
+            )}
+          </div>
+
+          {/* CHỈ THÊM MỚI: Thanh tiến độ siêu mảnh nằm sát đáy thẻ */}
+          {allocated > 0 && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted/20">
+              <div
+                className={`h-full transition-all duration-1000 ease-out ${isOverBudget ? "bg-destructive" : ""}`}
+                style={{
+                  width: `${Math.min(percentage, 100)}%`,
+                  backgroundColor: !isOverBudget ? categoryColor : undefined,
+                }}
+              />
+            </div>
+          )}
         </div>
       );
     })}

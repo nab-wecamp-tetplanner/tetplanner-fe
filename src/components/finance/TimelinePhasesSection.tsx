@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Calendar, Edit, Trash2 } from "lucide-react";
+import { Plus, Calendar, Edit, Trash2, Clock } from "lucide-react"; // Thêm Clock để làm icon trang trí
 import type { TimelinePhase } from "../../types/timeline.types";
 
 interface TimelinePhasesSectionProps {
@@ -17,13 +17,18 @@ export const TimelinePhasesSection: React.FC<TimelinePhasesSectionProps> = ({
 }) => {
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-serif text-lg font-medium text-foreground">
-          Timeline Phases
-        </h2>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="font-serif text-xl text-foreground">
+            Timeline Phases
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Lịch trình chuẩn bị cho các giai đoạn Tết
+          </p>
+        </div>
         <button
           onClick={onAddPhase}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-all shadow-sm font-medium"
         >
           <Plus className="w-4 h-4" />
           Add Phase
@@ -31,29 +36,44 @@ export const TimelinePhasesSection: React.FC<TimelinePhasesSectionProps> = ({
       </div>
 
       {phases.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">
-            No timeline phases yet. Add one to start planning!
+        <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed border-border">
+          <Calendar className="w-12 h-12 mx-auto mb-3 opacity-20 text-foreground" />
+          <p className="text-sm font-medium text-muted-foreground">
+            Chưa có giai đoạn nào được tạo.
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {phases
             .sort((a, b) => a.display_order - b.display_order)
             .map((phase) => (
               <div
                 key={phase.id}
-                className="flex items-center justify-between p-3 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors"
+                className="group flex items-center gap-4 p-4 bg-background border border-border rounded-2xl hover:border-primary/50 hover:shadow-md transition-all duration-300 relative overflow-hidden"
               >
-                <div className="flex-1">
-                  <h3 className="font-medium text-foreground">{phase.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(phase.start_date).toLocaleDateString()} -{" "}
-                    {new Date(phase.end_date).toLocaleDateString()}
-                  </p>
+                {/* Trang trí icon bên trái cho đồng bộ BudgetOverview */}
+                <div className="h-12 w-12 rounded-xl bg-planner-blue-light flex items-center justify-center text-planner-blue shrink-0 shadow-sm">
+                  <Clock className="w-6 h-6" />
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-foreground text-sm truncate">
+                    {phase.name}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1 font-medium">
+                    <Calendar className="w-3 h-3" />
+                    <span>
+                      {new Date(phase.start_date).toLocaleDateString("vi-VN")}
+                    </span>
+                    <span>-</span>
+                    <span>
+                      {new Date(phase.end_date).toLocaleDateString("vi-VN")}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Nút hành động hiện lên khi hover giống các section khác */}
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => onEditPhase(phase)}
                     className="p-2 hover:bg-muted rounded-lg transition-colors"
@@ -68,6 +88,13 @@ export const TimelinePhasesSection: React.FC<TimelinePhasesSectionProps> = ({
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
+                </div>
+
+                {/* Chỉ số thứ tự nhỏ ở góc (Display Order) */}
+                <div className="absolute top-0 right-0 p-1">
+                  <span className="text-[9px] font-bold text-muted-foreground/30 px-1.5">
+                    #{phase.display_order}
+                  </span>
                 </div>
               </div>
             ))}
