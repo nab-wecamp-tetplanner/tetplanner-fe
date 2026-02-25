@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
-import type { Category, Task, TaskPriority, TaskStatus } from "../../types/task";
+import type { Category, Member, Task, TaskPriority, TaskStatus } from "../../types/task";
 import './AddTaskModal.css';
 import { Calendar, CheckSquare, Flag, Plus, ShoppingCart, Tag, Trash2, User, X } from "lucide-react";
-import { MOCK_MEMBERS } from "../../data/mockTasks";
+
 import { todoService } from "../../services/todoService";
+import { useToast } from "../../hooks/useToast";
 
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   status: TaskStatus;
   onSave: (taskData: Omit<Task, "id" | "created_at" | "is_overdue" | "purchased" | "quantity">) => void;
+  members?: Member[];
 }
 
 
-const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, onSave }) => {
+const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, onSave, members = [] }) => {
     
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState<TaskPriority>('medium');
@@ -25,6 +27,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
     const [subTasks, setSubTasks] = useState<Record<string, boolean>>({});
     const [tempSubtask, setTempSubtask] = useState('');
     const [assignedTo, setAssignedTo] = useState<string>('');
+    const toast = useToast();
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -62,7 +65,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         e.preventDefault();
 
         if(!title.trim()) {
-            alert("Task title cannot be empty.");
+            toast.warning("Task title cannot be empty.");
             return;
         }
 
@@ -119,7 +122,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
             <div className="form-group">
                 <label className="form-label"><User size={14} /> Assigned To</label>
                 <div className="assignee-picker">
-                    {MOCK_MEMBERS.map(member => (
+                    {members.map(member => (
                         <button
                             key={member.id}
                             type="button"

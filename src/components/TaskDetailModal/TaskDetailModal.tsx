@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import "./TaskDetailModal.css";
 import type { Task } from "../../types/task";
 import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare, User } from "lucide-react";
-import { MOCK_MEMBERS } from "../../data/mockTasks";
 import { todoService } from "../../services/todoService";
+import type { Member } from "../../types/task";
+import { useToast } from "../../hooks/useToast";
 
 /* ── Status / Priority lookup ── */
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -25,14 +26,17 @@ interface TaskDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateTask: (updatedTask: Task, skipApi?: boolean) => void;
+  members?: Member[];
 }
 const TaskDetailModal = ({
   task,
   isOpen,
   onClose,
   onUpdateTask,
+  members,
 }: TaskDetailModalProps) => {
   const [newSubtaskText, setNewSubtaskText] = useState("");
+  const toast = useToast();
 
   if (!isOpen || !task) return null;
 
@@ -61,7 +65,7 @@ const TaskDetailModal = ({
     }
     catch (error) {
       console.error("Error updating subtask:", error);
-      alert("Failed to update subtask. Please try again.");
+      toast.error("Failed to update subtask. Please try again.");
     }
   };
 
@@ -96,7 +100,7 @@ const TaskDetailModal = ({
       );
     } catch (error) {
       console.error("Error updating subtasks:", error);
-      alert("Failed to update subtasks. Please try again.");
+      toast.error("Failed to update subtasks. Please try again.");
     } 
   };
 
@@ -116,7 +120,7 @@ const TaskDetailModal = ({
       await todoService.deleteSubtask(task.id, subtaskKey);
     } catch (error) {
       console.error("Error deleting subtask:", error);
-      alert("Xóa việc nhỏ thất bại. Vui lòng thử lại!");
+      toast.error("Xóa việc nhỏ thất bại. Vui lòng thử lại!");
     }
   };
 
@@ -163,7 +167,7 @@ const TaskDetailModal = ({
 
         {/* ── Assigned Member ── */}
         {(() => {
-          const member = MOCK_MEMBERS.find(m => m.id === task.assigned_to);
+          const member = members?.find(m => m.id === task.assigned_to);
           return member ? (
             <div className="tdm-assigned">
               <span className="tdm-assigned__label"><User size={13} /> Assigned to</span>

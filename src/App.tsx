@@ -5,12 +5,14 @@ import './App.css'
 import Header from './components/Header/Header';
 import TaskManagement from './pages/TaskManagement/TaskManagement';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 
 const queryClient = new QueryClient();
 
 export default function App() {
   return (
     <ThemeProvider>
+      <ToastProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Header />
@@ -24,6 +26,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </QueryClientProvider>
+      </ToastProvider>
     </ThemeProvider>
   )
 };    

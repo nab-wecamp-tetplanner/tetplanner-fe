@@ -47,6 +47,12 @@ export interface Category {
     name: string;
 }
 
+export interface Member {
+    id: string;
+    name: string;
+    avatar: string;
+}
+
 export interface ManagePhasesModalProps {
     isOpen: boolean;
     onClose: () => void;

@@ -1,7 +1,6 @@
 import React from 'react'
 import { Clock, Flame, MoreHorizontal, ShoppingCart, DollarSign } from 'lucide-react'
-import type { Task, Category } from '../../types/task'
-import { MOCK_MEMBERS } from '../../data/mockTasks'
+import type { Task, Category, Member } from '../../types/task'
 import './TaskCard.css'
 
 interface TaskCardProps {
@@ -10,10 +9,11 @@ interface TaskCardProps {
     onClick?: (task: Task) => void;
     isDissolving?: boolean;
     categories?: Category[];
+    members?: Member[];
 }
 
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDissolving, categories }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDissolving, categories, members }) => {
 
     /* Resolve category name from UUID */
     const categoryName = categories?.find(c => c.id === task.category_id)?.name;
@@ -123,7 +123,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                         )}
                     </div>
                     {(() => {
-                        const member = MOCK_MEMBERS.find(m => m.id === task.assigned_to);
+                        const member = members?.find(m => m.id === task.assigned_to);
                         return member ? (
                             <div className="tet-card__assignee" title={member.name}>
                                 <img 

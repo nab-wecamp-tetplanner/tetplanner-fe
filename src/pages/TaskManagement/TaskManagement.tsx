@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useMemo } from "react";
-import type { TetConfig, Task, TaskStatus, Category } from "../../types/task";
+import { useSearchParams } from "react-router-dom";
+import type { TetConfig, Task, TaskStatus, Category, Member } from "../../types/task";
 import { todoService } from "../../services/todoService";
+import { collaboratorService } from "../../services/collaboratorService";
 import {
-  MOCK_MEMBERS,
-  TIMELINE_PHASES,
   MOCK_INITIAL_TASKS,
 } from "../../data/mockTasks";
 import "./TaskManagement.css";
@@ -32,12 +32,15 @@ import {
 import FallingPetals from "../../components/FallingPetals/FallingPetals";
 import SharePlanModal from "../../components/SharePlanModal/SharePlanModal";
 import ManagePhasesModal from "../../components/ManagePhasesModal/ManagePhasesModal";
+import { useToast } from "../../hooks/useToast";
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
 const TaskManagement: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [configs, setConfigs] = useState<TetConfig[]>([]);
+  const toast = useToast();
   const [phases, setPhases] = useState<any[]>([]);
   const [activeConfigId, setActiveConfigId] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -55,65 +58,102 @@ const TaskManagement: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const configRes: any = await todoService.getTetConfigs();
-        const configList = configRes.data || [];
 
-        setConfigs(configList);
-
-        // Fetch categories
+    useEffect(() => {
+      const fetchConfigs = async () => {
         try {
-          const catRes: any = await todoService.getCategories();
-          setCategories(catRes.data || catRes || []);
-        } catch {
-          /* categories are optional */
-        }
+          const configRes: any = await todoService.getTetConfigs();
+          const configList = configRes.data || [];
+          setConfigs(configList);
 
-        if (configList.length > 0) {
-          const firstConfigId = configList[0].id;
-          setActiveConfigId(firstConfigId);
+          try {
+            const catRes: any = await todoService.getCategories();
+            setCategories(catRes.data || catRes || []);
+          } catch (error) {
+            console.error("Lỗi lấy Categories:", error);
+          }
 
-          const phaseRes: any =
-            await todoService.getTimelinePhases(firstConfigId);
+          const urlConfigId = searchParams.get("config");
+          const targetConfigId = urlConfigId || (configList.length > 0 ? configList[0].id : null);
+          
+          if (targetConfigId) {
+            setActiveConfigId(targetConfigId);
+          }
+        } catch (error) { console.error("Lỗi lấy Configs:", error); }
+      };
+
+      fetchConfigs();
+    }, [searchParams]);
+
+    useEffect(() => {
+      if (!activeConfigId) return;
+
+      const fetchPhasesAndMembers = async () => {
+        // 1.Get Members
+        try {
+          const collabRes: any = await collaboratorService.getCollaborators(activeConfigId);
+          const data = collabRes.data || collabRes || {};
+          const memberList: Member[] = [];
+          
+          if (data.owner) {
+            memberList.push({ id: data.owner.id, name: data.owner.name || 'Owner', avatar: data.owner.image_url });
+          }
+          if (data.collaborators) {
+            for (const c of data.collaborators) {
+              if (c.status === 'accepted' || !c.status) {
+                memberList.push({ id: c.user_id || c.id, name: c.user?.name || 'User', avatar: c.user?.image_url });
+              }
+            }
+          }
+          setMembers(memberList);
+        } catch (err) { console.error("Lỗi lấy Members:", err); }
+
+        // 2. Get phases for the selected config
+        try {
+          const phaseRes: any = await todoService.getTimelinePhases(activeConfigId);
           const phaseList = phaseRes.data || [];
           setPhases(phaseList);
 
           if (phaseList.length > 0) {
-            setActivePhaseId(phaseList[0].id);
+            setActivePhaseId(phaseList[0].id); // automatically select the first phase
+          } else {
+            setActivePhaseId(""); //if no phase, clear activePhaseId to prevent loading tasks with invalid phase
           }
+        } catch (error) { console.error("Lỗi lấy Phase:", error); }
+      };
+
+      fetchPhasesAndMembers();
+    }, [activeConfigId]); 
+
+    // ==========================================
+    // auto-fetch tasks when activeConfigId or activePhaseId changes
+    // ==========================================
+    useEffect(() => {
+      const fetchTasks = async () => {
+        if (!activeConfigId || !activePhaseId) {
+          setTodoItems([]);
+          return;
         }
-      } catch (error) {
-        console.error("Error loading Config/Phase data from DB:", error);
-      }
-    };
 
-    fetchInitialData();
-  }, []);
+        try {
+          setIsLoading(true);
+          const response: any = await todoService.getTodoItems(
+            activeConfigId,
+            activePhaseId,
+          );
+          setTodoItems(response.data || []);
+        } catch (error) {
+          console.error("Lỗi lấy Tasks:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      if (!activeConfigId || !activePhaseId) return;
-
-      try {
-        setIsLoading(true);
-        // GET /todo-items?tet_config_id=...&timeline_phase_id=...
-        const response: any = await todoService.getTodoItems(
-          activeConfigId,
-          activePhaseId,
-        );
-        setTodoItems(response.data || []);
-      } catch (error) {
-        console.error("Error loading Tasks:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchTasks();
-  }, [activeConfigId, activePhaseId]);
-
+      fetchTasks();
+    }, [activeConfigId, activePhaseId]); 
+    
   const handleCelebrate = (x: number, y: number) => {
     setCelebration(null);
 
@@ -177,7 +217,7 @@ const TaskManagement: React.FC = () => {
     } catch (error) {
       console.error("Error updating task status:", error);
       setTodoItems(backupTasks);
-      alert("Failed to update task. Please try again.");
+      toast.error("Failed to update task. Please try again.");
     }
   };
 
@@ -197,7 +237,7 @@ const TaskManagement: React.FC = () => {
     } catch (error) {
       console.error("Error updating task status:", error);
       setTodoItems(backupTasks);
-      alert("Failed to move task. Please try again.");
+      toast.error("Failed to move task. Please try again.");
     }
   };
 
@@ -226,7 +266,7 @@ const TaskManagement: React.FC = () => {
       newTask = (response as { data: Task }).data;
     } catch (error) {
       console.error("Error creating task:", error);
-      alert("Failed to create task. Please try again.");
+      toast.error("Failed to create task. Please try again.");
       return;
     }
 
@@ -281,7 +321,7 @@ const TaskManagement: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error updating task:", error);
-        alert("Failed to update task. Please try again.");
+        toast.error("Failed to update task. Please try again.");
       });
   };
 
@@ -374,14 +414,14 @@ const TaskManagement: React.FC = () => {
 
           <div className="tet-collaborators">
             <div className="tet-collaborators__avatars">
-              {MOCK_MEMBERS.map((member, index) => (
+              {members.map((member, index) => (
                 <img
                   key={member.id}
                   src={member.avatar}
                   alt={member.name}
                   title={member.name}
                   className="tet-collaborators__avatar"
-                  style={{ zIndex: MOCK_MEMBERS.length - index }}
+                  style={{ zIndex: members.length - index }}
                 />
               ))}
               <button
@@ -518,6 +558,7 @@ const TaskManagement: React.FC = () => {
               onTaskClick={handleOpenTaskDetail}
               onCelebrate={handleCelebrate}
               categories={categories}
+              members={members}
             />
           ))}
         </div>
@@ -528,6 +569,7 @@ const TaskManagement: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         status={activeColumn}
         onSave={handleAddTask}
+        members={members}
       />
 
       <TaskDetailModal
@@ -535,6 +577,7 @@ const TaskManagement: React.FC = () => {
         isOpen={!!selectedTask}
         onClose={() => setSelectedTask(null)}
         onUpdateTask={handleUpdateTask}
+        members={members}
       />
 
       {/* Celebration particles when task dropped in Done */}

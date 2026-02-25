@@ -11,6 +11,10 @@ export const collaboratorService = {
         });
     },
 
+    getTetConfigById: (id: string) => {
+        return apiClient.get(`/tet-configs/${id}`);
+    },
+
     inviteCollaborator: (data: { tet_config_id: string; [key: string]: any }) => {
         return apiClient.post('/collaborators', data);
     },
