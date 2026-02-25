@@ -8,13 +8,7 @@ import type { TodoItem } from "../../../types/todo.types";
 import { useAppStore } from "../../../stores/useAppStore";
 import { useLoading } from "../../../contexts/LoadingContext";
 import apiClient from "../../../services/apiClient";
-interface Task {
-  id: string;
-  title: string;
-  deadline: string;
-  priority: "high" | "medium" | "low" | "urgent";
-  status: "pending" | "completed" | "canceled";
-}
+
 
 const CalendarWidget = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

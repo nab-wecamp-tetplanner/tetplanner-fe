@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import "./TaskDetailModal.css";
-import type { Task, SubTask } from "../../types/task";
+import type { Task } from "../../types/task";
 import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare, User } from "lucide-react";
-import { MOCK_MEMBERS } from "../../data/mockTasks";
+import { todoService } from "../../services/todoService";
+import type { Member } from "../../types/task";
+import { useToast } from "../../hooks/useToast";
 
 /* ── Status / Priority lookup ── */
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
@@ -23,67 +25,108 @@ interface TaskDetailModalProps {
   task: Task | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateTask: (updatedTask: Task) => void;
+  onUpdateTask: (updatedTask: Task, skipApi?: boolean) => void;
+  members?: Member[];
 }
-
 const TaskDetailModal = ({
   task,
   isOpen,
   onClose,
   onUpdateTask,
+  members,
 }: TaskDetailModalProps) => {
+  const [newSubtaskText, setNewSubtaskText] = useState("");
+  const toast = useToast();
+
   if (!isOpen || !task) return null;
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [newSubtaskText, setNewSubtaskText] = useState("");
+  const currentSubtasks: Record<string, boolean> = (task.subtasks as Record<string, boolean>) || {};
 
-  const toggleSubtask = (subtaskId: string) => {
-    const updatedSubtasks =
-      task.sub_tasks?.map((st: SubTask) =>
-        st.id === subtaskId ? { ...st, isCompleted: !st.isCompleted } : st,
-      ) || [];
+  const toggleSubtask = async(subtaskTitle: string) => {
 
-    const isAllCompleted =
-      updatedSubtasks.length > 0 && updatedSubtasks.every((st) => st.isCompleted);
-    const newStatus = isAllCompleted ? "completed" : task.status;
+    const newValue = !currentSubtasks[subtaskTitle];
 
-    onUpdateTask({ ...task, sub_tasks: updatedSubtasks, status: newStatus });
-  };
-
-  const completedCount =
-    task.sub_tasks?.filter((st: SubTask) => st.isCompleted).length || 0;
-  const totalCount = task.sub_tasks?.length || 0;
-  const progress =
-    totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
-
-  const handleAddSubtask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSubtaskText.trim()) return;
-
-    const newSubtask: SubTask = {
-      id: `subtask-${Date.now()}`,
-      text: newSubtaskText,
-      isCompleted: false,
+    const updatedSubtasks = {
+      ...currentSubtasks,
+      [subtaskTitle]: newValue
     };
 
-    const newStatus = task.status === "completed" ? "in_progress" : task.status;
-    onUpdateTask({
-      ...task,
-      sub_tasks: [...(task.sub_tasks || []), newSubtask],
-      status: newStatus,
-    });
-    setNewSubtaskText("");
+    const subtaskValues = Object.values(updatedSubtasks);
+    const isAllCompleted = subtaskValues.length > 0 && subtaskValues.every(status => status === true);
+    let newStatus = isAllCompleted ? "completed" : task.status;
+    if(task.status === "completed" && !isAllCompleted) {
+      newStatus = "in_progress";
+    }
+    console.log(`Toggling subtask "${subtaskTitle}" to ${newValue}. New status: ${newStatus}`);
+    onUpdateTask({ ...task, subtasks: updatedSubtasks, status: newStatus }, true);
+
+    try {
+      await todoService.addOrUpdateSubtask(task.id, { name: subtaskTitle, done: newValue });
+    }
+    catch (error) {
+      console.error("Error updating subtask:", error);
+      toast.error("Failed to update subtask. Please try again.");
+    }
   };
 
-  const handleDeleteSubtask = (subtaskId: string) => {
-    const updatedSubtasks =
-      task.sub_tasks?.filter((st) => st.id !== subtaskId) || [];
-    onUpdateTask({ ...task, sub_tasks: updatedSubtasks });
+  const subtaskValuesForProgress = Object.values(currentSubtasks);
+  const totalCount = subtaskValuesForProgress.length;
+  const completedCount = subtaskValuesForProgress.filter(Boolean).length; 
+  const progress = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
+  const handleAddSubtask = async(e: React.FormEvent) => {
+    e.preventDefault();
+    const title = newSubtaskText.trim();
+    if (!title) return;
+
+    const updatedSubtasks = {
+      ...currentSubtasks,
+      [title]: false 
+    };
+
+    const subtaskValues = Object.values(updatedSubtasks);
+    const isAllCompleted = subtaskValues.length > 0 && subtaskValues.every(status => status === true);
+    const newStatus = isAllCompleted ? "completed" : (task.status === "completed" ? "in_progress" : task.status);    
+    onUpdateTask({
+      ...task,
+      subtasks: updatedSubtasks,
+      status: newStatus,
+    }, true);
+    setNewSubtaskText("");
+    
+    try{
+      await todoService.addOrUpdateSubtask(task.id,
+        { name: title, done: false }
+      );
+    } catch (error) {
+      console.error("Error updating subtasks:", error);
+      toast.error("Failed to update subtasks. Please try again.");
+    } 
+  };
+
+  const handleDeleteSubtask = async(subtaskKey: string) => {
+    const updatedSubtasks = { ...currentSubtasks };
+    console.log(`Deleting subtask "${subtaskKey}"`);
+    delete updatedSubtasks[subtaskKey];
+
+    const subtaskValues = Object.values(updatedSubtasks);
+    const isAllCompleted = subtaskValues.length > 0 && subtaskValues.every(status => status === true);
+    const newStatus = isAllCompleted ? "completed" : (task.status === "completed" && subtaskValues.length > 0 ? "in_progress" : task.status);
+
+    onUpdateTask({ ...task, subtasks: updatedSubtasks, status: newStatus }, true);
+
+    try {
+      console.log(`Calling API to delete subtask "${subtaskKey}" for task ${task.id}`);
+      await todoService.deleteSubtask(task.id, subtaskKey);
+    } catch (error) {
+      console.error("Error deleting subtask:", error);
+      toast.error("Xóa việc nhỏ thất bại. Vui lòng thử lại!");
+    }
   };
 
   const status = STATUS_CONFIG[task.status] ?? STATUS_CONFIG.pending;
   const priority = PRIORITY_CONFIG[task.priority ?? "medium"] ?? PRIORITY_CONFIG.medium;
-
+  console.log("Dữ liệu Subtasks nhận được:", task.title, typeof task.subtasks, task.subtasks);
   return (
     <div className="tdm-overlay" onClick={onClose}>
       <div className="tdm-modal" onClick={(e) => e.stopPropagation()}>
@@ -124,7 +167,7 @@ const TaskDetailModal = ({
 
         {/* ── Assigned Member ── */}
         {(() => {
-          const member = MOCK_MEMBERS.find(m => m.id === task.assigned_to);
+          const member = members?.find(m => m.id === task.assigned_to);
           return member ? (
             <div className="tdm-assigned">
               <span className="tdm-assigned__label"><User size={13} /> Assigned to</span>
@@ -156,28 +199,28 @@ const TaskDetailModal = ({
           </div>
 
           <div className="tdm-subtask-list">
-            {task.sub_tasks && task.sub_tasks.length > 0 ? (
-              task.sub_tasks.map((st, idx) => (
+            {Object.keys(currentSubtasks).length > 0 ? (
+              Object.entries(currentSubtasks).map(([title, completed], idx: number) => (
                 <div
-                  key={st.id}
-                  className={`tdm-subtask ${st.isCompleted ? "tdm-subtask--done" : ""}`}
+                  key={title}
+                  className={`tdm-subtask ${completed ? "tdm-subtask--done" : ""}`}
                   style={{ animationDelay: `${idx * 0.04}s` }}
-                  onClick={() => toggleSubtask(st.id)}
+                  onClick={() => toggleSubtask(title)}
                 >
                   <label className="tdm-checkbox">
                     <input
                       type="checkbox"
-                      checked={st.isCompleted}
+                      checked={completed}
                       readOnly
                     />
                     <span className="tdm-checkmark" />
                   </label>
-                  <span className="tdm-subtask-text">{st.text}</span>
+                  <span className="tdm-subtask-text">{title}</span>
                   <button
                     className="tdm-del"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteSubtask(st.id);
+                      handleDeleteSubtask(title);
                     }}
                     aria-label="Delete subtask"
                   >

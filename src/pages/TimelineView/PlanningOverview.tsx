@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertCircle,
   Calendar,
@@ -40,6 +40,8 @@ export default function PlanningOverview() {
     const newTask = await apiClient.todos.update(id , {
       ... updatedTask
     });
+
+    console.log(newTask);
   };
 
   // Fetch data

@@ -7,16 +7,15 @@ import "./App.css";
 import Header from "./components/Header/Header";
 import TaskManagement from "./pages/TaskManagement/TaskManagement";
 import Overview from "./pages/Overview";
-import CalendarPage from "./pages/Calendar/Calendar";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Auth/LoginPage";
 import Register from "./pages/Auth/RegisterPage";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
 import { ThemeProvider } from "./context/ThemeContext";
+import { ToastProvider } from "./context/ToastContext";
 import { LoadingProvider } from "./contexts/LoadingContext";
 import ConfigGuard from "./routes/ConfigGuard";
-import TimelineModule from "./pages/Timeline";
 import PlanningOverview from "./pages/TimelineView/PlanningOverview";
 
 const queryClient = new QueryClient();
@@ -25,6 +24,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <ToastProvider>
         <LoadingProvider>
           <AuthProvider>
             <BrowserRouter>
@@ -69,6 +69,7 @@ export default function App() {
             </BrowserRouter>
           </AuthProvider>
         </LoadingProvider>
+        </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

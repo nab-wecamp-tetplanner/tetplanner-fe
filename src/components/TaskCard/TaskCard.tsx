@@ -1,23 +1,28 @@
 import React from 'react'
-import { Clock, Flame, MoreHorizontal, ShoppingCart } from 'lucide-react'
-import type { Task } from '../../types/task'
-import { MOCK_MEMBERS } from '../../data/mockTasks'
+import { Clock, Flame, MoreHorizontal, ShoppingCart, DollarSign } from 'lucide-react'
+import type { Task, Category, Member } from '../../types/task'
 import './TaskCard.css'
 
 interface TaskCardProps {
     task: Task;
     onDeleteTask?: (taskId: string) => void;
-    onClick?: () => void;
-    isDisssolving?: boolean;
+    onClick?: (task: Task) => void;
+    isDissolving?: boolean;
+    categories?: Category[];
+    members?: Member[];
 }
 
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDisssolving }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDissolving, categories, members }) => {
+
+    /* Resolve category name from UUID */
+    const categoryName = categories?.find(c => c.id === task.category_id)?.name;
 
     const getProgress = () => {
-        if (task.sub_tasks && task.sub_tasks.length > 0) {
-            const completed = task.sub_tasks.filter(st => st.isCompleted).length;
-            const total = task.sub_tasks.length;
+        if (task.subtasks && Object.keys(task.subtasks).length > 0) {
+            const values = Object.values(task.subtasks);
+            const total = values.length;
+            const completed = values.filter(Boolean).length;
             return { text: `${completed}/${total}`, percent: `${Math.round((completed / total) * 100)}%` };
         }
         switch(task.status) {
@@ -32,7 +37,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
     const { text: progressText, percent: progressWidth } = getProgress();
 
     const getCategoryColor = () => {
-        switch(task.category_id?.toLowerCase()) {
+        const name = (categoryName || '').toLowerCase();
+        switch(name) {
             case 'design':      return 'tet-tag--rose';
             case 'marketing':   return 'tet-tag--amber';
             case 'product':     return 'tet-tag--jade';
@@ -53,10 +59,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
 
     return (
         <div 
-            className={`tet-card ${isHighPriority ? 'tet-card--gold' : ''} ${isDisssolving ? 'tet-card--dissolving' : ''}`}
+            className={`tet-card ${isHighPriority ? 'tet-card--gold' : ''} ${isDissolving ? 'tet-card--dissolving' : ''}`}
             draggable="true" 
             onDragStart={(e) => e.dataTransfer.setData('taskId', task.id)} 
-            onClick={onClick}
+            onClick={() => onClick && onClick(task)}
         >
             {/* Gold trim corner for high priority */}
             {isHighPriority && <div className="tet-card__gold-trim"></div>}
@@ -65,9 +71,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
             <div className="tet-card__body">
                 {/* Header: Tag + Priority */}
                 <div className="tet-card__top">
-                    {task.category_id && (
+                    {task.category_id && categoryName && (
                         <span className={`tet-card__tag ${getCategoryColor()}`}>
-                            {task.category_id}
+                            {categoryName}
                         </span>
                     )}
                     <div className="tet-card__top-right">
@@ -101,7 +107,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                     <span className="tet-card__progress-text">{progressText}</span>
                 </div>
 
-                {/* Footer: Deadline + Assignee */}
+                {/* Footer: Deadline + Price + Assignee */}
                 <div className="tet-card__footer">
                     <div className="tet-card__stats">
                         {task.deadline && (
@@ -109,9 +115,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                                 <Clock size={13} /> {task.deadline}
                             </span>
                         )}
+                        {task.estimated_price != null && task.estimated_price > 0 && (
+                            <span className="tet-card__price">
+                                <DollarSign size={12} />
+                                {task.estimated_price.toLocaleString('vi-VN')}
+                            </span>
+                        )}
                     </div>
                     {(() => {
-                        const member = MOCK_MEMBERS.find(m => m.id === task.assigned_to);
+                        const member = members?.find(m => m.id === task.assigned_to);
                         return member ? (
                             <div className="tet-card__assignee" title={member.name}>
                                 <img 

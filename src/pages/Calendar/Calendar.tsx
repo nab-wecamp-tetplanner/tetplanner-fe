@@ -23,16 +23,9 @@ import apiClient from "../../services/apiClient";
 interface FlattenedTodo extends TodoItem {
   phaseName: string;
 }
-interface TaskFormData {
-  title: string;
-  priority: "low" | "medium" | "high" | "urgent";
-  status: "pending" | "in_progress" | "completed" | "cancelled";
-  deadline: string;
-  timeline_phase_id: string;
-}
+
 export default function CalendarPage({
   tasks: overviewConfig,
-  setTasks,
   onUpdateTask
 }: {
   tasks?: OverviewConfig;

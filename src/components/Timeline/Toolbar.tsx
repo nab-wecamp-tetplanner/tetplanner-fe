@@ -13,8 +13,6 @@ interface TaskToolbarProps {
 export default function TaskToolbar({
   activeView,
   onViewChange,
-  searchTerm,
-  onSearchChange,
   onAddClick,
 }: TaskToolbarProps) {
   return (
