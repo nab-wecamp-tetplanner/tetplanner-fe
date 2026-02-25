@@ -4,6 +4,7 @@ import { X, Plus, Check, Calendar } from 'lucide-react';
 import './ManagePhasesModal.css';
 import { type ManagePhasesModalProps } from '../../types/task';
 import { todoService } from '../../services/todoService';
+import { useToast } from '../../hooks/useToast';
 
 const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   isOpen,
@@ -18,13 +19,14 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
   if (!isOpen) return null;
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !startDate || !endDate) {
-      alert('Please fill in all fields (name and dates)!');
+      toast.warning('Please fill in all fields (name and dates)!');
       return;
     }
 
@@ -49,7 +51,7 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
       onClose();
     } catch (error) {
       console.error(error);
-      alert('Error creating timeline phase!');
+      toast.error('Error creating timeline phase!');
     } finally {
       setIsLoading(false);
     }

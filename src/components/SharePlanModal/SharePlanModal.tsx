@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Copy, Check, Lock, Globe, Loader2 } from 'lucide-react';
 import { collaboratorService } from '../../services/collaboratorService';
+import { useToast } from '../../hooks/useToast';
 import './SharePlanModal.css';
 import '../AddTaskModal/AddTaskModal.css'
 
@@ -19,6 +20,7 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
     const [inviteStatus, setInviteStatus] = useState<'idle' | 'loading' | 'success'>('idle');
     const [accessLevel, setAccessLevel] = useState<'restricted' | 'public'>('restricted');
     const [isCopied, setIsCopied] = useState(false);
+    const toast = useToast();
 
     useEffect(() => {
         if (isOpen && configId) fetchCollaborators();
@@ -45,13 +47,13 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
             })
             .catch((err) => {
                 console.error("Error copying link: ", err);
-                alert("Could not copy link. Please copy manually: " + inviteLink);
+                toast.error("Could not copy link. Please copy manually: " + inviteLink);
             });
     }
 
     const handleInvite = async () => {
         if (!inviteUserEmail.trim()) {
-            alert("Please enter a user email to invite.");
+            toast.warning("Please enter a user email to invite.");
             return;
         }
         setInviteStatus('loading');
@@ -67,7 +69,7 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
         } catch (error) {
             console.error("Error inviting collaborator:", error);
             console.log("Invite data:", { tet_config_id: configId, user_email: inviteUserEmail, role: "editor" });  
-            alert("Error inviting collaborator. Please check the user email and try again.");
+            toast.error("Error inviting collaborator. Please check the user email and try again.");
             setInviteStatus('idle');
         } finally {
             setTimeout(() => setInviteStatus('idle'), 2000);
@@ -81,7 +83,7 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
             fetchCollaborators(); 
         } catch (error) {
             console.error("Error removing collaborator:", error);
-            alert("Error removing collaborator. Please try again.");
+            toast.error("Error removing collaborator. Please try again.");
         }
     }
 
