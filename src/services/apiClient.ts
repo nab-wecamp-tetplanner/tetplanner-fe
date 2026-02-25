@@ -23,7 +23,7 @@ export class ApiClient {
     }): ApiResponse<string> => {
       return this.post("/auth/signup", data);
     },
-    
+
     login: (data: {
       email: string;
       password: string;
@@ -64,7 +64,7 @@ export class ApiClient {
       name?: string;
       image_url?: string;
     }): ApiResponse<User> => {
-      return this.put("/users/me", data);
+      return this.patch("/users/me", data);
     },
     uploadAvatar: (file: File): ApiResponse<User> => {
       const formData = new FormData();
@@ -100,24 +100,25 @@ export class ApiClient {
 
     updateConfig: (
       id: string,
-      data: { 
+      data: {
         name?: string;
         total_budget?: number;
-       }
+      },
     ): ApiResponse<TetConfig> => {
-      return this.patch("/tet-configs/" + id, data);    
+      return this.patch("/tet-configs/" + id, data);
     },
 
     updateBudget: (
       id: string,
       data: {
         total_budget: number;
-      }): ApiResponse<TetConfig> => {
-        return this.patch("/tet-configs/" + id + "/budget", data);
       },
+    ): ApiResponse<TetConfig> => {
+      return this.patch("/tet-configs/" + id + "/budget", data);
+    },
     deleteConfig: (id: string): ApiResponse<void> => {
       return this.delete("/tet-configs/" + id);
-    }
+    },
   };
 
   // Category endpoints
@@ -145,16 +146,15 @@ export class ApiClient {
         name?: string;
         icon?: string;
         allocated_budget?: number;
-      }
-    ) : ApiResponse<Category> => {
+      },
+    ): ApiResponse<Category> => {
       return this.patch("/categories/" + id, data);
     },
 
     delete: (id: string): ApiResponse<string> => {
       return this.delete("/categories/" + id);
-    }
-    
-  }
+    },
+  };
 
   // To-do endpoints
   todos = {
@@ -212,6 +212,20 @@ export class ApiClient {
 
     delete: (id: string): ApiResponse<any> => {
       return this.delete("/todo-items/" + id);
+    },
+  };
+
+  notifications = {
+    getAll: (): ApiResponse<any> => {
+      return this.get("/notifications");
+    },
+
+    markAsRead: (id: string): ApiResponse<any> => {
+      return this.patch("/notifications/" + id + "/read", {});
+    },
+
+    markAllRead: (): ApiResponse<any> => {
+      return this.patch("/notifications/read-all", {});
     },
   };
 
