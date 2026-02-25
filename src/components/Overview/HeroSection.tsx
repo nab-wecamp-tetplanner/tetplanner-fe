@@ -1,26 +1,100 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  Sparkles,
+  Gift,
+  ArrowRight,
+  CheckCircle2,
+  TrendingUp,
+} from "lucide-react";
+
 export default function HeroSection() {
+  const stats = [
+    {
+      label: "Active Users",
+      value: "2,500+",
+      icon: CheckCircle2,
+      color: "text-planner-green",
+      bg: "bg-planner-green-light",
+    },
+    {
+      label: "Plans Created",
+      value: "12,000+",
+      icon: TrendingUp,
+      color: "text-planner-blue",
+      bg: "bg-planner-blue-light",
+    },
+    {
+      label: "Average Savings",
+      value: "30%",
+      icon: Sparkles,
+      color: "text-planner-amber",
+      bg: "bg-planner-amber-light",
+    },
+  ];
+
   return (
-    <div className="mx-4 mt-6 relative overflow-hidden bg-slate-950 rounded-md p-10 md:p-16 shadow-2xl shadow-slate-900/20 border border-slate-800">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)]"></div>
-      <div className="absolute -top-20 -left-20 w-96 h-96 bg-red-600/30 rounded-full blur-[100px] pointer-events-none mix-blend-screen"></div>
-      <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-amber-500/20 rounded-full blur-[100px] pointer-events-none mix-blend-screen"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-linear-to-b from-transparent to-slate-950/80 pointer-events-none"></div>
-      <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto space-y-7">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-amber-400 text-xs font-bold tracking-widest uppercase backdrop-blur-md shadow-lg shadow-amber-500/10">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></span>
-          </span>
-          Tết Planner Pro
+    <section className="relative overflow-hidden pt-16 pb-20 bg-gradient-to-b from-white via-white/80 to-transparent">
+      {/* Decorative blobs - Seamless background decorations */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
+      <div className="absolute top-20 right-1/4 w-96 h-96 bg-planner-purple/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute -bottom-20 left-1/3 w-96 h-96 bg-planner-amber/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+        {/* Modern Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-xs font-bold tracking-widest uppercase text-primary mb-8 shadow-sm">
+          <Gift className="w-4 h-4" />
+          <span>Ready for Tet 2026</span>
         </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight leading-snug">
-          Quản lý tài chính và công việc, 
-          <br className="hidden md:block mt-2" />
-          <span className="text-transparent bg-clip-text bg-linear-to-r from-red-500 via-orange-400 to-amber-400 drop-shadow-sm">
-          Tận hưởng cuộc sống dễ dàng
-          </span>
+
+        <h1 className="font-serif text-5xl md:text-7xl text-foreground mb-6 leading-[1.1] tracking-tight">
+          Plan your <span className="text-primary">Tet shopping</span> <br />
+          with absolute ease
         </h1>
+
+        <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
+          Manage shopping lists, track your budget in real-time, and ensure
+          everything is perfectly prepared for the Lunar New Year.
+        </p>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+          <Link
+            to="/task"
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl hover:opacity-95 transition-all font-bold text-base shadow-xl shadow-primary/20 hover:-translate-y-0.5"
+          >
+            Get started
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
+
+          <div className="px-7 py-4 bg-white/60 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm flex items-center gap-3 text-sm font-bold text-foreground">
+            <Sparkles className="w-5 h-5 text-planner-amber" />
+            <span>Expense Tracking</span>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className={`text-center p-8 rounded-[2.5rem] ${stat.bg} border border-white shadow-sm backdrop-blur-sm group hover:scale-105 transition-transform duration-300`}
+            >
+              <div
+                className={`h-11 w-11 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-border/40 shadow-inner group-hover:rotate-6 transition-transform`}
+              >
+                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+              </div>
+              <p className="text-3xl font-black text-foreground mb-1 tracking-tight">
+                {stat.value}
+              </p>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em]">
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

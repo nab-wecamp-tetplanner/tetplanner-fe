@@ -1,11 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-
-export interface SubTask {
-    id: string;
-    text: string;
-    isCompleted: boolean;
-}
 
 export interface Task {
     id: string;
@@ -24,7 +19,7 @@ export interface Task {
     tet_config_id?: string;
     timeline_phase_id?: string;
     category_id?: string;
-    sub_tasks?: SubTask[];
+    subtasks?: Record<string, boolean>;
 }
 
 export interface TimelinePhase {
@@ -45,4 +40,25 @@ export interface TetConfig {
     created_at?: string;
     deleted_at?: string;
     owner_id?: string;
+}
+
+export interface Category {
+    id: string;
+    name: string;
+}
+
+export interface Member {
+    id: string;
+    name: string;
+    avatar: string;
+}
+
+export interface ManagePhasesModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    phases: any[];
+    configId: string;
+    onPhaseCreated: (newPhase: any) => void;
+    activePhaseId: string;
+    onSelectPhase: (phaseId: string) => void;
 }

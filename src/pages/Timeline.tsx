@@ -1,6 +1,11 @@
-import React, { useState, useMemo, type Dispatch, type SetStateAction } from "react";
-import { Gantt, type Task, ViewMode } from "gantt-task-react";
-import "gantt-task-react/dist/index.css"; 
+import React, {
+  useState,
+  useMemo,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+// import { Gantt, type Task, ViewMode } from "gantt-task-react";
+// import "gantt-task-react/dist/index.css";
 import TaskToolbar, { type ViewType } from "../components/Timeline/Toolbar";
 import type { OverviewConfig } from "../types/overview.types";
 import type { TodoItem } from "../types/todo.types";
@@ -19,7 +24,9 @@ export interface ExtendedTask extends Task {
 // SUB-COMPONENTS
 // ==========================================
 
-const CustomTaskListHeader: React.FC<{ headerHeight: number }> = ({ headerHeight }) => {
+const CustomTaskListHeader: React.FC<{ headerHeight: number }> = ({
+  headerHeight,
+}) => {
   return (
     <div
       className="flex items-end px-5 pb-3 border-b border-border bg-card"
@@ -36,10 +43,13 @@ const CustomTaskListHeader: React.FC<{ headerHeight: number }> = ({ headerHeight
 const CustomTaskListTable: React.FC<{
   rowHeight: number;
   rowWidth: string;
-  tasks: ExtendedTask[]; 
+  tasks: ExtendedTask[];
 }> = ({ rowHeight, rowWidth, tasks }) => {
   return (
-    <div className="bg-card w-full border-r border-border overflow-hidden" style={{ width: rowWidth }}>
+    <div
+      className="bg-card w-full border-r border-border overflow-hidden"
+      style={{ width: rowWidth }}
+    >
       {tasks.map((task) => {
         const isProject = task.type === "project";
 
@@ -60,10 +70,15 @@ const CustomTaskListTable: React.FC<{
               <div className="flex items-center gap-3 w-full pl-6">
                 <div className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center shrink-0">
                   <span className="text-[10px] text-muted-foreground font-medium">
-                    {task.rawTodo?.priority === "high" || task.rawTodo?.priority === "urgent" ? "🔥" : "📌"}
+                    {task.rawTodo?.priority === "high" ||
+                    task.rawTodo?.priority === "urgent"
+                      ? "🔥"
+                      : "📌"}
                   </span>
                 </div>
-                <span className={`text-sm truncate flex-1 font-medium ${task.progress === 100 ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                <span
+                  className={`text-sm truncate flex-1 font-medium ${task.progress === 100 ? "text-muted-foreground line-through" : "text-foreground"}`}
+                >
                   {task.name}
                 </span>
               </div>
@@ -83,7 +98,12 @@ const CustomTooltip: React.FC<{ task: ExtendedTask }> = ({ task }) => {
         <p>Start: {task.start.toLocaleDateString("vi-VN")}</p>
         <p>End: {task.end.toLocaleDateString("vi-VN")}</p>
         {task.type !== "project" && (
-          <p>Trạng thái: <span className="font-medium text-planner-blue uppercase">{task.rawTodo?.status}</span></p>
+          <p>
+            Trạng thái:{" "}
+            <span className="font-medium text-planner-blue uppercase">
+              {task.rawTodo?.status}
+            </span>
+          </p>
         )}
       </div>
     </div>
@@ -97,7 +117,7 @@ const CustomTooltip: React.FC<{ task: ExtendedTask }> = ({ task }) => {
 export default function TimelineModule({
   tasks: overviewConfig,
   setTasks,
-  onUpdateTask
+  onUpdateTask,
 }: {
   tasks?: OverviewConfig;
   setTasks: Dispatch<SetStateAction<OverviewConfig | undefined>>;
@@ -115,12 +135,16 @@ export default function TimelineModule({
 
     overviewConfig.phases.forEach((phase) => {
       // Ép kiểu an toàn cho Phase
-      const phaseStart = phase.start_date ? new Date(phase.start_date) : new Date();
-      let phaseEnd = phase.end_date ? new Date(phase.end_date) : new Date(phaseStart.getTime() + 86400000 * 7); // Mặc định +7 ngày nếu thiếu
-      
+      const phaseStart = phase.start_date
+        ? new Date(phase.start_date)
+        : new Date();
+      let phaseEnd = phase.end_date
+        ? new Date(phase.end_date)
+        : new Date(phaseStart.getTime() + 86400000 * 7); // Mặc định +7 ngày nếu thiếu
+
       // Chống lỗi thời gian ngược của Phase
       if (phaseEnd.getTime() < phaseStart.getTime()) {
-        phaseEnd = new Date(phaseStart.getTime() + 86400000); 
+        phaseEnd = new Date(phaseStart.getTime() + 86400000);
       }
 
       flatTasks.push({
@@ -132,19 +156,27 @@ export default function TimelineModule({
         progress: 100,
         hideChildren: false,
         displayOrder: phase.display_order,
-        styles: { progressColor: "#10b981", progressSelectedColor: "#059669" }
+        styles: { progressColor: "#10b981", progressSelectedColor: "#059669" },
       });
 
       phase.tasks?.forEach((todo) => {
-        if (searchTerm && !todo.title.toLowerCase().includes(searchTerm.toLowerCase())) return;
+        if (
+          searchTerm &&
+          !todo.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+          return;
 
         let progressVal = 0;
         if (todo.status === "completed") progressVal = 100;
         else if (todo.status === "in_progress") progressVal = 50;
 
-        const todoStart = todo.created_at ? new Date(todo.created_at) : new Date();
-        
-        let todoEnd = todo.deadline ? new Date(todo.deadline) : new Date(todoStart.getTime() + 86400000);
+        const todoStart = todo.created_at
+          ? new Date(todo.created_at)
+          : new Date();
+
+        let todoEnd = todo.deadline
+          ? new Date(todo.deadline)
+          : new Date(todoStart.getTime() + 86400000);
 
         if (todoEnd.getTime() < todoStart.getTime()) {
           todoEnd = new Date(todoStart.getTime() + 86400000);
@@ -160,7 +192,8 @@ export default function TimelineModule({
           progress: progressVal,
           rawTodo: todo,
           styles: {
-            backgroundColor: todo.status === "completed" ? "#6ee7b7" : "#93c5fd",
+            backgroundColor:
+              todo.status === "completed" ? "#6ee7b7" : "#93c5fd",
             progressColor: todo.status === "completed" ? "#10b981" : "#3b82f6",
           },
         });
@@ -172,23 +205,27 @@ export default function TimelineModule({
 
   const ganttViewMode = useMemo(() => {
     switch (currentView) {
-      case "day": return ViewMode.Day;
-      case "week": return ViewMode.Week;
-      case "month": return ViewMode.Month;
-      default: return ViewMode.Day;
+      case "day":
+        return ViewMode.Day;
+      case "week":
+        return ViewMode.Week;
+      case "month":
+        return ViewMode.Month;
+      default:
+        return ViewMode.Day;
     }
   }, [currentView]);
 
   const handleTaskChange = async (task: Task) => {
     const extended = task as ExtendedTask;
-    if (extended.type === "project") return; 
+    if (extended.type === "project") return;
 
     if (extended.rawTodo) {
       const updatedTodo: TodoItem = {
         ...extended.rawTodo,
         deadline: task.end.toISOString(),
       };
-      
+
       await onUpdateTask(extended.id, updatedTodo);
     }
   };
@@ -201,13 +238,17 @@ export default function TimelineModule({
   };
 
   if (!overviewConfig || ganttTasks.length === 0) {
-    return <div className="p-10 text-center text-muted-foreground font-medium">No tasks available to show on Timeline.</div>;
+    return (
+      <div className="p-10 text-center text-muted-foreground font-medium">
+        No tasks available to show on Timeline.
+      </div>
+    );
   }
 
   return (
     <div className="bg-background">
       <main className="mx-auto px-4 sm:px-6 lg:px-8">
-        <TaskToolbar 
+        <TaskToolbar
           activeView={currentView}
           onViewChange={setCurrentView}
           searchTerm={searchTerm}
