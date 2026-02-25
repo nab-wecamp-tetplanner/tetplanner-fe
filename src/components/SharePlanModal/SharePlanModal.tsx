@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import { X, Copy, Check, Lock, Globe } from 'lucide-react';
+import { X, Copy, Check, Lock, Globe, Loader2 } from 'lucide-react';
 import { collaboratorService } from '../../services/collaboratorService';
 import './SharePlanModal.css';
 import '../AddTaskModal/AddTaskModal.css'
@@ -16,7 +16,7 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
     const [owner, setOwner] = useState<any>(null);
     const [collaborators, setCollaborators] = useState<any[]>([]);
     const [inviteUserEmail, setInviteUserEmail] = useState("");
-    const [isInviting, setIsInviting] = useState(false);
+    const [inviteStatus, setInviteStatus] = useState<'idle' | 'loading' | 'success'>('idle');
     const [accessLevel, setAccessLevel] = useState<'restricted' | 'public'>('restricted');
     const [isCopied, setIsCopied] = useState(false);
 
@@ -54,7 +54,7 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
             alert("Please enter a user email to invite.");
             return;
         }
-        setIsInviting(true);
+        setInviteStatus('loading');
         try {
             await collaboratorService.inviteCollaborator({
                 tet_config_id: configId,
@@ -63,12 +63,14 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
             });
             fetchCollaborators();
             setInviteUserEmail("");
+            setInviteStatus('success');
         } catch (error) {
             console.error("Error inviting collaborator:", error);
             console.log("Invite data:", { tet_config_id: configId, user_email: inviteUserEmail, role: "editor" });  
             alert("Error inviting collaborator. Please check the user email and try again.");
+            setInviteStatus('idle');
         } finally {
-            setIsInviting(false);
+            setTimeout(() => setInviteStatus('idle'), 2000);
         }
     }
 
@@ -118,13 +120,19 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                                 />
                                 <button 
                                     onClick={handleInvite}
-                                    disabled={isInviting}
-                                    style={{
-                                        backgroundColor: '#dc2626', color: 'white', border: 'none', 
-                                        borderRadius: '8px', padding: '0 20px', cursor: 'pointer', fontWeight: 500
-                                    }}
+                                    disabled={inviteStatus !== 'idle'}
+                                    className={`morph-btn ${inviteStatus}`} // Class CSS quyết định hình dáng
                                 >
-                                    {isInviting ? 'Inviting...' : 'Invite'}
+                                    {inviteStatus === 'idle' && <span>Invite</span>}
+                                    
+                                    {inviteStatus === 'loading' && <Loader2 className="icon-spin" size={18} />}
+                                    
+                                    {inviteStatus === 'success' && (
+                                        <>
+                                            <Check size={18} strokeWidth={3} />
+                                            <span>Done!</span>
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

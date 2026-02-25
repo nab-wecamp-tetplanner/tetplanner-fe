@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { Settings, Bell } from "lucide-react";
 import ThemeSelector from '../ThemeSelector/ThemeSelector';
 import { ZodiacMascot } from '../Decoratives/Decoratives';
 
@@ -38,9 +39,9 @@ const Header = () => {
         <div className="header-actions">
             <ThemeSelector />
             <div className="header-actions__divider" />
-            <button className="action-button">⚙️</button>
+            <button className="action-button"><Settings size={18} /></button>
             <div className="notification-wrapper">
-                <button className="action-button">🔔</button>
+                <button className="action-button"><Bell size={18} /></button>
                 <span className="notification-dot"></span>
             </div>
             <div className="user-avatar">

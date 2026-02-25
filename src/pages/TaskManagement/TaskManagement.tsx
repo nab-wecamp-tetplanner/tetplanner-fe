@@ -12,8 +12,6 @@ import {
   LayoutGrid,
   Plus,
   Search,
-  SlidersHorizontal,
-  ArrowUpDown,
   Calendar,
 } from "lucide-react";
 import TaskColumn from "../../components/TaskColumn/TaskColumn";
@@ -52,7 +50,6 @@ const TaskManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [todoItems, setTodoItems] = useState<Task[]>(MOCK_INITIAL_TASKS);
   const [activePhaseId, setActivePhaseId] = useState<string>("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isRewardOpen, setIsRewardOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -416,50 +413,17 @@ const TaskManagement: React.FC = () => {
               </button>
             </div>
 
-            {/* Filter by Timeline */}
+            {/* Manage Timeline */}
             <div className="tet-filter-wrapper">
-              <button
-                className={`tet-ghost-btn ${isFilterOpen ? "tet-ghost-btn--active" : ""}`}
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                <SlidersHorizontal size={15} />
-                {TIMELINE_PHASES.find((p) => p.id === activePhaseId)?.name ||
-                  "Filter"}
-              </button>
-
-              {/* Filter Dropdown Menu */}
-              {isFilterOpen && (
-                <div className="tet-filter-dropdown">
-                  <div className="tet-filter-dropdown__title">
-                    Filter by Timeline Phase
-                  </div>
-                  {TIMELINE_PHASES.map((phase) => (
-                    <div
-                      key={phase.id}
-                      className={`tet-filter-dropdown__item ${activePhaseId === phase.id ? "tet-filter-dropdown__item--active" : ""}`}
-                      onClick={() => {
-                        setActivePhaseId(phase.id);
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      {phase.name}
-                    </div>
-                  ))}
-                </div>
-              )}
               <button
                 className="tet-ghost-btn"
                 onClick={() => setIsPhaseModalOpen(true)}
                 title="Manage timeline phases"
               >
                 <Calendar size={15} color="#dc2626" />
-                {/* Button can be icon-only or labeled "Schedule" */}
+                Manage Timeline
               </button>
             </div>
-
-            <button className="tet-ghost-btn">
-              <ArrowUpDown size={15} /> Sort
-            </button>
 
             <button
               className="tet-primary-btn"
