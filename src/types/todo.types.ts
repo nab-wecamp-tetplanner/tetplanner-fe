@@ -19,4 +19,5 @@ export interface TodoItem {
   tet_config: BaseReference;
   timeline_phase: BaseReference;
   category: BaseReference;
+  subtasks?: Record<string, boolean>;
 }

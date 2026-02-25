@@ -1,9 +1,11 @@
 import { NavLink, Link } from "react-router-dom";
 import { useAuthContext } from "../../contexts/AuthContext";
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
-import { Bell, ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import apiClient from "../../services/apiClient";
+import type { TetConfig } from "../../types/tetConfig.types";
+import { useAppStore } from "../../stores/useAppStore"; //
+import { Bell, ChevronDown, ChevronUp } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -31,6 +33,13 @@ const formatTimeAgo = (timestamp: string): string => {
   return past.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
+export interface ConfigInfo extends TetConfig {
+  total_budget: number;
+  used_budget: number;
+  remaining_budget: number;
+  warning_level: string;
+  categories: string[];
+}
 const navItems: NavItem[] = [
   // { name: "Overview", href: "/" },
   { name: "Tasks", href: "/task" },
@@ -42,6 +51,38 @@ const navItems: NavItem[] = [
 
 const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthContext();
+  const [showSettings, setShowSettings] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const [configs, setConfigs] = useState<ConfigInfo[]>([]);
+
+  // Logic Synchronization with Store
+  const configId = useAppStore((state) => state.configId); //
+  const setConfigId = useAppStore((state) => state.setConfigId); //
+
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        const data = await apiClient.tetConfigs.getMyConfigs();
+        setConfigs(data as ConfigInfo[]);
+      } catch (error) {
+        console.error("Failed to fetch configs", error);
+      }
+    };
+    if (isAuthenticated) fetchConfigs();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(e.target as Node)
+      ) {
+        setShowSettings(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -61,7 +102,7 @@ const Header = () => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <header className="flex items-center justify-between px-8 py-4  border-b border-accent transition-colors duration-200">
+    <header className="flex items-center justify-between px-8 py-4 bg-bg-main border-b border-accent transition-colors duration-300 relative">
       {/* Logo */}
       <Link to="/" className="flex items-center">
         <img
@@ -252,6 +293,14 @@ const Header = () => {
                 </div>
               </div>
             </div>
+
+            {/* Logout */}
+            <button
+              onClick={logout}
+              className="ml-2 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+            >
+              Đăng xuất
+            </button>
           </>
         ) : (
           <div className="flex items-center gap-3 ml-2 pl-4 border-l border-accent transition-colors duration-300">
@@ -273,5 +322,4 @@ const Header = () => {
     </header>
   );
 };
-
 export default Header;

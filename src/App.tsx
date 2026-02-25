@@ -15,6 +15,8 @@ import Login from "./pages/Auth/LoginPage";
 import Register from "./pages/Auth/RegisterPage";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
 import { ThemeProvider } from "./context/ThemeContext";
+import { LoadingProvider } from "./contexts/LoadingContext";
+import ConfigGuard from "./routes/ConfigGuard";
 
 const queryClient = new QueryClient();
 
@@ -22,47 +24,51 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick={false}
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-              transition={Bounce}
-            />
-            <Header />
-            <Routes>
-              {/* Public Route  */}
-              <Route>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route
-                  path="/forgot-password"
-                  element={<div>Forgot Password Page</div>}
-                />
-                <Route path="/verify-otp" element={<VerifyOTP />} />
-              </Route>
+        <LoadingProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+              />
+              <Header />
+              <Routes>
+                {/* Public Route  */}
+                <Route>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route
+                    path="/forgot-password"
+                    element={<div>Forgot Password Page</div>}
+                  />
+                  <Route path="/verify-otp" element={<VerifyOTP />} />
+                </Route>
 
-              {/* Protected Routes  */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Overview />} />
-                <Route path="/task" element={<TaskManagement />} />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="/finance" element={<FinanceDashboard />} />
-                <Route path="/transaction" element={<Transaction />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/settings" element={<Settings />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
+                {/* Protected Routes  */}
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<ConfigGuard />}>
+                    <Route path="/" element={<Overview />} />
+                    <Route path="/task" element={<TaskManagement />} />
+                    <Route path="/calendar" element={<CalendarPage />} />
+                    <Route path="/finance" element={<FinanceDashboard />} />
+                    <Route path="/transaction" element={<Transaction />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Route>
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </LoadingProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
