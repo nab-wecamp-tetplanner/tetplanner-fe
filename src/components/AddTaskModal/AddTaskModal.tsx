@@ -33,7 +33,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
         const fetchCategories = async () => {
             try {
                 const res: any = await todoService.getCategories();
-                const list = res.data || res || [];
+                const list = res || [];
                 setCategories(list);
                 if (list.length > 0) {
                     setcategory_id((prev) => prev || list[0].id);

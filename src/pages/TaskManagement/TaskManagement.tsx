@@ -33,6 +33,7 @@ import FallingPetals from "../../components/FallingPetals/FallingPetals";
 import SharePlanModal from "../../components/SharePlanModal/SharePlanModal";
 import ManagePhasesModal from "../../components/ManagePhasesModal/ManagePhasesModal";
 import { useToast } from "../../hooks/useToast";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
@@ -59,18 +60,19 @@ const TaskManagement: React.FC = () => {
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
+  const [isOwner, setIsOwner] = useState(false);
+  const { currentUser } = useAuthContext();
 
 
     useEffect(() => {
       const fetchConfigs = async () => {
         try {
-          const configRes: any = await todoService.getTetConfigs();
-          const configList = configRes.data || [];
+          const configList: any = await todoService.getTetConfigs();
           setConfigs(configList);
 
           try {
-            const catRes: any = await todoService.getCategories();
-            setCategories(catRes.data || catRes || []);
+            const categoriesList: any = await todoService.getCategories();
+            setCategories(categoriesList);
           } catch (error) {
             console.error("Lỗi lấy Categories:", error);
           }
@@ -93,9 +95,15 @@ const TaskManagement: React.FC = () => {
       const fetchPhasesAndMembers = async () => {
         // 1.Get Members
         try {
-          const collabRes: any = await collaboratorService.getCollaborators(activeConfigId);
-          const data = collabRes.data || collabRes || {};
+          const data: any = await collaboratorService.getCollaborators(activeConfigId);
           const memberList: Member[] = [];
+
+          // Check if current user is the owner
+          if (data.owner && currentUser && String(data.owner.id) === String(currentUser.id)) {
+            setIsOwner(true);
+          } else {
+            setIsOwner(false);
+          }
           
           if (data.owner) {
             memberList.push({ id: data.owner.id, name: data.owner.name || 'Owner', avatar: data.owner.image_url });
@@ -112,8 +120,7 @@ const TaskManagement: React.FC = () => {
 
         // 2. Get phases for the selected config
         try {
-          const phaseRes: any = await todoService.getTimelinePhases(activeConfigId);
-          const phaseList = phaseRes.data || [];
+          const phaseList: any = await todoService.getTimelinePhases(activeConfigId);
           setPhases(phaseList);
 
           if (phaseList.length > 0) {
@@ -125,7 +132,7 @@ const TaskManagement: React.FC = () => {
       };
 
       fetchPhasesAndMembers();
-    }, [activeConfigId]); 
+    }, [activeConfigId, currentUser]); 
 
     // ==========================================
     // auto-fetch tasks when activeConfigId or activePhaseId changes
@@ -143,7 +150,7 @@ const TaskManagement: React.FC = () => {
             activeConfigId,
             activePhaseId,
           );
-          setTodoItems(response.data || []);
+          setTodoItems(response || []);
         } catch (error) {
           console.error("Lỗi lấy Tasks:", error);
         } finally {
@@ -263,7 +270,7 @@ const TaskManagement: React.FC = () => {
         tet_config_id: activeConfigId,
         timeline_phase_id: activePhaseId,
       });
-      newTask = (response as { data: Task }).data;
+      newTask = response as Task;
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error("Failed to create task. Please try again.");
@@ -424,13 +431,15 @@ const TaskManagement: React.FC = () => {
                   style={{ zIndex: members.length - index }}
                 />
               ))}
-              <button
-                className="tet-collaborators__add"
-                title="Add Member"
-                onClick={() => setIsShareModalOpen(true)}
-              >
-                <Plus size={14} />
-              </button>
+              {isOwner && (
+                <button
+                  className="tet-collaborators__add"
+                  title="Add Member"
+                  onClick={() => setIsShareModalOpen(true)}
+                >
+                  <Plus size={14} />
+                </button>
+              )}
             </div>
             <span className="tet-collaborators__label">Collaborators</span>
           </div>
@@ -606,7 +615,7 @@ const TaskManagement: React.FC = () => {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         configId={activeConfigId}
-        isOwner={true}
+        isOwner={isOwner}
       />
 
       <ManagePhasesModal

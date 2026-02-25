@@ -1,173 +1,191 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { Settings, Bell } from "lucide-react";
-import ThemeSelector from '../ThemeSelector/ThemeSelector';
-import { ZodiacMascot } from '../Decoratives/Decoratives';
-
-import './Header.css';
+import { NavLink, Link } from "react-router-dom";
+import { useAuthContext } from "../../contexts/AuthContext";
+import ThemeSelector from "../ThemeSelector/ThemeSelector";
 import { useEffect, useRef, useState } from "react";
-import { collaboratorService } from "../../services/collaboratorService";
+import apiClient from "../../services/apiClient";
+import type { TetConfig } from "../../types/tetConfig.types";
+import { useAppStore } from "../../stores/useAppStore"; //
+import InvitationBell from "../InvitationBell/InvitationBell";
 
 type NavItem = {
   name: string;
   href: string;
 };
-const navItems : NavItem[] = [
-    { name: "Overview", href: "/" },
-    { name: "Task management", href: "/task" },
-    { name: "Calendar", href: "/calendar" },
-    { name: "Finance", href: "/finance" },
-    { name: "Transactions", href: "/transaction" },
-    { name: "Dashboard", href: "/dashboard" },
+
+export interface ConfigInfo extends TetConfig {
+  total_budget: number;
+  used_budget: number;
+  remaining_budget: number;
+  warning_level: string;
+  categories: string[];
+}
+const navItems: NavItem[] = [
+  { name: "Overview", href: "/" },
+  { name: "Task management", href: "/task" },
+  { name: "Calendar", href: "/calendar" },
+  { name: "Finance", href: "/finance" },
+  { name: "Transactions", href: "/transaction" },
+  { name: "Dashboard", href: "/dashboard" },
 ];
 
-
-type Invitation = { id: string; role: string; tet_config_id: string };
-
-type InvitationResponse = {
-    data: Invitation[];
-};
-
 const Header = () => {
-    const [invitations, setInvitations] = useState<Invitation[]>([]);
-    const [isNotifOpen, setIsNotifOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const fetchInvitations = async () => {
-            try {
-                const response = await collaboratorService.getMyInvitations() as InvitationResponse;
-                setInvitations(response.data);
-            } catch (error) {
-                console.error("Failed to fetch invitations", error);
-            }
-        };
-        fetchInvitations();
-    }, []);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsNotifOpen(false);
-            }
-        };
-        
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    const handleAccept = async (invitation: Invitation) => {
-        try {
-            await collaboratorService.acceptInvitation(invitation.id);
-            setInvitations(prev => prev.filter(inv => inv.id !== invitation.id));
-            setIsNotifOpen(false);
-            // Navigate to task management with the accepted config
-            navigate(`/task?config=${invitation.tet_config_id}`);
-        } catch (error) {
-            console.error("Failed to accept invitation", error);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            console.log("Error details:", (error as any).response ? (error as any).response.data : error);
-        }
+  const { isAuthenticated, currentUser, logout } = useAuthContext();
+  const [showSettings, setShowSettings] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const [configs, setConfigs] = useState<ConfigInfo[]>([]);
+  
+  // Logic Synchronization with Store
+  const configId = useAppStore((state) => state.configId); //
+  const setConfigId = useAppStore((state) => state.setConfigId); //
+  
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        const data = await apiClient.tetConfigs.getMyConfigs();
+        setConfigs(data as ConfigInfo[]);
+      } catch (error) {
+        console.error("Failed to fetch configs", error);
+      }
     };
+    if (isAuthenticated) fetchConfigs();
+  }, [isAuthenticated]);
 
-    const handleDecline = async (id: string) => {
-        if (!window.confirm("Bạn muốn từ chối lời mời này?")) return;
-        try {
-            await collaboratorService.declineInvitation(id);
-            setInvitations(prev => prev.filter(inv => inv.id !== id));
-            setIsNotifOpen(false);
-        } catch (error) {
-            console.error("Failed to decline invitation", error);
-        }
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(e.target as Node)
+      ) {
+        setShowSettings(false);
+      }
     };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
-    return (
+  return (
+    <header className="flex items-center justify-between px-8 py-4 bg-bg-main border-b border-accent transition-colors duration-300 relative">
+      {/* Logo */}
+      <Link to="/" className="flex items-center gap-2">
+        <div className="w-6 h-6 bg-primary rounded-sm transform rotate-45 transition-colors duration-300"></div>
+        <span className="font-bold text-text-main text-lg transition-colors duration-300">
+          NY Planner
+        </span>
+      </Link>
 
-    <header className='header-container'>
-        <div className="header-logo">
-            <ZodiacMascot size={28} className="header-mascot" />
-            <span className="logo-text">Tet Planner</span>
-        </div>
-    
-        <nav className="header-nav">
-            {navItems.map((item) => (
-            <NavLink key={item.href} to={item.href} className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-                {item.name}
+      {/* Navigation isAuthenticated*/}
+      {isAuthenticated && (
+        <nav className="flex items-center gap-8 text-sm font-medium">
+          {navItems.map((item, idx) => (
+            <NavLink
+              key={idx}
+              to={item.href}
+              className={({ isActive }) =>
+                isActive
+                  ? "bg-accent text-primary p-2 rounded-md transition-all duration-300"
+                  : "text-text-main opacity-70 p-2 rounded-md hover:opacity-100 hover:text-primary transition-all duration-300"
+              }
+            >
+              {item.name}
             </NavLink>
-            ))}
+          ))}
         </nav>
+      )}
 
-        <div className="header-actions">
-            <ThemeSelector />
-            <div className="header-actions__divider" />
-            <button className="action-button"><Settings size={18} /></button>
-            <div className="notification-wrapper">
-                <button className="action-button" onClick={() => setIsNotifOpen(!isNotifOpen)}><Bell size={18} /></button>
-                {invitations.length > 0 && (
-                    <span className="notification-dot" style={{
-                    position: 'absolute', top: 0, right: 0, backgroundColor: 'red', 
-                    color: 'white', fontSize: '10px', width: '16px', height: '16px', 
-                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>
-                    {invitations.length}
-                    </span>
-                )}
-                {/* DROPDOWN DANH SÁCH LỜI MỜI */}
-                {isNotifOpen && (
-                    <div style={{
-                    position: 'absolute', top: '45px', right: '-10px', width: '320px', 
-                    backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', 
-                    borderRadius: '12px', border: '1px solid #e5e7eb', zIndex: 1000, overflow: 'hidden'
-                    }}>
-                    <div style={{ padding: '12px 16px', borderBottom: '1px solid #f3f4f6', fontWeight: 600, color: '#374151' }}>
-                        Thông báo của bạn
+      <div className="flex items-center gap-3">
+        {isAuthenticated ? (
+          <>
+            {/* User Info & Settings */}
+            <div
+              className="flex items-center gap-3 ml-2 pl-4 border-l border-accent transition-colors duration-300 relative"
+              ref={settingsRef}
+            >
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-semibold text-text-main">
+                  {currentUser?.name}
+                </p>
+                <p className="text-xs text-text-main opacity-60">
+                  {currentUser?.email}
+                </p>
+              </div>
+
+              {/* Invitation Notifications */}
+              <InvitationBell />
+
+              {/* Settings */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSettings(!showSettings);
+                }}
+                className={`p-2 rounded-lg transition-all ${showSettings ? "bg-primary text-white" : "bg-accent hover:bg-primary/20 text-text-main"}`}
+              >
+                ⚙️
+              </button>
+
+              {/* Menu Dropdown */}
+              {showSettings && (
+                <div className="bg-white absolute right-0 top-full mt-2 w-64 bg-bg-card border border-accent rounded-xl shadow-2xl p-4 z-50 flex flex-col gap-4">
+                  {/* Section 1: CONFIG (PLAN) */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[10px] font-bold text-text-subtle uppercase tracking-widest px-1">
+                      Config
+                    </p>
+                    <div className="grid grid-cols-1 gap-1">
+                      {configs.map((cfg) => {
+                        const isCurrent = configId === cfg.id; // Check against store ID
+                        return (
+                          <button
+                            key={cfg.id}
+                            onClick={() => {
+                              setConfigId(cfg.id); // Update Store
+                              setShowSettings(false);
+                            }}
+                            className={`flex items-center gap-3 p-2 rounded-lg text-[12px] transition-all ${isCurrent ? "bg-primary/10 border border-primary/30 text-primary" : "hover:bg-accent text-text-main"}`}
+                          >
+                            <span className="flex-1 text-left font-medium">
+                              {cfg.name}
+                            </span>
+                            {isCurrent && (
+                              <span className="text-[10px]">●</span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                    
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                        {invitations.length === 0 ? (
-                        <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
-                            Bạn không có thông báo nào.
-                        </div>
-                        ) : (
-                        invitations.map(inv => (
-                            <div key={inv.id} style={{ padding: '12px 16px', borderBottom: '1px solid #f3f4f6', backgroundColor: '#fffbeb' }}>
-                            <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#374151', lineHeight: '1.4' }}>
-                                Someone invites you to be an <strong>{inv.role}</strong> for a Tet plan!
-                            </p>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                <button 
-                                onClick={() => {
-                                    handleAccept(inv);
-                                }}
-                                style={{ flex: 1, backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '6px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: 500 }}
-                                >
-                                I do!
-                                </button>
-                                <button 
-                                onClick={() => handleDecline(inv.id)}
-                                style={{ flex: 1, backgroundColor: 'white', color: '#374151', border: '1px solid #d1d5db', padding: '6px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: 500 }}
-                                >
-                                No, thanks
-                                </button>
-                            </div>
-                            </div>
-                        ))
-                        )}
-                    </div>
-                    </div>
-                )}
+                  </div>
+
+                  <div className="border-t border-accent my-1"></div>
+
+                  {/* PHẦN 2: CHỌN THEME */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[10px] font-bold text-text-subtle uppercase tracking-widest px-1">
+                      Chủ đề giao diện
+                    </p>
+                    <ThemeSelector />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="user-avatar">
-                <img 
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-                    alt="User avatar" 
-                />
-            </div>
-        </div>
+
+            {/* Logout */}
+            <button
+              onClick={logout}
+              className="ml-2 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+            >
+              Đăng xuất
+            </button>
+          </>
+        ) : (
+          <Link
+            to="/login"
+            className="text-text-main hover:text-primary font-medium"
+          >
+            Login
+          </Link>
+        )}
+      </div>
     </header>
-  )
-}
-
-export default Header
+  );
+};
+export default Header;
