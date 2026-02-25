@@ -23,7 +23,9 @@ const Header = () => {
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 group">
         <div className="w-6 h-6 bg-primary rounded-sm transform rotate-45 transition-all duration-300 group-hover:rotate-90"></div>
-        <span className="font-bold text-text-main text-lg transition-colors duration-300">NY Planner</span>
+        <span className="font-bold text-text-main text-lg transition-colors duration-300">
+          NY Planner
+        </span>
       </Link>
 
       {/* Navigation isAuthenticated */}
@@ -54,16 +56,22 @@ const Header = () => {
         {isAuthenticated ? (
           <div className="flex items-center gap-3 ml-2 pl-4 border-l border-accent transition-colors duration-300">
             <div className="relative cursor-pointer">
-              <button className="text-xl hover:scale-110 transition-transform">🔔</button>
+              <button className="text-xl hover:scale-110 transition-transform">
+                🔔
+              </button>
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-bg-main"></span>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-text-main leading-none">{currentUser?.name}</p>
-                <p className="text-[10px] text-text-main opacity-50 uppercase tracking-tighter mt-1">Member</p>
+                <p className="text-sm font-semibold text-text-main leading-none">
+                  {currentUser?.name}
+                </p>
+                <p className="text-[10px] text-text-main opacity-50 uppercase tracking-tighter mt-1">
+                  Member
+                </p>
               </div>
-              <button 
+              <button
                 onClick={logout}
                 // Ép text-white ở đây để Logout không bị mất chữ
                 className="bg-primary text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-all shadow-sm"
@@ -74,10 +82,16 @@ const Header = () => {
           </div>
         ) : (
           <div className="flex items-center gap-4 ml-2 pl-4 border-l border-accent transition-colors duration-300">
-            <Link to="/login" className="text-text-main/70 hover:text-primary font-medium transition-colors">
+            <Link
+              to="/login"
+              className="text-text-main/70 hover:text-primary font-medium transition-colors"
+            >
               Login
             </Link>
-            <Link to="/register" className="bg-primary text-white px-5 py-2 rounded-lg font-bold hover:opacity-90 transition-all shadow-md">
+            <Link
+              to="/register"
+              className="bg-primary text-white px-5 py-2 rounded-lg font-bold hover:opacity-90 transition-all shadow-md"
+            >
               Register
             </Link>
           </div>
