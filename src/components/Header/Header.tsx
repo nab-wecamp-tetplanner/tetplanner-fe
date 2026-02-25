@@ -1,7 +1,7 @@
 import { NavLink, Link } from "react-router-dom";
 import { useAuthContext } from "../../contexts/AuthContext";
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
-import { Bell } from "lucide-react";
+import { Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import apiClient from "../../services/apiClient";
 
@@ -98,6 +98,26 @@ const Header = () => {
       <div className="flex items-center gap-4 text-sm">
         {isAuthenticated ? (
           <>
+            <div className="relative group">
+              <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-main border border-accent rounded-lg hover:bg-accent transition-colors">
+                Plan
+                <ChevronDown size={16} className="group-hover:hidden" />
+                <ChevronUp size={16} className="hidden group-hover:inline" />
+              </button>
+              <div className="absolute left-0 mt-2 w-48 bg-(--bg) border border-accent rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <div className="p-2">
+                  <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-accent rounded transition-colors">
+                    Free Plan
+                  </button>
+                  <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-accent rounded transition-colors">
+                    Pro Plan
+                  </button>
+                  <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-accent rounded transition-colors">
+                    Premium Plan
+                  </button>
+                </div>
+              </div>
+            </div>
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
