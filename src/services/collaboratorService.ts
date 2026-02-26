@@ -20,7 +20,7 @@ export const collaboratorService = {
     },
 
     removeCollaborator: (collaboratorId: string) => {
-        return apiClient.patch(`/collaborators/${collaboratorId}`, { is_deleted: true });
+        return apiClient.delete(`/collaborators/${collaboratorId}`);
     },
 
     updateCollaborator: (id: string, data: any) => {

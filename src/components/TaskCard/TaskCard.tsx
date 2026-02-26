@@ -1,5 +1,5 @@
 import React from 'react'
-import { Clock, Flame, MoreHorizontal, ShoppingCart, DollarSign } from 'lucide-react'
+import { Clock, Flame, MoreHorizontal, ShoppingCart, DollarSign, BadgeDollarSign } from 'lucide-react'
 import type { Task, Category, Member } from '../../types/task'
 import './TaskCard.css'
 
@@ -117,7 +117,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                         )}
                         {task.estimated_price != null && task.estimated_price > 0 && (
                             <span className="tet-card__price">
-                                <DollarSign size={12} />
+                                <BadgeDollarSign size={12} />
                                 {task.estimated_price.toLocaleString('vi-VN')}
                             </span>
                         )}

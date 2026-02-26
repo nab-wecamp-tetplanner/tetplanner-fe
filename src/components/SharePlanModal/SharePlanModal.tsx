@@ -28,10 +28,10 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
 
     const fetchCollaborators = async () => {
         try {
-            const response = await collaboratorService.getCollaborators(configId) as { data: { owner: any; collaborators: any[] } };
-            console.log("Fetched collaborators:", response.data);
-            setOwner(response.data.owner);
-            setCollaborators(response.data.collaborators || []);
+            const response = await collaboratorService.getCollaborators(configId) as { owner: any; collaborators: any[] };
+            console.log("Fetched collaborators:", response);
+            setOwner(response.owner);
+            setCollaborators(response.collaborators || []);
         } catch (error) {
             console.error("Error fetching collaborators:", error);
         }
@@ -80,9 +80,11 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
         if (!window.confirm("Are you sure you want to remove this collaborator?")) return;
         try {
             await collaboratorService.removeCollaborator(collaboratorId);
+            console.log("Collaborator removed:", collaboratorId);
             fetchCollaborators(); 
         } catch (error) {
             console.error("Error removing collaborator:", error);
+            console.log("Error Collaborator ID:", collaboratorId);
             toast.error("Error removing collaborator. Please try again.");
         }
     }

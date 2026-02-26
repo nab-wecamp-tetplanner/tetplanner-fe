@@ -74,7 +74,7 @@ const TaskManagement: React.FC = () => {
             const categoriesList: any = await todoService.getCategories();
             setCategories(categoriesList);
           } catch (error) {
-            console.error("Lỗi lấy Categories:", error);
+            console.error("Error fetching categories:", error);
           }
 
           const urlConfigId = searchParams.get("config");
