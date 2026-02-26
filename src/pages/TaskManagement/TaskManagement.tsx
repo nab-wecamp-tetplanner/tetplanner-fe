@@ -294,15 +294,39 @@ const TaskManagement: React.FC = () => {
 
   const handleMoveTask = async (taskId: string, newStatus: TaskStatus) => {
     const backupTasks = [...todoItems];
+    const targetTask = todoItems.find((t) => t.id === taskId);
+
+    // When moving to "completed", auto-tick all subtasks as done
+    const completedSubtasks =
+      newStatus === "completed" && targetTask?.subtasks
+        ? Object.fromEntries(
+            Object.keys(targetTask.subtasks).map((key) => [key, true]),
+          )
+        : undefined;
 
     setTodoItems((prev) =>
       prev.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task,
+        task.id === taskId
+          ? {
+              ...task,
+              status: newStatus,
+              ...(completedSubtasks ? { subtasks: completedSubtasks } : {}),
+            }
+          : task,
       ),
     );
 
     try {
       await todoService.updateTodoItem(taskId, { status: newStatus });
+
+      // Update each subtask to done via API
+      if (completedSubtasks) {
+        await Promise.all(
+          Object.keys(completedSubtasks).map((name) =>
+            todoService.addOrUpdateSubtask(taskId, { name, done: true }),
+          ),
+        );
+      }
     } catch (error) {
       console.error("Error updating task status:", error);
       setTodoItems(backupTasks);
