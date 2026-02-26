@@ -92,7 +92,10 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ label, status, tasks, onMoveTas
                         key={task.id} 
                         task={task} 
                         onDeleteTask={onDeleteTask} 
-                        onClick={() => onTaskClick && onTaskClick(task)}
+                        onClick={(t) => {
+                            console.log('🟡 TaskColumn.onClick called for task:', t.id, 'onTaskClick defined?', !!onTaskClick);
+                            onTaskClick && onTaskClick(t);
+                        }}
                         isDissolving={dissolvingTaskId === task.id}
                         categories={categories}
                         members={members}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
     Clock, Flame, MoreHorizontal, ShoppingCart, BadgeDollarSign,
-    ChevronDown, ChevronUp, User, Flag, CheckCircle2, Circle, Package
+    ChevronDown, ChevronUp, User, Flag, CheckCircle2, Circle, Package, AlertCircle
 } from 'lucide-react'
 import type { Task, Category, Member } from '../../types/task'
 import './TaskCard.css'
@@ -36,7 +36,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
 
     /* Resolve category name from UUID */
     const categoryName = categories?.find(c => String(c.id) === String(task.category_id))?.name;
-    const assignedMember = members?.find(m => String(m.user_id) === String(task.assigned_to));
+    // try to match either user_id or member.id, since the API may refer to either
+    const assignedMember = members?.find(m =>
+        String(m.user_id) === String(task.assigned_to_user?.id) ||
+        String(m.id) === String(task.assigned_to_user?.id)
+    );
+
+
 
     /* ── Subtask progress ── */
     const subtaskEntries = task.subtasks ? Object.entries(task.subtasks) : [];
@@ -73,14 +79,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
     };
 
     const handleCardClick = () => {
-        if (onClick) onClick(task);
+        console.log('🔵 TaskCard.handleCardClick called, onClick defined?', !!onClick, 'task:', task);
+        if (onClick) {
+            console.log('✅ Calling onClick with task:', task);
+            onClick(task);
+        } else {
+            console.warn('❌ onClick prop is undefined!');
+        }
     };
-
-    console.log("🛠️ CHECK ASSIGN TASK:", task.title, {
-        "1. ID người nhận (task.assigned_to)": task.assigned_to,
-        "2. Danh sách members nhận được": members,
-        "3. Kết quả tìm kiếm (assignedMember)": assignedMember
-    });
 
     return (
         <div
@@ -110,6 +116,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                         <span className={`tet-card__badge ${priority.cls}`}>
                             <Flag size={10} /> {priority.label}
                         </span>
+                        {task.is_overdue && task.status !== 'completed' && (
+                            <span className="tet-card__badge tet-badge--overdue">
+                                <AlertCircle size={10} /> Overdue
+                            </span>
+                        )}
                         {task.is_shopping && (
                             <span className="tet-card__badge tet-badge--shopping">
                                 <ShoppingCart size={10} />
@@ -147,7 +158,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
                     )}
                     {task.is_shopping && task.quantity > 0 && (
                         <span className="tet-card__chip">
-                            <Package size={11} /> x{task.quantity}
+                            <Package size={11} /> x{task.quantity} 
                         </span>
                     )}
                 </div>

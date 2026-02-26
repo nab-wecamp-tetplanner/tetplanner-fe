@@ -4,6 +4,45 @@
   z-index: 50;
 }
 
+.tf-container {
+  position: relative;
+  z-index: 50;
+}
+
+/* ===== Inline Filter Summary ===== */
+.tf-inline-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-subtle);
+  font-weight: 500;
+  padding: 2px 4px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.tf-inline-summary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(225, 29, 72, 0.05);
+  color: var(--accent, #e11d48);
+  font-weight: 500;
+  font-size: 10px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
 /* ===== Trigger Button ===== */
 .tf-trigger {
   display: inline-flex;
@@ -12,8 +51,7 @@
   padding: 7px 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(8px);
+  background: #fff;
   color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
@@ -65,10 +103,11 @@
   max-width: 360px;
   padding: 16px;
   border-radius: 14px;
-  background: var(--bg-card, #fff);
+  background: #fff;
   border: 1px solid var(--border);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--border);
   animation: tfSlideIn 0.2s ease-out;
+  z-index: 9999;
 }
 
 @keyframes tfSlideIn {
@@ -87,6 +126,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
 }
 
 .tf-panel__title {

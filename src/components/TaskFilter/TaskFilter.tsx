@@ -82,18 +82,57 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ categories, filters, onFiltersC
         onFiltersChange(EMPTY_FILTERS);
     };
 
+    const getActiveFilterLabels = () => {
+        const labels = [];
+        
+        // Add category names
+        const catNames = filters.categories
+            .map(id => categories.find(c => c.id === id)?.name)
+            .filter(Boolean);
+        if (catNames.length > 0) {
+            labels.push(...catNames);
+        }
+
+        // Add status labels
+        filters.statuses.forEach(status => {
+            const label = STATUS_OPTIONS.find(s => s.value === status)?.label;
+            if (label) labels.push(label);
+        });
+
+        // Add priority labels
+        filters.priorities.forEach(priority => {
+            const label = PRIORITY_OPTIONS.find(p => p.value === priority)?.label;
+            if (label) labels.push(label);
+        });
+
+        return labels;
+    };
+
     return (
         <div className="tf-wrap" ref={panelRef}>
-            {/* Trigger button */}
-            <button
-                className={`tf-trigger ${activeCount > 0 ? 'tf-trigger--active' : ''}`}
-                onClick={() => setOpen(prev => !prev)}
-            >
-                <Filter size={14} />
-                Filter
-                {activeCount > 0 && <span className="tf-trigger__count">{activeCount}</span>}
-                <ChevronDown size={12} className={`tf-trigger__chevron ${open ? 'tf-trigger__chevron--open' : ''}`} />
-            </button>
+            {/* Trigger button with inline preview */}
+            <div className="tf-container">
+                <button
+                    className={`tf-trigger ${activeCount > 0 ? 'tf-trigger--active' : ''}`}
+                    onClick={() => setOpen(prev => !prev)}
+                >
+                    <Filter size={14} />
+                    Filter
+                    {activeCount > 0 && <span className="tf-trigger__count">{activeCount}</span>}
+                    <ChevronDown size={12} className={`tf-trigger__chevron ${open ? 'tf-trigger__chevron--open' : ''}`} />
+                </button>
+
+                {/* Show selected filters inline */}
+                {activeCount > 0 && (
+                    <div className="tf-inline-summary">
+                        {getActiveFilterLabels().map((label, idx) => (
+                            <span key={idx} className="tf-inline-summary-chip">
+                                {label}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             {/* Dropdown panel */}
             {open && (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./TaskDetailModal.css";
-import type { Task } from "../../types/task";
+import type { Task, Category } from "../../types/task";
 import { X, Plus, Trash2, Flag, Layers, Calendar, CheckSquare, User } from "lucide-react";
 import { todoService } from "../../services/todoService";
 import type { Member } from "../../types/task";
@@ -27,6 +27,7 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onUpdateTask: (updatedTask: Task, skipApi?: boolean) => void;
   members?: Member[];
+  categories?: Category[];
 }
 const TaskDetailModal = ({
   task,
@@ -34,6 +35,7 @@ const TaskDetailModal = ({
   onClose,
   onUpdateTask,
   members,
+  categories,
 }: TaskDetailModalProps) => {
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const toast = useToast();
@@ -160,14 +162,14 @@ const TaskDetailModal = ({
           )}
           {task.category_id && (
             <span className="tdm-chip">
-              <Layers size={14} /> {task.category_id}
+              <Layers size={14} /> {categories?.find(c => c.id === task.category_id)?.name || "No Category"}
             </span>
           )}
         </div>
 
         {/* ── Assigned Member ── */}
         {(() => {
-          const member = members?.find(m => String(m.id) === String(task.assigned_to));
+          const member = members?.find(m => String(m.user_id) === String(task.assigned_to_user?.id));
           return member ? (
             <div className="tdm-assigned">
               <span className="tdm-assigned__label"><User size={13} /> Assigned to</span>

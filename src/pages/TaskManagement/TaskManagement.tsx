@@ -109,12 +109,23 @@ const TaskManagement: React.FC = () => {
           }
           
           if (data.owner) {
-            memberList.push({ id: data.owner.id, name: data.owner.name || 'Owner', avatar: data.owner.image_url });
+            // Owner's user_id is their actual user ID (not the record id)
+            memberList.push({ 
+              id: data.owner.id, 
+              user_id: data.owner.user_id || data.owner.id, 
+              name: data.owner.name || 'Owner', 
+              avatar: data.owner.image_url 
+            });
           }
           if (data.collaborators) {
             for (const c of data.collaborators) {
               if (c.status === 'accepted' || !c.status) {
-                memberList.push({ id: c.user_id || c.id, name: c.user?.name || 'User', avatar: c.user?.image_url });
+                memberList.push({ 
+                  id: c.id, 
+                  user_id: c.user_id, 
+                  name: c.user?.name || 'User', 
+                  avatar: c.user?.image_url 
+                });
               }
             }
           }
@@ -138,6 +149,28 @@ const TaskManagement: React.FC = () => {
     }, [activeConfigId, currentUser]); 
 
     // ==========================================
+    // Normalize raw API task → Task shape
+    // ==========================================
+    const normalizeTask = (raw: any): Task => {
+      let assignedToUser: { id: string } | null = null;
+      if (raw.assigned_to_user && typeof raw.assigned_to_user === 'object' && raw.assigned_to_user.id) {
+        assignedToUser = { id: String(raw.assigned_to_user.id) };
+      } else if (typeof raw.assigned_to_user === 'string' && raw.assigned_to_user) {
+        assignedToUser = { id: raw.assigned_to_user };
+      } else if (typeof raw.assigned_to === 'string' && raw.assigned_to) {
+        assignedToUser = { id: raw.assigned_to };
+      } else if (raw.assigned_to && typeof raw.assigned_to === 'object' && raw.assigned_to.id) {
+        assignedToUser = { id: String(raw.assigned_to.id) };
+      }
+
+      return {
+        ...raw,
+        category_id: raw.category_id ?? raw.category?.id ?? undefined,
+        assigned_to_user: assignedToUser,
+      };
+    };
+
+    // ==========================================
     // auto-fetch tasks when activeConfigId or activePhaseId changes
     // ==========================================
     useEffect(() => {
@@ -153,7 +186,8 @@ const TaskManagement: React.FC = () => {
             activeConfigId,
             activePhaseId,
           );
-          setTodoItems(response || []);
+          const items: Task[] = (response || []).map(normalizeTask);
+          setTodoItems(items);
         } catch (error) {
           console.error("Lỗi lấy Tasks:", error);
         } finally {
@@ -268,9 +302,7 @@ const TaskManagement: React.FC = () => {
     );
 
     try {
-      console.log(`1 Moving task ${taskId} to status ${newStatus}`);
       await todoService.updateTodoItem(taskId, { status: newStatus });
-      console.log(`2 Successfully moved task ${taskId} to status ${newStatus}`);
     } catch (error) {
       console.error("Error updating task status:", error);
       setTodoItems(backupTasks);
@@ -294,13 +326,13 @@ const TaskManagement: React.FC = () => {
         deadline: taskData.deadline,
         is_shopping: taskData.is_shopping,
         estimated_price: taskData.estimated_price,
-        assigned_to: taskData.assigned_to,
+        assigned_to: taskData.assigned_to_user?.id || undefined,
         category_id: (taskData as any).category_id,
         subtasks: taskData.subtasks || {},
         tet_config_id: activeConfigId,
         timeline_phase_id: activePhaseId,
       });
-      newTask = response as Task;
+      newTask = normalizeTask(response);
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error("Failed to create task. Please try again.");
@@ -492,11 +524,7 @@ const TaskManagement: React.FC = () => {
               onFiltersChange={setTaskFilters}
             />
 
-            <div className="tet-view-options">
-              <button className="tet-view-btn active">
-                <LayoutGrid size={15} /> Board
-              </button>
-            </div>
+
 
             {/* Manage Timeline */}
             <div className="tet-filter-wrapper">
@@ -623,6 +651,7 @@ const TaskManagement: React.FC = () => {
         onClose={() => setSelectedTask(null)}
         onUpdateTask={handleUpdateTask}
         members={members}
+        categories={categories}
       />
 
       {/* Celebration particles when task dropped in Done */}

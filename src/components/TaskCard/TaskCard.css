@@ -196,6 +196,14 @@
   border-color: rgba(124, 58, 237, 0.15);
 }
 
+/* Overdue badge */
+.tet-badge--overdue {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+  border-color: rgba(220, 38, 38, 0.15);
+  font-weight: 600;
+}
+
 /* Priority bar (high/urgent emphasis) */
 .tet-card__priority-bar {
   display: flex;
