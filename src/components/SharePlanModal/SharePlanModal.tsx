@@ -273,7 +273,6 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                         Done
                     </button>
                 </div>
-
             </div>
         </div>
     );

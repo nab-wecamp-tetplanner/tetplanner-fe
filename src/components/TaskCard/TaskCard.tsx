@@ -36,7 +36,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
 
     /* Resolve category name from UUID */
     const categoryName = categories?.find(c => String(c.id) === String(task.category_id))?.name;
-    const assignedMember = members?.find(m => String(m.id) === String(task.assigned_to));
+    const assignedMember = members?.find(m => String(m.user_id) === String(task.assigned_to));
 
     /* ── Subtask progress ── */
     const subtaskEntries = task.subtasks ? Object.entries(task.subtasks) : [];
@@ -75,6 +75,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDeleteTask, onClick, isDiss
     const handleCardClick = () => {
         if (onClick) onClick(task);
     };
+
+    console.log("🛠️ CHECK ASSIGN TASK:", task.title, {
+        "1. ID người nhận (task.assigned_to)": task.assigned_to,
+        "2. Danh sách members nhận được": members,
+        "3. Kết quả tìm kiếm (assignedMember)": assignedMember
+    });
 
     return (
         <div

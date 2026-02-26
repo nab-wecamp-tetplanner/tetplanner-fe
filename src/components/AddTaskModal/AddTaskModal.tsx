@@ -130,6 +130,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                             onClick={() => setAssignedTo(assignedTo === member.id ? '' : member.id)}
                             title={member.name}
                         >
+                            <script>console.log("Member:", member);</script>
                             <img src={member.avatar} alt={member.name} className="assignee-picker__avatar" />
                             <span className="assignee-picker__name">{member.name}</span>
                         </button>
