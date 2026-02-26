@@ -32,6 +32,8 @@ import {
 import FallingPetals from "../../components/FallingPetals/FallingPetals";
 import SharePlanModal from "../../components/SharePlanModal/SharePlanModal";
 import ManagePhasesModal from "../../components/ManagePhasesModal/ManagePhasesModal";
+import TaskFilter, { EMPTY_FILTERS } from "../../components/TaskFilter/TaskFilter";
+import type { TaskFilters } from "../../components/TaskFilter/TaskFilter";
 import { useToast } from "../../hooks/useToast";
 import { useAuthContext } from "../../contexts/AuthContext";
 
@@ -61,6 +63,7 @@ const TaskManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [isOwner, setIsOwner] = useState(false);
+  const [taskFilters, setTaskFilters] = useState<TaskFilters>(EMPTY_FILTERS);
   const { currentUser } = useAuthContext();
 
 
@@ -174,11 +177,38 @@ const TaskManagement: React.FC = () => {
   };
 
   const currentTasks = useMemo(() => {
-    if (!searchQuery.trim()) return todoItems;
-    return todoItems.filter((task) =>
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }, [todoItems, searchQuery]);
+    let filtered = todoItems;
+
+    // Text search
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((task) =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    // Category filter
+    if (taskFilters.categories.length > 0) {
+      filtered = filtered.filter((task) =>
+        task.category_id && taskFilters.categories.includes(task.category_id),
+      );
+    }
+
+    // Status filter
+    if (taskFilters.statuses.length > 0) {
+      filtered = filtered.filter((task) =>
+        taskFilters.statuses.includes(task.status),
+      );
+    }
+
+    // Priority filter
+    if (taskFilters.priorities.length > 0) {
+      filtered = filtered.filter((task) =>
+        taskFilters.priorities.includes(task.priority),
+      );
+    }
+
+    return filtered;
+  }, [todoItems, searchQuery, taskFilters]);
 
   const columns: { id: TaskStatus; label: string }[] = [
     { id: "pending", label: "To Do" },
@@ -455,6 +485,12 @@ const TaskManagement: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+
+            <TaskFilter
+              categories={categories}
+              filters={taskFilters}
+              onFiltersChange={setTaskFilters}
+            />
 
             <div className="tet-view-options">
               <button className="tet-view-btn active">

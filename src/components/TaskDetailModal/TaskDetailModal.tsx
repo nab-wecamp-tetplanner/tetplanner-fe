@@ -167,7 +167,7 @@ const TaskDetailModal = ({
 
         {/* ── Assigned Member ── */}
         {(() => {
-          const member = members?.find(m => m.id === task.assigned_to);
+          const member = members?.find(m => String(m.id) === String(task.assigned_to));
           return member ? (
             <div className="tdm-assigned">
               <span className="tdm-assigned__label"><User size={13} /> Assigned to</span>
