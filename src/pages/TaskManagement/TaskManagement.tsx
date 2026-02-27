@@ -36,6 +36,7 @@ import TaskFilter, { EMPTY_FILTERS } from "../../components/TaskFilter/TaskFilte
 import type { TaskFilters } from "../../components/TaskFilter/TaskFilter";
 import { useToast } from "../../hooks/useToast";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { useAppStore } from "../../stores/useAppStore";
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
@@ -45,12 +46,13 @@ const TaskManagement: React.FC = () => {
   const [configs, setConfigs] = useState<TetConfig[]>([]);
   const toast = useToast();
   const [phases, setPhases] = useState<any[]>([]);
-  const [activeConfigId, setActiveConfigId] = useState<string>("");
+  const storeConfigId = useAppStore((state) => state.configId);
+  const [activeConfigId, setActiveConfigId] = useState<string>(storeConfigId || "");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [activeColumn, setActiveColumn] = React.useState<TaskStatus>("pending");
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [celebration, setCelebration] = React.useState<{
-    x: number;
+    x: number;  
     y: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,7 +83,7 @@ const TaskManagement: React.FC = () => {
           }
 
           const urlConfigId = searchParams.get("config");
-          const targetConfigId = urlConfigId || (configList.length > 0 ? configList[0].id : null);
+          const targetConfigId = urlConfigId || storeConfigId || (configList.length > 0 ? configList[0].id : null);
           
           if (targetConfigId) {
             setActiveConfigId(targetConfigId);
