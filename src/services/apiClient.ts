@@ -66,7 +66,7 @@ export class ApiClient {
       name?: string;
       image_url?: string;
     }): ApiResponse<User> => {
-      return this.put("/users/me", data);
+      return this.patch("/users/me", data);
     },
     uploadAvatar: (file: File): ApiResponse<User> => {
       const formData = new FormData();
@@ -230,6 +230,20 @@ export class ApiClient {
     getByConfigId: (id: string): ApiResponse<Timeline[]> => {
       return this.get("/timeline-phases/tet-config/" + id);
     }
+  };
+
+  notifications = {
+    getAll: (): ApiResponse<any> => {
+      return this.get("/notifications");
+    },
+
+    markAsRead: (id: string): ApiResponse<any> => {
+      return this.patch("/notifications/" + id + "/read", {});
+    },
+
+    markAllRead: (): ApiResponse<any> => {
+      return this.patch("/notifications/read-all", {});
+    },
   };
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

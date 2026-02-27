@@ -7,6 +7,7 @@ import "./App.css";
 import Header from "./components/Header/Header";
 import TaskManagement from "./pages/TaskManagement/TaskManagement";
 import Overview from "./pages/Overview";
+import Settings from "./pages/Settings";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Auth/LoginPage";
@@ -64,6 +65,7 @@ export default function App() {
                     <Route path="/finance" element={<FinanceDashboard />} />
                     <Route path="/transaction" element={<Transaction />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/settings" element={<Settings />} />
                   </Route>
                 </Route>
               </Routes>
