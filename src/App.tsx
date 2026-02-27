@@ -16,6 +16,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 import { LoadingProvider } from "./contexts/LoadingContext";
 import ConfigGuard from "./routes/ConfigGuard";
+import ChatWidget from "./components/ChatWidget/ChatWidget";
 import PlanningOverview from "./pages/TimelineView/PlanningOverview";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ export default function App() {
                   </Route>
                 </Route>
               </Routes>
+              <ChatWidget />
             </BrowserRouter>
           </AuthProvider>
         </LoadingProvider>

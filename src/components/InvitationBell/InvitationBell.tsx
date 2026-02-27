@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { collaboratorService } from "../../services/collaboratorService";
 
 type Invitation = { id: string; role: string; tet_config_id: string };
-type InvitationResponse = { data: Invitation[] };
 
 const InvitationBell = () => {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -15,8 +14,8 @@ const InvitationBell = () => {
     const fetchInvitations = async () => {
       try {
         const response =
-          (await collaboratorService.getMyInvitations()) as InvitationResponse;
-        setInvitations(response.data || []);
+          (await collaboratorService.getMyInvitations()) as Invitation[];
+        setInvitations(response || []);
       } catch (error) {
         console.error("Failed to fetch invitations", error);
       }
@@ -56,7 +55,7 @@ const InvitationBell = () => {
       await collaboratorService.declineInvitation(id);
       setInvitations((prev) => prev.filter((inv) => inv.id !== id));
       setIsOpen(false);
-    } catch (error) {
+    } catch (error) { 
       console.error("Failed to decline invitation", error);
     }
   };

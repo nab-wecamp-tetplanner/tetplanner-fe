@@ -13,7 +13,7 @@ export interface TodoItem {
   estimated_price?: number;
   quantity?: number;
   purchased: boolean;
-  assigned_to?: string;
+  assigned_to_user: { id: string } | null;
   created_at: string;
   deleted_at?: string;
   tet_config: BaseReference;
