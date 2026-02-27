@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Loader2 } from "lucide-react";
+import {
+  X,
+  Send,
+  Loader2,
+  Sparkles,
+  Utensils,
+  Wallet,
+  Palette,
+} from "lucide-react";
 import api from "../../services/api";
 import "./ChatWidget.css";
 
@@ -9,12 +17,20 @@ interface ChatMessage {
   content: string;
 }
 
+const SUGGESTIONS = [
+  { text: "Tet Planning", icon: <Sparkles size={12} /> },
+  { text: "Recipes", icon: <Utensils size={12} /> },
+  { text: "Budget Tips", icon: <Wallet size={12} /> },
+  { text: "Decor Ideas", icon: <Palette size={12} /> },
+];
+
 const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content: "Xin chào! Mình là TetBot AI 🤖 Mình có thể giúp gì cho bạn?",
+      content:
+        "Hi! I'm TetBot AI 🤖 How can I help you prepare for the Lunar New Year?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -32,12 +48,12 @@ const ChatWidget: React.FC = () => {
 
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 200);
+      setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [isOpen]);
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const handleSend = async (customText?: string) => {
+    const text = customText || input.trim();
     if (!text || isLoading) return;
 
     const userMessage: ChatMessage = { role: "user", content: text };
@@ -46,34 +62,28 @@ const ChatWidget: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Build the conversation history to send to the API
-      const history = [...messages, userMessage].map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      // Prevents 500 error by skipping the initial bot greeting
+      const history = messages
+        .filter((_, index) => index > 0)
+        .map((m) => ({ role: m.role, content: m.content }));
 
-      const response = await api.post<{ data: { reply: string } }>(
-        "/chat",
-        { messages: history },
-      );
+      const response = await api.post("/ai-chat", {
+        message: text,
+        history: history,
+      });
 
-      // api interceptor returns AxiosResponse, and our backend wraps in { data: { reply } }
-      const reply =
-        (response as any)?.data?.reply ??
-        (response as any)?.reply ??
-        "Xin lỗi, mình không hiểu. Bạn thử hỏi lại nhé!";
+      const reply = response.data?.data?.reply || response.data?.reply; //
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: reply },
-      ]);
+      if (reply) {
+        setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      }
     } catch (error) {
       console.error("Chat API error:", error);
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Có lỗi xảy ra rồi. Bạn thử lại sau nhé! 😅",
+          content: "Something went wrong. Please try again! 🧧",
         },
       ]);
     } finally {
@@ -81,38 +91,29 @@ const ChatWidget: React.FC = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   return (
     <>
-      {/* ── Chat Window ── */}
       <div className={`cw-window ${isOpen ? "cw-window--open" : ""}`}>
         {/* Header */}
         <div className="cw-header">
           <div className="cw-header__info">
             <div className="cw-header__avatar">
-              <img src="https://api.dicebear.com/9.x/toon-head/svg?beard[]&clothes=turtleNeck,openJacket&clothesColor=731ac3&hair=bun&hairColor=d6b370,b58143&mouth=laugh&rearHair=longStraight,neckHigh,shoulderHigh,longWavy&rearHairProbability=0&skinColor=f1c3a5&backgroundColor=ffd5dc,ffdfbf,transparent&seed=Christopher" alt="" />
+              <img
+                src="https://api.dicebear.com/9.x/toon-head/svg?seed=Christopher"
+                alt="Bot"
+              />
             </div>
             <div>
               <h3 className="cw-header__title">TetBot AI</h3>
               <span className="cw-header__status">Online</span>
             </div>
           </div>
-          <button
-            className="cw-header__close"
-            onClick={() => setIsOpen(false)}
-            aria-label="Close chat"
-          >
+          <button className="cw-header__close" onClick={() => setIsOpen(false)}>
             <X size={18} />
           </button>
         </div>
 
-        {/* Message List */}
+        {/* Message Body */}
         <div className="cw-body">
           {messages.map((msg, idx) => (
             <div
@@ -121,17 +122,41 @@ const ChatWidget: React.FC = () => {
             >
               {msg.role === "assistant" && (
                 <div className="cw-msg__avatar">
-                  <img src="https://api.dicebear.com/9.x/toon-head/svg?beard[]&clothes=turtleNeck,openJacket&clothesColor=731ac3&hair=bun&hairColor=d6b370,b58143&mouth=laugh&rearHair=longStraight,neckHigh,shoulderHigh,longWavy&rearHairProbability=0&skinColor=f1c3a5&backgroundColor=ffd5dc,ffdfbf,transparent&seed=Christopher" alt="Bot Avatar" />
+                  <img
+                    src="https://api.dicebear.com/9.x/toon-head/svg?seed=Christopher"
+                    alt="Avatar"
+                  />
                 </div>
               )}
               <div className="cw-msg__bubble">{msg.content}</div>
             </div>
           ))}
 
+          {/* --- SOFT MINI-CHIPS SUGGESTIONS --- */}
+          {messages.length === 1 && !isLoading && (
+            <div className="cw-chip-wrapper">
+              <div className="cw-chip-list">
+                {SUGGESTIONS.map((s, i) => (
+                  <button
+                    key={i}
+                    className="cw-chip"
+                    onClick={() => handleSend(s.text)}
+                  >
+                    <span className="cw-chip-icon">{s.icon}</span>
+                    {s.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {isLoading && (
             <div className="cw-msg cw-msg--bot">
               <div className="cw-msg__avatar">
-                <img src="https://api.dicebear.com/9.x/toon-head/svg?beard[]&clothes=turtleNeck,openJacket&clothesColor=731ac3&hair=bun&hairColor=d6b370,b58143&mouth=laugh&rearHair=longStraight,neckHigh,shoulderHigh,longWavy&rearHairProbability=0&skinColor=f1c3a5&backgroundColor=ffd5dc,ffdfbf,transparent&seed=Christopher" alt="Bot Avatar" />
+                <img
+                  src="https://api.dicebear.com/9.x/toon-head/svg?seed=Christopher"
+                  alt="Bot"
+                />
               </div>
               <div className="cw-msg__bubble cw-msg__bubble--typing">
                 <span className="cw-dot" />
@@ -140,11 +165,10 @@ const ChatWidget: React.FC = () => {
               </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Footer / Input */}
+        {/* Footer */}
         <form
           className="cw-footer"
           onSubmit={(e) => {
@@ -156,30 +180,33 @@ const ChatWidget: React.FC = () => {
             ref={inputRef}
             type="text"
             className="cw-footer__input"
-            placeholder="Nhập tin nhắn..."
+            placeholder="Type a message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
             disabled={isLoading}
           />
           <button
             type="submit"
             className="cw-footer__send"
             disabled={isLoading || !input.trim()}
-            aria-label="Send message"
           >
-            {isLoading ? <Loader2 size={18} className="cw-spin" /> : <Send size={18} />}
+            {isLoading ? (
+              <Loader2 size={18} className="cw-spin" />
+            ) : (
+              <Send size={18} />
+            )}
           </button>
         </form>
       </div>
 
-      {/* ── Floating Action Button (Launcher) ── */}
       <button
         className={`cw-fab ${isOpen ? "cw-fab--active" : ""}`}
         onClick={() => setIsOpen((v) => !v)}
-        aria-label="Toggle chat"
       >
-        <img src="https://api.dicebear.com/9.x/toon-head/svg?beard[]&clothes=turtleNeck,openJacket&clothesColor=731ac3&hair=bun&hairColor=d6b370,b58143&mouth=laugh&rearHair=longStraight,neckHigh,shoulderHigh,longWavy&rearHairProbability=0&skinColor=f1c3a5&backgroundColor=ffd5dc,ffdfbf,transparent&seed=Christopher" alt="" />
+        <img
+          src="https://api.dicebear.com/9.x/toon-head/svg?seed=Christopher"
+          alt="FAB"
+        />
         <X size={24} className="cw-fab__icon cw-fab__icon--close" />
       </button>
     </>
