@@ -19,8 +19,8 @@ import {
 interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (category: any) => void; 
-  initialData?: any; 
+  onAdd: (category: any) => void;
+  initialData?: any;
 }
 
 export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
@@ -66,11 +66,11 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   useEffect(() => {
     if (isOpen && initialData) {
       setName(initialData.name || "");
-      
+
       // Xử lý icon: tương thích cả emoji cũ và string name mới
       const rawIcon = initialData.icon;
       setSelectedIcon(emojiToIconName[rawIcon] || rawIcon || "Package");
-      
+
       // Xử lý màu sắc: hỗ trợ cả hex color cũ và colorClass mới từ Category
       let colorVal = "planner-blue";
       if (initialData.colorClass) {
@@ -79,7 +79,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
         colorVal = getColorNameFromHex(initialData.color);
       }
       setSelectedColor(colorVal);
-      
+
       setAllocatedBudget(initialData.allocated?.toString() || "");
     } else if (isOpen && !initialData) {
       setName("");
@@ -176,7 +176,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
               <CircleDollarSign className="w-4 h-4 text-planner-green" />{" "}
               Allocated budget
-              <span className="ml-1 text-xs text-muted-foreground font-normal">(optional)</span>
+              <span className="ml-1 text-xs text-muted-foreground font-normal">
+                (optional)
+              </span>
             </label>
             <input
               type="number"

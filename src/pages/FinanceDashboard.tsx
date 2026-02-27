@@ -1,7 +1,6 @@
-import  { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, FolderPlus, ChevronDown, Check, LayoutGrid } from "lucide-react";
-
 import { BudgetOverview } from "../components/finance/BudgetOverview";
 import { CategoryCards } from "../components/finance/CategoryCards";
 import { ShoppingList } from "../components/finance/ShoppingList";
@@ -14,10 +13,12 @@ import financeApi from "../services/financeApi";
 import apiClient from "../services/apiClient";
 import { SuccessModal } from "../components/finance/SuccessModal";
 import { DeleteConfirmationModal } from "../components/finance/DeleteConfirmationModal";
-
-import type { ShoppingItem, Budget } from "../types/shopping.types";
-import type { Timeline } from "../types/timeline.types";
-import type { Category } from "../types/dashboard.types";
+import type {
+  ShoppingItem,
+  Budget,
+  CustomCategory,
+} from "../types/shopping.types";
+import type { TimelinePhase } from "../types/timeline.types";
 
 // --- Component PlanSelector ---
 const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
@@ -98,23 +99,20 @@ export default function FinanceDashboard() {
   const [allConfigs, setAllConfigs] = useState<any[]>([]);
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
-  
-  // Áp dụng chuẩn Category mới
-  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
-  
-  const [phases, setPhases] = useState<Timeline[]>([]);
+  const [categories, setCategories] =
+    useState<CustomCategory[]>(DEFAULT_CATEGORIES);
+  const [phases, setPhases] = useState<TimelinePhase[]>([]);
   const [defaultPhaseId, setDefaultPhaseId] = useState<string | null>(null);
 
   // Modals state
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
-  const [editingPhase, setEditingPhase] = useState<Timeline | null>(null);
+  const [editingPhase, setEditingPhase] = useState<TimelinePhase | null>(null);
   const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
-  
-  // Chỉnh sửa state editingCategory dùng chuẩn mới
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  
+  const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(
+    null,
+  );
   const [successModal, setSuccessModal] = useState<{
     isOpen: boolean;
     message: string;
@@ -122,7 +120,6 @@ export default function FinanceDashboard() {
     isOpen: false,
     message: "",
   });
-  
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -136,7 +133,7 @@ export default function FinanceDashboard() {
   });
 
   // 1. Lấy danh sách kế hoạch
-  useQuery({
+  const { data: configs } = useQuery({
     queryKey: ["allTetConfigs"],
     queryFn: async () => {
       const data = await financeApi.getTetConfigs();
@@ -164,7 +161,7 @@ export default function FinanceDashboard() {
             financeApi.getBudget(configId),
             financeApi.getItems(configId),
             financeApi.getCategories(configId),
-            apiClient.get<Timeline[]>(
+            apiClient.get<TimelinePhase[]>(
               `/timeline-phases/tet-config/${configId}`,
             ),
           ]);
@@ -175,21 +172,17 @@ export default function FinanceDashboard() {
         if (phasesData && phasesData.length > 0)
           setDefaultPhaseId(phasesData[0].id);
 
-        // Map data từ API về chuẩn Category mới
-        if (categoriesData && categoriesData.length > 0) {
-          const mappedCategories: Category[] = categoriesData.map((cat: any) => ({
-             id: cat.id,
-             name: cat.name,
-             icon: cat.icon || "Package",
-             colorClass: `text-${cat.color || "planner-blue"}`,
-             bgClass: `bg-${cat.color || "planner-blue"}/20`,
-             percent: "0%",
-             is_system: cat.is_system || false,
-             transactions: [] 
-          }));
-          setCategories(mappedCategories);
-        }
-
+        const backendCategories: CustomCategory[] = categoriesData.map(
+          (cat) => ({
+            id: cat.id,
+            name: cat.name,
+            icon: cat.icon || "Package",
+            color: cat.color || "planner-blue",
+            isDefault: cat.is_system || false,
+            allocated: cat.allocated,
+          }),
+        );
+        setCategories(backendCategories);
       } catch (err) {
         console.error("Failed to fetch finance data:", err);
       }
@@ -197,7 +190,7 @@ export default function FinanceDashboard() {
     fetchData();
   }, [tetConfigId]);
 
-  // --- HANDLERS ---
+  // --- HANDLERS (KHÔI PHỤC LẠI ĐẦY ĐỦ) ---
 
   const handlePlanChange = (id: string) => {
     setTetConfigId(id);
@@ -253,7 +246,7 @@ export default function FinanceDashboard() {
         editingItem.id,
         updatedItem,
         tetConfigId,
-        updatedItem.timelinePhaseId, // Fix lỗi TimelineId
+        updatedItem.timelinePhaseId,
       );
       const [budgetData, itemsData] = await Promise.all([
         financeApi.getBudget(tetConfigId),
@@ -297,17 +290,7 @@ export default function FinanceDashboard() {
     if (!tetConfigId) return;
     try {
       const created = await financeApi.addCategory(tetConfigId, newCat);
-      
-      const newCategory: Category = {
-        ...created,
-        percent: "0%", 
-        colorClass: `text-${newCat.color || "planner-blue"}`, 
-        bgClass: `bg-${newCat.color || "planner-blue"}/20`,
-        is_system: false,
-        transactions: [], 
-      };
-
-      setCategories((prev) => [...prev, newCategory]);
+      setCategories((prev) => [...prev, created]);
       setSuccessModal({
         isOpen: true,
         message: "Đã thêm danh mục mới!",
@@ -318,7 +301,7 @@ export default function FinanceDashboard() {
     }
   };
 
-  const handleEditCategory = async (category: Category, updates: any) => {
+  const handleEditCategory = async (category: CustomCategory, updates: any) => {
     try {
       await financeApi.updateCategory(category.id, {
         name: updates.name,
@@ -326,12 +309,7 @@ export default function FinanceDashboard() {
         allocated_budget: updates.allocated,
       });
       setCategories((prev) =>
-        prev.map((c) => (c.id === category.id ? { 
-          ...c, 
-          name: updates.name,
-          colorClass: `text-${updates.color}`,
-          bgClass: `bg-${updates.color}/20` 
-        } : c)),
+        prev.map((c) => (c.id === category.id ? { ...c, ...updates } : c)),
       );
       setEditingCategory(null);
       setSuccessModal({
@@ -350,7 +328,7 @@ export default function FinanceDashboard() {
         ...data,
         tet_config_id: tetConfigId,
       });
-      setPhases((prev) => [...prev, res as Timeline]); // Fix lỗi ép kiểu
+      setPhases((prev) => [...prev, res]);
       setSuccessModal({ isOpen: true, message: "Đã thêm giai đoạn mới!" });
       setIsAddPhaseModalOpen(false);
     } catch (err) {
@@ -361,12 +339,14 @@ export default function FinanceDashboard() {
   const handleUpdatePhase = async (data: any) => {
     if (!editingPhase) return;
     try {
-      const res = await apiClient.patch(
-        `/timeline-phases/${editingPhase.id}`,
-        data,
-      );
+      const res = await apiClient.patch(`/timeline-phases/${editingPhase.id}`, {
+        name: data.name,
+        start_date: data.start_date, // Thêm dòng này
+        end_date: data.end_date, // Thêm dòng này
+        display_order: data.display_order,
+      });
       setPhases((prev) =>
-        prev.map((p) => (p.id === editingPhase.id ? (res as Timeline) : p)),
+        prev.map((p) => (p.id === editingPhase.id ? res : p)),
       );
       setEditingPhase(null);
       setSuccessModal({
@@ -401,6 +381,7 @@ export default function FinanceDashboard() {
     });
   };
 
+  // For Categories
   const handleDeleteCategory = (id: string) => {
     const cat = categories.find((c) => c.id === id);
     setDeleteModal({
@@ -419,6 +400,7 @@ export default function FinanceDashboard() {
     });
   };
 
+  // Add this new handler for Phases
   const handleDeletePhase = (id: string) => {
     const phase = phases.find((p) => p.id === id);
     setDeleteModal({
@@ -439,18 +421,21 @@ export default function FinanceDashboard() {
 
   const categorySummaries = useMemo(() => {
     return categories.map((cat) => {
+      // Lấy tất cả items thuộc category này
       const catItems = items.filter((i) => i.category === cat.id);
+
+      // LOGIC MỚI: Chỉ lọc những item có status là "purchased" để tính tổng tiền
       const purchasedTotal = catItems
         .filter((i) => i.status === "purchased")
         .reduce((s, i) => s + i.price * i.quantity, 0);
 
       return {
         category: cat.name,
-        total: purchasedTotal, 
-        itemCount: catItems.length, 
+        total: purchasedTotal, // Bây giờ total chỉ tính các món đã mua
+        itemCount: catItems.length, // Vẫn giữ nguyên số lượng để user biết có bao nhiêu món trong list
         icon: cat.icon,
-        color: cat.colorClass, // Fix thuộc tính color -> colorClass
-        bgColor: cat.bgClass, // Fix thuộc tính bgColor -> bgClass
+        color: cat.color,
+        bgColor: `${cat.color}20`,
       };
     });
   }, [items, categories]);
@@ -503,7 +488,7 @@ export default function FinanceDashboard() {
         <TimelinePhasesSection
           phases={phases}
           onAddPhase={() => setIsAddPhaseModalOpen(true)}
-          onEditPhase={(p : any) => {
+          onEditPhase={(p) => {
             setEditingPhase(p);
             setIsAddPhaseModalOpen(true);
           }}
@@ -512,14 +497,14 @@ export default function FinanceDashboard() {
 
         <CategoryCards
           categorySummaries={categorySummaries}
-          categories={categories as any} // Ép kiểu tạm thời nếu components con chưa kịp đổi Type
+          categories={categories}
           onDeleteCategory={handleDeleteCategory}
-          onEditCategory={setEditingCategory as any}
+          onEditCategory={setEditingCategory}
         />
 
         <ShoppingList
           items={items}
-          categories={categories as any} // Ép kiểu tạm thời nếu components con chưa kịp đổi Type
+          categories={categories}
           onAddItem={() => setIsAddItemModalOpen(true)}
           onEditItem={setEditingItem}
           onToggleStatus={handleToggleStatus}
@@ -549,7 +534,7 @@ export default function FinanceDashboard() {
           setEditingItem(null);
         }}
         onAdd={editingItem ? handleEditItem : handleAddItem}
-        categories={categories as any} // Ép kiểu tạm thời
+        categories={categories}
         phases={phases}
         defaultPhaseId={defaultPhaseId}
         initialData={editingItem || undefined}
@@ -566,7 +551,7 @@ export default function FinanceDashboard() {
             ? handleEditCategory(editingCategory, data)
             : handleAddCategory(data)
         }
-        initialData={editingCategory as any} // Ép kiểu tạm thời
+        initialData={editingCategory || undefined}
       />
 
       <AddPhaseModal

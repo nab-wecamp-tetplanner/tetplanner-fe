@@ -2,16 +2,22 @@ import React, { useState, useEffect } from "react";
 import { X, Calendar, Type, ListOrdered, Sparkles } from "lucide-react";
 import type { Timeline } from "../../types/timeline.types";
 
+// AddPhaseModal.tsx
+
 interface AddPhaseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (phase: Omit<Timeline, "id" | "tet_config_id">) => void;
+  // Thêm "tet_config" vào danh sách Omit
+  onSave: (
+    phase: Omit<Timeline, "id" | "tet_config_id" | "tet_config">,
+  ) => void;
   editingPhase?: Timeline | null;
 }
 
 export const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
   isOpen,
   onClose,
+  onSave,
   editingPhase,
 }) => {
   const [name, setName] = useState("");
@@ -36,6 +42,19 @@ export const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !startDate || !endDate) return;
+
+    if (new Date(endDate) < new Date(startDate)) {
+      // Thay vì alert, bạn có thể dùng state để hiện lỗi đỏ dưới input cho xịn
+      alert("End date must be after or equal to start date!");
+      return;
+    }
+
+    onSave({
+      name: name.trim(),
+      start_date: startDate,
+      end_date: endDate,
+      display_order: Number(displayOrder),
+    });
 
     onClose();
   };

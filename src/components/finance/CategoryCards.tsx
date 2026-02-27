@@ -59,10 +59,11 @@ export const CategoryCards: React.FC<CategoryCardsProps> = ({
               {onDeleteCategory && (
                 <button
                   onClick={(e) => {
-                    e.stopPropagation();
-                    // if (confirm(`Delete "${category.name}" category?`)) {
-                    //   onDeleteCategory(category.id);
-                    // }
+                    e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài thẻ card
+
+                    // BỎ COMMENT ĐOẠN NÀY:
+                    // Gọi trực tiếp prop để kích hoạt Modal xác nhận ở file cha (FinanceDashboard)
+                    onDeleteCategory(category.id);
                   }}
                   className="p-1 rounded-lg hover:bg-destructive/10 transition-colors"
                 >
