@@ -49,6 +49,7 @@ export default function CalendarPage({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<FlattenedTodo | null>(null);
   const [currentView, setCurrentView] = useState<ViewType>("month");
+  const [isNew, setIsNew] = useState<boolean>(true);
 
   const calendarRef = useRef<FullCalendar>(null);
 
@@ -132,6 +133,7 @@ export default function CalendarPage({
   };
 
   const openEditModal = (task: FlattenedTodo) => {
+    setIsNew(false);
     setEditingTask(task);
     setIsModalOpen(true);
   };
@@ -264,7 +266,7 @@ export default function CalendarPage({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <div className="flex items-center gap-1  group-hover:opacity-100 transition-opacity shrink-0">
                         <button
                           onClick={() => openEditModal(task)}
                           className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-planner-blue transition-colors"
@@ -289,11 +291,12 @@ export default function CalendarPage({
 
       {/* Gọi Modal Component ở đây */}
       <CalendarModal
+        is_new={isNew}
         isOpen={isModalOpen}
         onClose={closeModal}
         editingTask={editingTask}
         selectedDate={selectedDate}
-        overviewConfig={overviewConfig}
+        phases={overviewConfig.phases}
         categories={categories}
         onUpdateTask={onUpdateTask}
         onCreateTask={onCreateTask}

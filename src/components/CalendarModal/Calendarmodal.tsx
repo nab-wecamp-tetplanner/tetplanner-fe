@@ -3,17 +3,18 @@ import { X } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
 import { useAppStore } from "../../stores/useAppStore";
-import type { OverviewConfig } from "../../types/overview.types";
 import type { CategoryResponse } from "../../types/categories.type";
 import type { TaskCreateRequest } from "../../types/todo.types";
-import type { FlattenedTodo } from "../../pages/Calendar/Calendar"; // Import type từ Calendar.tsx
+import type { FlattenedTodo } from "../../pages/Calendar/Calendar";
+import type { Timeline } from "../../types/timeline.types";
 
 interface CalendarModalProps {
   isOpen: boolean;
   onClose: () => void;
+  is_new: boolean; // Thêm prop xác định trạng thái Create/Edit
   editingTask: FlattenedTodo | null;
   selectedDate: Date | null;
-  overviewConfig: OverviewConfig;
+  phases: Timeline[];
   categories: CategoryResponse[];
   onUpdateTask: (id: string, updatedTask: any) => Promise<void>;
   onCreateTask: (newTask: TaskCreateRequest) => Promise<void>;
@@ -22,9 +23,10 @@ interface CalendarModalProps {
 export default function CalendarModal({
   isOpen,
   onClose,
+  is_new,
   editingTask,
   selectedDate,
-  overviewConfig,
+  phases,
   categories,
   onUpdateTask,
   onCreateTask,
@@ -33,24 +35,23 @@ export default function CalendarModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isShopping, setIsShopping] = useState(false);
   const [newSubtask, setNewSubtask] = useState<string>("");
-  // Khai báo state là Object thay vì Arra
   const [subtasks, setSubtasks] = useState<Record<string, boolean>>({});
 
+  // Khởi tạo state dựa vào is_new
   useEffect(() => {
     if (isOpen) {
-      setIsShopping(editingTask?.is_shopping || false);
-      setSubtasks(editingTask?.subtasks || {});
+      if (is_new) {
+        // Form tạo mới: Reset toàn bộ
+        setIsShopping(false);
+        setSubtasks({});
+      } else {
+        // Form chỉnh sửa: Lấy data từ editingTask
+        setIsShopping(editingTask?.is_shopping || false);
+        setSubtasks(editingTask?.subtasks ?? {});
+      }
       setNewSubtask("");
     }
-  }, [isOpen, editingTask]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsShopping(editingTask?.is_shopping || false);
-      setSubtasks(editingTask?.subtasks ?? {});
-      setNewSubtask("");
-    }
-  }, [isOpen, editingTask]);
+  }, [isOpen, is_new, editingTask]);
 
   if (!isOpen) return null;
 
@@ -58,7 +59,6 @@ export default function CalendarModal({
     const trimmedTitle = newSubtask.trim();
     if (!trimmedTitle) return;
 
-    // Thêm key mới vào object
     setSubtasks((prev) => ({
       ...prev,
       [trimmedTitle]: false,
@@ -69,9 +69,16 @@ export default function CalendarModal({
   const removeSubtask = (titleToRemove: string) => {
     setSubtasks((prev) => {
       const next = { ...prev };
-      delete next[titleToRemove]; // Xóa key khỏi object
+      delete next[titleToRemove];
       return next;
     });
+  };
+
+  const toggleSubtask = (titleToToggle: string) => {
+    setSubtasks((prev) => ({
+      ...prev,
+      [titleToToggle]: !prev[titleToToggle],
+    }));
   };
 
   const handleSaveTask = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -84,6 +91,7 @@ export default function CalendarModal({
       const categoryId = formData.get("category_id");
       if (!categoryId) {
         toast.error("Please select a category.");
+        setIsSubmitting(false);
         return;
       }
 
@@ -94,13 +102,14 @@ export default function CalendarModal({
         deadline: new Date(formData.get("deadline") as string).toISOString(),
         timeline_phase_id: formData.get("timeline_phase_id") as string,
         category_id: categoryId.toString(),
-        quantity: Number(formData.get("quantity")) || 0,
+        quantity: Number(formData.get("quantity")) || 1, // Để mặc định là 1 hợp lý hơn 0
         is_shopping: isShopping,
       };
 
-      if (!editingTask) {
+      if (is_new) {
         taskPayload.tet_config_id = configId;
       }
+
       if (Object.keys(subtasks).length > 0) {
         taskPayload.subtasks = subtasks;
       }
@@ -110,10 +119,11 @@ export default function CalendarModal({
           Number(formData.get("estimated_price")) || 0;
       }
 
-      if (editingTask) {
-        await onUpdateTask(editingTask.id, taskPayload);
-      } else {
+      // Xử lý API dựa vào is_new
+      if (is_new) {
         await onCreateTask(taskPayload as TaskCreateRequest);
+      } else if (editingTask) {
+        await onUpdateTask(editingTask.id, taskPayload);
       }
 
       onClose();
@@ -125,21 +135,16 @@ export default function CalendarModal({
     }
   };
 
-  const toggleSubtask = (titleToToggle: string) => {
-    setSubtasks((prev) => ({
-      ...prev,
-      [titleToToggle]: !prev[titleToToggle], // Lật trạng thái true/false
-    }));
-  };
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
+      {" "}
       <form
         onSubmit={handleSaveTask}
-        className="bg-card p-6 rounded-2xl w-full max-w-md border border-border shadow-xl max-h-[90vh] overflow-y-auto custom-scrollbar"
+        className="bg-card p-6 rounded-2xl w-full max-w-md border border-border  max-h-[90vh] overflow-y-auto custom-scrollbar"
       >
         <div className="flex justify-between items-center mb-6 sticky top-0 bg-card z-10 py-2">
           <h3 className="text-xl font-bold text-foreground">
-            {editingTask ? "Update Task" : "Create New Task"}
+            {is_new ? "Create New Task" : "Update Task"}
           </h3>
           <button
             type="button"
@@ -158,7 +163,7 @@ export default function CalendarModal({
             </label>
             <input
               name="title"
-              defaultValue={editingTask?.title}
+              defaultValue={!is_new ? editingTask?.title : ""}
               required
               className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-planner-blue outline-none"
             />
@@ -174,7 +179,7 @@ export default function CalendarModal({
                 name="deadline"
                 type="date"
                 defaultValue={
-                  editingTask?.deadline
+                  !is_new && editingTask?.deadline
                     ? format(new Date(editingTask.deadline), "yyyy-MM-dd")
                     : format(selectedDate ?? Date.now(), "yyyy-MM-dd")
                 }
@@ -189,7 +194,7 @@ export default function CalendarModal({
               </label>
               <select
                 name="priority"
-                defaultValue={editingTask?.priority || "medium"}
+                defaultValue={!is_new ? editingTask?.priority : "medium"}
                 className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm"
               >
                 <option value="low">Low</option>
@@ -208,12 +213,12 @@ export default function CalendarModal({
             <select
               name="timeline_phase_id"
               defaultValue={
-                editingTask?.timeline_phase?.id || overviewConfig?.phases[0]?.id
+                !is_new ? editingTask?.timeline_phase?.id : phases[0]?.id
               }
               required
               className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm"
             >
-              {overviewConfig?.phases.map((p) => (
+              {phases.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
@@ -221,13 +226,16 @@ export default function CalendarModal({
             </select>
           </div>
 
-          {/* Categories  */}
+          {/* Categories */}
           <div>
             <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
               Category
             </label>
             <select
               name="category_id"
+              defaultValue={
+                !is_new ? editingTask?.category?.id : categories[0]?.id
+              }
               required
               className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm"
             >
@@ -270,7 +278,7 @@ export default function CalendarModal({
                   <input
                     name="estimated_price"
                     type="number"
-                    defaultValue={editingTask?.estimated_price}
+                    defaultValue={!is_new ? editingTask?.estimated_price : ""}
                     placeholder="0.00"
                     className="w-full pl-7 pr-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-planner-blue outline-none"
                   />
@@ -342,14 +350,14 @@ export default function CalendarModal({
             </div>
 
             {/* Status & Quantity */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
                   Status
                 </label>
                 <select
                   name="status"
-                  defaultValue={editingTask?.status || "pending"}
+                  defaultValue={!is_new ? editingTask?.status : "pending"}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm"
                 >
                   <option value="pending">Pending</option>
@@ -363,7 +371,7 @@ export default function CalendarModal({
                 </label>
                 <input
                   name="quantity"
-                  defaultValue={editingTask?.quantity || 0}
+                  defaultValue={!is_new ? editingTask?.quantity : 1}
                   type="number"
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-planner-blue outline-none"
                 />
@@ -376,7 +384,7 @@ export default function CalendarModal({
             >
               {isSubmitting
                 ? "Processing..."
-                : editingTask
+                : !is_new
                   ? "Save Changes"
                   : "Create Task"}
             </button>

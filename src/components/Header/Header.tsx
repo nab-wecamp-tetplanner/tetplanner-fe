@@ -42,7 +42,7 @@ export interface ConfigInfo extends TetConfig {
   categories: string[];
 }
 const navItems: NavItem[] = [
-  { name: "Overview", href: "/" },
+  { name: "Homepage", href: "/" },
   { name: "Task management", href: "/task" },
   { name: "Calendar", href: "/calendar" },
   { name: "Finance", href: "/finance" },
@@ -113,9 +113,6 @@ const Header = () => {
         />
         <span className="font-bold text-text-main text-lg transition-colors duration-300">
           Tết Planner
-        </span>
-        <span className="font-bold text-text-main text-lg transition-colors duration-300">
-          NY Planner
         </span>
       </Link>
 

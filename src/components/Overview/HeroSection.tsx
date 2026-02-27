@@ -47,12 +47,12 @@ export default function HeroSection() {
         </div>
 
         <h1 className="font-serif text-5xl md:text-7xl text-foreground mb-6 leading-[1.1] tracking-tight">
-          Plan your <span className="text-primary">Tet shopping</span> <br />
+          Plan your <span className="text-primary">Tet</span> <br />
           with absolute ease
         </h1>
 
         <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
-          Manage shopping lists, track your budget in real-time, and ensure
+          Manage tasks, shopping lists, track your budget in real-time, ensure
           everything is perfectly prepared for the Lunar New Year.
         </p>
 
@@ -66,9 +66,11 @@ export default function HeroSection() {
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
 
-          <div className="px-7 py-4 bg-white/60 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm flex items-center gap-3 text-sm font-bold text-foreground">
-            <Sparkles className="w-5 h-5 text-planner-amber" />
-            <span>Expense Tracking</span>
+          <div className="px-7 py-4 bg-white/60 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm flex items-center gap-3 text-sm font-bold text-foreground hover:opacity-95 transition-all hover:-translate-y-0.5">
+            <Link to="/finance"className="group inline-flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-planner-amber group-hover:-translate-x-0.5 transition-transform" />
+              <span>Expense Tracking</span>
+            </Link>
           </div>
         </div>
 

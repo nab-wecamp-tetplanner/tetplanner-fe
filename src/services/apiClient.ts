@@ -232,6 +232,7 @@ export class ApiClient {
     }
   };
 
+  // Notification endpoints
   notifications = {
     getAll: (): ApiResponse<any> => {
       return this.get("/notifications");
@@ -245,6 +246,9 @@ export class ApiClient {
       return this.patch("/notifications/read-all", {});
     },
   };
+
+  // Recent tasks endpoints
+  
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     // AxiosResponse.data bây giờ là BackendResponse<T>

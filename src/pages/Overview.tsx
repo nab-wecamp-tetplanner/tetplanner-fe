@@ -33,7 +33,8 @@ export interface FullConfigData extends TetConfig {
 const features = [
   {
     icon: ListChecks,
-    title: "Shopping List",
+    title: "Task management",
+    link: "/task",
     description:
       "Create and manage your Tet shopping list easily and in an organized manner.",
     color: "bg-planner-blue",
@@ -44,6 +45,7 @@ const features = [
   {
     icon: Wallet,
     title: "Budget Management",
+    link: "/finance",
     description: "Track spending in real-time and never exceed your budget.",
     color: "bg-planner-green",
     lightBg: "bg-planner-green-light",
@@ -53,6 +55,7 @@ const features = [
   {
     icon: BarChart3,
     title: "Spending Analysis",
+    link: "/dashboard",
     description: "View detailed reports by category and track spending trends.",
     color: "bg-planner-purple",
     lightBg: "bg-planner-purple-light",
@@ -61,7 +64,8 @@ const features = [
   },
   {
     icon: Calendar,
-    title: "Shopping Schedule",
+    title: "Schedule",
+    link: "/calendar",
     description:
       "Set deadlines for each item and never miss a thing before Tet.",
     color: "bg-planner-amber",
@@ -73,13 +77,14 @@ const features = [
 
 export default function Overview() {
   const [data, setData] = useState<FullConfigData | null>(null);
-  const { hideLoading } = useLoading();
+  const { showLoading, hideLoading } = useLoading();
   const configId = useAppStore((state) => state.configId);
+  const refreshKey = useAppStore((state) => state.refreshKey);
 
   const fetchAllOverviewData = useCallback(async () => {
     try {
       if (!configId) return;
-
+      showLoading()
       const [config, budgetSummary, taskItems] = await Promise.all([
         apiClient.tetConfigs.getConfigById(configId),
         apiClient.tetConfigs.getBudgetSummary(configId),
@@ -102,9 +107,10 @@ export default function Overview() {
     }
   }, [configId]);
 
+   
   useEffect(() => {
     fetchAllOverviewData();
-  }, [configId, fetchAllOverviewData]);
+  }, [configId, fetchAllOverviewData, refreshKey]);
 
   const handleDeleteConfigAction = useCallback(
     async (id: string) => {
@@ -117,7 +123,7 @@ export default function Overview() {
         }
       }
     },
-    [fetchAllOverviewData],
+    [fetchAllOverviewData, hideLoading],
   );
 
   const handleUpdateBudgetAction = useCallback(
@@ -152,7 +158,7 @@ export default function Overview() {
             Everything you need
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto italic">
-            The perfect tool to plan your Tet shopping scientifically and
+            The perfect tool to plan your Tet tasks & shopping scientifically and
             economically.
           </p>
         </div>
@@ -218,7 +224,7 @@ export default function Overview() {
 
           {/* Column 2: Tasks */}
           <div className="space-y-6">
-            <TaskListWidget />
+            <TaskListWidget            />
           </div>
 
           {/* Column 3: Calendar */}

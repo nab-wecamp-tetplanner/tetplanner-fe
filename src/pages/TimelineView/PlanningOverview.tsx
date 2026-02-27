@@ -28,6 +28,11 @@ export interface AppTask {
   progress: number; // Dùng cho Timeline
 }
 
+interface StatProps {
+  total: number;
+  completed: number;
+  overdue: number;
+}
 export default function PlanningOverview() {
   const [activeView, setActiveView] = useState<"calendar" | "timeline">(
     "calendar",
@@ -38,11 +43,18 @@ export default function PlanningOverview() {
   // Dữ liệu mẫu tập trung
   const [tasksByPhase, setTasksByPhase] = useState<OverviewConfig>();
   const [catergories, setCategories] = useState<CategoryResponse[]>([]);
+  const [stats, setStats] = useState<StatProps>({
+    total: 0,
+    completed: 0,
+    overdue: 0,
+  });
 
   // Hàm cập nhật task chung cho cả 2 component
   const handleUpdateTask = async (id: string, updatedTask: any) => {
     try {
       console.log("UPDATE TASK: ", updatedTask, id);
+      if (!configId) return;
+      showLoading();
       const response = await apiClient.todos.update(id, updatedTask);
       const savedTask = response.todo_item || response;
 
@@ -87,6 +99,8 @@ export default function PlanningOverview() {
     } catch (error) {
       console.error(error);
       toast.error("Error in updating!");
+    } finally {
+      hideLoading();
     }
   };
 
@@ -125,7 +139,7 @@ export default function PlanningOverview() {
   const handleDeleteTask = async (id: string) => {
     try {
       if (!id) return;
-      showLoading();
+      // showLoading();
       await apiClient.todos.delete(id);
 
       setTasksByPhase((prevData) => {
@@ -151,7 +165,7 @@ export default function PlanningOverview() {
   const fetchCategories = async () => {
     if (!configId) return;
     try {
-      showLoading();
+      // showLoading();
       const categoriesData =
         await apiClient.categories.getByTetConfig(configId);
       setCategories(categoriesData);
@@ -180,6 +194,9 @@ export default function PlanningOverview() {
 
         return {
           ...phase,
+          tet_config: {
+            id: configId,
+          },
           tasks: tasks,
         };
       }),
@@ -194,6 +211,29 @@ export default function PlanningOverview() {
     console.log(`Full overview data: `, data);
     setTasksByPhase(data);
   };
+
+  const calculateTaskStats = () => {
+    if (!tasksByPhase) return;
+    const statsData = tasksByPhase.phases.reduce(
+      (acc, phase) => {
+        const tasks = phase.tasks || []; // Đề phòng tasks bị undefined
+
+        acc.total += tasks.length;
+        acc.completed += tasks.filter(
+          (task) => task.status === "completed",
+        ).length;
+        acc.overdue += tasks.filter((task) => task.is_overdue).length;
+
+        return acc;
+      },
+      { total: 0, completed: 0, overdue: 0 },
+    );
+    setStats(statsData);
+  };
+
+  useEffect(() => {
+    calculateTaskStats();
+  }, [tasksByPhase]);
 
   // Fetch data
   useEffect(() => {
@@ -218,7 +258,9 @@ export default function PlanningOverview() {
                   <p className="text-xs text-muted-foreground font-medium">
                     Done
                   </p>
-                  <p className="text-xl font-bold text-planner-green">{}</p>
+                  <p className="text-xl font-bold text-planner-green">
+                    {stats.completed}
+                  </p>
                 </div>
               </div>
 
@@ -230,7 +272,9 @@ export default function PlanningOverview() {
                   <p className="text-xs text-muted-foreground font-medium">
                     Overdue
                   </p>
-                  <p className="text-xl font-bold text-planner-pink">03</p>
+                  <p className="text-xl font-bold text-planner-pink">
+                    {stats.overdue}
+                  </p>
                 </div>
               </div>
 
@@ -243,10 +287,7 @@ export default function PlanningOverview() {
                     Total Tasks
                   </p>
                   <p className="text-xl font-bold text-planner-blue">
-                    {tasksByPhase?.phases.reduce(
-                      (acc, curr) => acc + curr.tasks.length,
-                      0,
-                    )}
+                    {stats.total}
                   </p>
                 </div>
               </div>

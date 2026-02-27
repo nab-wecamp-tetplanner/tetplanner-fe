@@ -14,14 +14,14 @@ const CalendarWidget = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [dayTasks, setDayTasks] = useState<TodoItem[]>([]);
   const [tasks, setTasks] = useState<TodoItem[]>([]);
-  const {showLoading, hideLoading} = useLoading();
+  const {hideLoading} = useLoading();
   const configId = useAppStore((state) => state.configId);
   
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         if (!configId) return;
-        showLoading();
+        // showLoading();
         const data = await apiClient.todos.getAll({
           tetConfigId: configId
         });
