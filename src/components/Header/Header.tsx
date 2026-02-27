@@ -6,7 +6,7 @@ import apiClient from "../../services/apiClient";
 import type { TetConfig } from "../../types/tetConfig.types";
 import { useAppStore } from "../../stores/useAppStore"; //
 import InvitationBell from "../InvitationBell/InvitationBell";
-import { Bell, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
 
 const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthContext();
-  const [showSettings, setShowSettings] = useState(false);
+  const [, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
 
@@ -85,7 +85,7 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [showNotifications, ] = useState(false);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -150,11 +150,11 @@ const Header = () => {
                 </span>
                 <ChevronDown
                   size={16}
-                  className="group-hover:hidden flex-shrink-0"
+                  className="group-hover:hidden shrink-0"
                 />
                 <ChevronUp
                   size={16}
-                  className="hidden group-hover:inline flex-shrink-0"
+                  className="hidden group-hover:inline shrink-0"
                 />
               </button>
               <div className="absolute left-0 mt-2 w-48 bg-(--bg) border border-accent rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">

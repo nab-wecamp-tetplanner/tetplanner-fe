@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings as Account, User, Palette, Bell, X } from "lucide-react";
+import { Settings as Account, User, Bell, X } from "lucide-react";
 import ProfileSection from "../components/Settings/ProfileSection";
 import NotificationSection from "../components/Settings/NotificationSection";
 import AccountSection from "../components/Settings/AccountSection";

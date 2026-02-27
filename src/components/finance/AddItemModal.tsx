@@ -11,14 +11,14 @@ import {
   ChevronDown, // Added for the dropdown indicator
 } from "lucide-react";
 import type { ShoppingItem, CustomCategory } from "../../types/shopping.types";
-import type { TimelinePhase } from "../../types/timeline.types";
+import type { Timeline } from "../../types/timeline.types";
 
 interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (item: Omit<ShoppingItem, "id">) => void;
   categories: CustomCategory[];
-  phases: TimelinePhase[];
+  phases: Timeline[];
   defaultPhaseId?: string | null;
   initialData?: ShoppingItem;
 }

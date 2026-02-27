@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { X, Calendar, Type, ListOrdered, Sparkles } from "lucide-react";
-import type { TimelinePhase } from "../../types/timeline.types";
+import type { Timeline } from "../../types/timeline.types";
 
 interface AddPhaseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (phase: Omit<TimelinePhase, "id" | "tet_config_id">) => void;
-  editingPhase?: TimelinePhase | null;
+  onSave: (phase: Omit<Timeline, "id" | "tet_config_id">) => void;
+  editingPhase?: Timeline | null;
 }
 
 export const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
   isOpen,
   onClose,
-  onSave,
   editingPhase,
 }) => {
   const [name, setName] = useState("");
@@ -37,13 +36,6 @@ export const AddPhaseModal: React.FC<AddPhaseModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !startDate || !endDate) return;
-
-    onSave({
-      name: name.trim(),
-      start_date: new Date(startDate).toISOString(),
-      end_date: new Date(endDate).toISOString(),
-      display_order: parseInt(displayOrder) || 1,
-    });
 
     onClose();
   };

@@ -9,7 +9,6 @@ import {
 } from "../../data/mockTasks";
 import "./TaskManagement.css";
 import {
-  LayoutGrid,
   Plus,
   Search,
   Calendar,

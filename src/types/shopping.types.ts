@@ -5,9 +5,11 @@ export type ShoppingStatus = "pending" | "purchased";
 export interface CustomCategory {
   id: string;
   name: string;
-  icon: string; // Lucide icon name
-  color: string; // Tailwind color class like "planner-blue"
+  icon: string;
+  color: string;
   isDefault: boolean;
+  is_system: boolean | null;
+  allocated?: number; // <-- THÊM DÒNG NÀY VÀO LÀ HẾT BÁO ĐỎ
 }
 
 export interface ShoppingItem {

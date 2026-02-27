@@ -1,11 +1,11 @@
 import React from "react";
 import { Plus, Calendar, Edit, Trash2, Clock } from "lucide-react"; // Thêm Clock để làm icon trang trí
-import type { TimelinePhase } from "../../types/timeline.types";
+import type { Timeline } from "../../types/timeline.types";
 
 interface TimelinePhasesSectionProps {
-  phases: TimelinePhase[];
+  phases: Timeline[];
   onAddPhase: () => void;
-  onEditPhase: (phase: TimelinePhase) => void;
+  onEditPhase: (phase: Timeline) => void;
   onDeletePhase: (phaseId: string) => void;
 }
 

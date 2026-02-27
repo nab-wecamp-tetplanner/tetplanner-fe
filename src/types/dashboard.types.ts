@@ -17,6 +17,7 @@ export type Category = {
   colorClass: string;
   bgClass: string;
   icon: string;
+  is_system?: boolean;
   transactions: Transaction[];
 };
 

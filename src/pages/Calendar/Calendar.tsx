@@ -1,4 +1,4 @@
-import React, {
+import {
   useState,
   useMemo,
   useRef,
@@ -22,7 +22,7 @@ import "./calendar.css";
 import TaskToolbar, { type ViewType } from "../../components/Timeline/Toolbar";
 import type { OverviewConfig } from "../../types/overview.types";
 import type { TaskCreateRequest, TodoItem } from "../../types/todo.types";
-import apiClient from "../../services/apiClient";
+// import apiClient from "../../services/apiClient";
 import type { CategoryResponse } from "../../types/categories.type";
 import CalendarModal from "../../components/CalendarModal/Calendarmodal"; // Import Modal mới
 

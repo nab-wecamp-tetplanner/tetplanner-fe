@@ -1,5 +1,6 @@
 import apiClient from "./apiClient";
-import type { ShoppingItem, ShoppingCategory } from "../types/shopping.types";
+import type { ShoppingItem } from "../types/shopping.types";
+import type { Category } from "../types/dashboard.types";
 
 // ==========================================
 // TYPES - Backend Structure
@@ -73,13 +74,12 @@ const mapBackendItemToFrontend = (item: BackendTodoItem): ShoppingItem => ({
   dueDate: item.deadline || new Date().toISOString(),
   // Handle both timeline_phase_id (PATCH) and timeline_phase.id (GET/POST)
   timelinePhaseId:
-    item.timeline_phase_id || (item as any).timeline_phase?.id || undefined,
+    item.category_id || (item as any).timeline_phase?.id || undefined,
 });
 
 const mapFrontendItemToBackend = (
   item: Partial<ShoppingItem>,
   tetConfigId: string,
-  timelinePhaseId?: string, // Add timeline phase ID
   isUpdate: boolean = false, // Add flag to distinguish create vs update
 ): Partial<BackendTodoItem> => {
   const payload: any = {};
@@ -206,10 +206,11 @@ export const financeApi = {
     item: Omit<ShoppingItem, "id">,
     timelinePhaseId?: string, // Add timeline phase ID parameter
   ): Promise<ShoppingItem> => {
+    // FIX: Gộp timelinePhaseId vào bên trong object item và đặt isUpdate = false
     const backendItem = mapFrontendItemToBackend(
-      item,
+      { ...item, timelinePhaseId },
       tetConfigId,
-      timelinePhaseId,
+      false, 
     );
 
     // Debug logging - FULL OBJECT
@@ -243,11 +244,11 @@ export const financeApi = {
     tetConfigId: string, // Changed to string
     timelinePhaseId?: string, // Add timeline phase ID parameter
   ): Promise<ShoppingItem> => {
+    // FIX: Gộp timelinePhaseId vào bên trong object updates và đặt isUpdate = true
     const backendUpdates = mapFrontendItemToBackend(
-      updates,
+      { ...updates, timelinePhaseId },
       tetConfigId,
-      timelinePhaseId,
-      true, // isUpdate = true for updates
+      true, 
     );
 
     const response = await apiClient.patch<{
@@ -264,7 +265,6 @@ export const financeApi = {
     await apiClient.delete(`/todo-items/${itemId}`);
   },
 
-  // Toggle purchased (2 API calls: PATCH + GET budget)
   // Toggle purchased (2 API calls: PATCH + GET budget)
   toggleItemStatus: async (
     itemId: string,
@@ -325,15 +325,11 @@ export const financeApi = {
   // Categories
   getCategories: async (tetConfigId: string) => {
     // Changed to string
-    const categories = await apiClient.get<BackendCategory[]>(
+    const categories = await apiClient.get<Category[]>(
       `/categories?tet_config_id=${tetConfigId}`,
     );
 
-    const mapped = categories.map((cat, index) =>
-      mapBackendCategoryToFrontend(cat, index),
-    );
-
-    return mapped;
+    return categories;
   },
 
   addCategory: async (

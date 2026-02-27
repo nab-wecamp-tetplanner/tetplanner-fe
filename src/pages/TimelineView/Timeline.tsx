@@ -4,7 +4,7 @@ import "gantt-task-react/dist/index.css";
 import TaskToolbar, { type ViewType } from "../../components/Timeline/Toolbar";
 import type { OverviewConfig } from "../../types/overview.types";
 import type { TaskCreateRequest, TodoItem } from "../../types/todo.types";
-import "./timeline.css";
+import "./Timeline.css";
 import CalendarModal from "../../components/CalendarModal/Calendarmodal";
 import type { CategoryResponse } from "../../types/categories.type";
 import type { FlattenedTodo } from "../Calendar/Calendar";
@@ -182,7 +182,6 @@ const CustomTooltip: React.FC<{ task: ExtendedTask }> = ({ task }) => (
 export default function TimelineModule({
   overviewConfig,
   categories,
-  setTasks,
   onUpdateTask,
   onCreateTask,
   onDeleteTask,

@@ -12,7 +12,7 @@ import { BudgetCardsSection } from "../components/Dashboard/BudgetCardsSection";
 import TaskListWidget from "../components/Overview/TaskWidget";
 
 export default function Dashboard() {
-  const [configs, setConfigs] = useState<TetConfig[]>([]);
+  const [, setConfigs] = useState<TetConfig[]>([]);
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -23,7 +23,7 @@ export default function Dashboard() {
     fetchConfigs();
   }, []);
 
-  const tetConfigIds = configs.map((config) => config.id);
+  // const tetConfigIds = configs.map((config) => config.id);
 
   return (
     <div className="min-h-screen bg-background">

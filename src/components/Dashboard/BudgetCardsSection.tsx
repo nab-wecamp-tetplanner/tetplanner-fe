@@ -2,6 +2,8 @@ import BudgetCard from "../Overview/BudgetCard";
 
 const BUDGET_CARDS = [
   {
+        id: "23123",
+
     icon: "🎄",
     title: "Tết Budget",
     spent: 7000000,
@@ -10,6 +12,7 @@ const BUDGET_CARDS = [
     color: "bg-red-500",
   },
   {
+        id: "1232212",
     icon: "🛍️",
     title: "Shopping",
     spent: 2500000,
@@ -18,6 +21,7 @@ const BUDGET_CARDS = [
     color: "bg-blue-500",
   },
   {
+    id: "12312",
     icon: "🎁",
     title: "Gifts",
     spent: 3200000,
@@ -31,7 +35,7 @@ export const BudgetCardsSection = () => {
   return (
     <div className="flex flex-col gap-4 flex-1">
       {BUDGET_CARDS.map((budget) => (
-        <BudgetCard key={budget.title} {...budget} />
+        <BudgetCard key={budget.title} {...budget} onUpdate={() => {console.log("dfsdfa")}} onDelete={() => console.log("dfasdfa")} />
       ))}
     </div>
   );

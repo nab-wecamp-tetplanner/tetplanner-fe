@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Plus,
   Minus,
@@ -33,7 +33,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 // TYPES & CONSTANTS
 // ==========================================
 
-interface TransactionType {
+export interface TransactionType {
   id: string;
   name: string;
   categoryId?: string;

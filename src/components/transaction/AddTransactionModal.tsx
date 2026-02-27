@@ -11,7 +11,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { TransactionType } from "../../pages/Transaction";
-
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -41,7 +40,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         setAmount(initialData.amount.toString());
         setType(initialData.isIncome ? "income" : "expense");
         setNote(initialData.name);
-        setCategoryId(initialData.categoryId || "");
+        setCategoryId("");
         setDate(initialData.date || new Date().toISOString().split("T")[0]);
       } else {
         setAmount("");
@@ -70,8 +69,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl max-w-[400px] w-full overflow-hidden animate-in fade-in zoom-in duration-300">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-100 p-4">
+      <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl max-w-100 w-full overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* Header Section */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-muted/20">
           <div className="flex items-center gap-3">
