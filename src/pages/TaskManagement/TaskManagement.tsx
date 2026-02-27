@@ -32,8 +32,11 @@ import {
 import FallingPetals from "../../components/FallingPetals/FallingPetals";
 import SharePlanModal from "../../components/SharePlanModal/SharePlanModal";
 import ManagePhasesModal from "../../components/ManagePhasesModal/ManagePhasesModal";
+import TaskFilter, { EMPTY_FILTERS } from "../../components/TaskFilter/TaskFilter";
+import type { TaskFilters } from "../../components/TaskFilter/TaskFilter";
 import { useToast } from "../../hooks/useToast";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { useAppStore } from "../../stores/useAppStore";
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
@@ -43,12 +46,13 @@ const TaskManagement: React.FC = () => {
   const [configs, setConfigs] = useState<TetConfig[]>([]);
   const toast = useToast();
   const [phases, setPhases] = useState<any[]>([]);
-  const [activeConfigId, setActiveConfigId] = useState<string>("");
+  const storeConfigId = useAppStore((state) => state.configId);
+  const [activeConfigId, setActiveConfigId] = useState<string>(storeConfigId || "");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [activeColumn, setActiveColumn] = React.useState<TaskStatus>("pending");
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [celebration, setCelebration] = React.useState<{
-    x: number;
+    x: number;  
     y: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +65,7 @@ const TaskManagement: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [isOwner, setIsOwner] = useState(false);
+  const [taskFilters, setTaskFilters] = useState<TaskFilters>(EMPTY_FILTERS);
   const { currentUser } = useAuthContext();
 
 
@@ -74,11 +79,11 @@ const TaskManagement: React.FC = () => {
             const categoriesList: any = await todoService.getCategories();
             setCategories(categoriesList);
           } catch (error) {
-            console.error("Lỗi lấy Categories:", error);
+            console.error("Error fetching categories:", error);
           }
 
           const urlConfigId = searchParams.get("config");
-          const targetConfigId = urlConfigId || (configList.length > 0 ? configList[0].id : null);
+          const targetConfigId = urlConfigId || storeConfigId || (configList.length > 0 ? configList[0].id : null);
           
           if (targetConfigId) {
             setActiveConfigId(targetConfigId);
@@ -106,12 +111,23 @@ const TaskManagement: React.FC = () => {
           }
           
           if (data.owner) {
-            memberList.push({ id: data.owner.id, name: data.owner.name || 'Owner', avatar: data.owner.image_url });
+            // Owner's user_id is their actual user ID (not the record id)
+            memberList.push({ 
+              id: data.owner.id, 
+              user_id: data.owner.user_id || data.owner.id, 
+              name: data.owner.name || 'Owner', 
+              avatar: data.owner.image_url 
+            });
           }
           if (data.collaborators) {
             for (const c of data.collaborators) {
               if (c.status === 'accepted' || !c.status) {
-                memberList.push({ id: c.user_id || c.id, name: c.user?.name || 'User', avatar: c.user?.image_url });
+                memberList.push({ 
+                  id: c.id, 
+                  user_id: c.user_id, 
+                  name: c.user?.name || 'User', 
+                  avatar: c.user?.image_url 
+                });
               }
             }
           }
@@ -135,6 +151,28 @@ const TaskManagement: React.FC = () => {
     }, [activeConfigId, currentUser]); 
 
     // ==========================================
+    // Normalize raw API task → Task shape
+    // ==========================================
+    const normalizeTask = (raw: any): Task => {
+      let assignedToUser: { id: string } | null = null;
+      if (raw.assigned_to_user && typeof raw.assigned_to_user === 'object' && raw.assigned_to_user.id) {
+        assignedToUser = { id: String(raw.assigned_to_user.id) };
+      } else if (typeof raw.assigned_to_user === 'string' && raw.assigned_to_user) {
+        assignedToUser = { id: raw.assigned_to_user };
+      } else if (typeof raw.assigned_to === 'string' && raw.assigned_to) {
+        assignedToUser = { id: raw.assigned_to };
+      } else if (raw.assigned_to && typeof raw.assigned_to === 'object' && raw.assigned_to.id) {
+        assignedToUser = { id: String(raw.assigned_to.id) };
+      }
+
+      return {
+        ...raw,
+        category_id: raw.category_id ?? raw.category?.id ?? undefined,
+        assigned_to_user: assignedToUser,
+      };
+    };
+
+    // ==========================================
     // auto-fetch tasks when activeConfigId or activePhaseId changes
     // ==========================================
     useEffect(() => {
@@ -150,7 +188,8 @@ const TaskManagement: React.FC = () => {
             activeConfigId,
             activePhaseId,
           );
-          setTodoItems(response || []);
+          const items: Task[] = (response || []).map(normalizeTask);
+          setTodoItems(items);
         } catch (error) {
           console.error("Lỗi lấy Tasks:", error);
         } finally {
@@ -174,11 +213,38 @@ const TaskManagement: React.FC = () => {
   };
 
   const currentTasks = useMemo(() => {
-    if (!searchQuery.trim()) return todoItems;
-    return todoItems.filter((task) =>
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }, [todoItems, searchQuery]);
+    let filtered = todoItems;
+
+    // Text search
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((task) =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    // Category filter
+    if (taskFilters.categories.length > 0) {
+      filtered = filtered.filter((task) =>
+        task.category_id && taskFilters.categories.includes(task.category_id),
+      );
+    }
+
+    // Status filter
+    if (taskFilters.statuses.length > 0) {
+      filtered = filtered.filter((task) =>
+        taskFilters.statuses.includes(task.status),
+      );
+    }
+
+    // Priority filter
+    if (taskFilters.priorities.length > 0) {
+      filtered = filtered.filter((task) =>
+        taskFilters.priorities.includes(task.priority),
+      );
+    }
+
+    return filtered;
+  }, [todoItems, searchQuery, taskFilters]);
 
   const columns: { id: TaskStatus; label: string }[] = [
     { id: "pending", label: "To Do" },
@@ -230,17 +296,39 @@ const TaskManagement: React.FC = () => {
 
   const handleMoveTask = async (taskId: string, newStatus: TaskStatus) => {
     const backupTasks = [...todoItems];
+    const targetTask = todoItems.find((t) => t.id === taskId);
+
+    // When moving to "completed", auto-tick all subtasks as done
+    const completedSubtasks =
+      newStatus === "completed" && targetTask?.subtasks
+        ? Object.fromEntries(
+            Object.keys(targetTask.subtasks).map((key) => [key, true]),
+          )
+        : undefined;
 
     setTodoItems((prev) =>
       prev.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task,
+        task.id === taskId
+          ? {
+              ...task,
+              status: newStatus,
+              ...(completedSubtasks ? { subtasks: completedSubtasks } : {}),
+            }
+          : task,
       ),
     );
 
     try {
-      console.log(`1 Moving task ${taskId} to status ${newStatus}`);
       await todoService.updateTodoItem(taskId, { status: newStatus });
-      console.log(`2 Successfully moved task ${taskId} to status ${newStatus}`);
+
+      // Update each subtask to done via API
+      if (completedSubtasks) {
+        await Promise.all(
+          Object.keys(completedSubtasks).map((name) =>
+            todoService.addOrUpdateSubtask(taskId, { name, done: true }),
+          ),
+        );
+      }
     } catch (error) {
       console.error("Error updating task status:", error);
       setTodoItems(backupTasks);
@@ -264,13 +352,13 @@ const TaskManagement: React.FC = () => {
         deadline: taskData.deadline,
         is_shopping: taskData.is_shopping,
         estimated_price: taskData.estimated_price,
-        assigned_to: taskData.assigned_to,
+        assigned_to: taskData.assigned_to_user?.id || undefined,
         category_id: (taskData as any).category_id,
         subtasks: taskData.subtasks || {},
         tet_config_id: activeConfigId,
         timeline_phase_id: activePhaseId,
       });
-      newTask = response as Task;
+      newTask = normalizeTask(response);
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error("Failed to create task. Please try again.");
@@ -456,11 +544,13 @@ const TaskManagement: React.FC = () => {
               />
             </div>
 
-            <div className="tet-view-options">
-              <button className="tet-view-btn active">
-                <LayoutGrid size={15} /> Board
-              </button>
-            </div>
+            <TaskFilter
+              categories={categories}
+              filters={taskFilters}
+              onFiltersChange={setTaskFilters}
+            />
+
+
 
             {/* Manage Timeline */}
             <div className="tet-filter-wrapper">
@@ -587,6 +677,7 @@ const TaskManagement: React.FC = () => {
         onClose={() => setSelectedTask(null)}
         onUpdateTask={handleUpdateTask}
         members={members}
+        categories={categories}
       />
 
       {/* Celebration particles when task dropped in Done */}

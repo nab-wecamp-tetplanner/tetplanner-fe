@@ -44,8 +44,8 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 18px;
+  gap: 10px;
+  padding: 14px 16px;
   border-radius: 14px;
   background: var(--bg-glass);
   backdrop-filter: blur(12px);
@@ -67,12 +67,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tet-card__top-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .tet-card__top-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* Tag */
@@ -116,17 +125,100 @@
   border-color: rgba(168, 162, 158, 0.25);
 }
 
-/* Priority */
-.tet-card__priority {
-  display: flex;
+/* ===== Status & Priority Badges ===== */
+.tet-card__badge {
+  display: inline-flex;
   align-items: center;
   gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* Status badges */
+.tet-status--todo {
+  color: #78716c;
+  background: rgba(168, 162, 158, 0.1);
+  border-color: rgba(168, 162, 158, 0.25);
+}
+
+.tet-status--progress {
+  color: #2563eb;
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.tet-status--done {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+.tet-status--cancel {
+  color: #78716c;
+  background: rgba(120, 113, 108, 0.08);
+  border-color: rgba(120, 113, 108, 0.2);
+  text-decoration: line-through;
+}
+
+/* Priority badges */
+.tet-pri--urgent {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.tet-pri--high {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.2);
+}
+
+.tet-pri--med {
+  color: #2563eb;
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+.tet-pri--low {
+  color: #78716c;
+  background: rgba(168, 162, 158, 0.06);
+  border-color: rgba(168, 162, 158, 0.15);
+}
+
+/* Shopping badge */
+.tet-badge--shopping {
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.15);
+}
+
+/* Overdue badge */
+.tet-badge--overdue {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+  border-color: rgba(220, 38, 38, 0.15);
+  font-weight: 600;
+}
+
+/* Priority bar (high/urgent emphasis) */
+.tet-card__priority-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
   font-weight: 600;
   color: #dc2626;
+  padding: 4px 8px;
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.12);
+  border-radius: 8px;
 }
 
-.tet-card__priority svg {
+.tet-card__priority-bar svg {
   fill: currentColor;
 }
 
@@ -162,18 +254,68 @@
   color: var(--text-heading);
   line-height: 1.45;
   margin: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.tet-card__title:hover {
+  color: var(--accent, #e11d48);
+}
+
+/* ===== Attribute Chips ===== */
+.tet-card__chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tet-card__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-glass);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.tet-card__chip--overdue {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+  border-color: rgba(220, 38, 38, 0.15);
+}
+
+.tet-card__chip--price {
+  color: var(--accent, #059669);
+  background: rgba(5, 150, 105, 0.06);
+  border-color: rgba(5, 150, 105, 0.15);
+  font-weight: 600;
 }
 
 /* ===== Assignee (Footer) ===== */
 .tet-card__assignee {
   display: flex;
   align-items: center;
+  gap: 6px;
   flex-shrink: 0;
 }
 
+.tet-card__assignee--none {
+  color: var(--text-subtle);
+}
+
+.tet-card__assignee--none svg {
+  opacity: 0.5;
+}
+
 .tet-card__assignee-avatar {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--bg-card);
@@ -184,6 +326,16 @@
 .tet-card:hover .tet-card__assignee-avatar {
   transform: scale(1.1);
   box-shadow: 0 2px 10px rgba(120, 113, 108, 0.2);
+}
+
+.tet-card__assignee-name {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ===== Progress ===== */
@@ -219,6 +371,10 @@
   background: linear-gradient(90deg, #059669, #34d399);
 }
 
+.tet-card__progress-fill--cancelled {
+  background: linear-gradient(90deg, #78716c, #a8a29e);
+}
+
 .tet-card__progress-text {
   font-size: 11px;
   font-weight: 600;
@@ -234,7 +390,136 @@
   margin-top: 2px;
 }
 
-/* Avatars */
+.tet-card__footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Detail button */
+.tet-card__detail-btn {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent, #e11d48);
+  background: transparent;
+  border: 1px solid var(--accent, rgba(225, 29, 72, 0.25));
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.tet-card:hover .tet-card__detail-btn {
+  opacity: 1;
+}
+
+.tet-card__detail-btn:hover {
+  background: rgba(225, 29, 72, 0.06);
+}
+
+/* Expand button */
+.tet-card__expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-subtle);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tet-card__expand-btn:hover {
+  background: var(--bg-glass);
+  color: var(--text-heading);
+  border-color: var(--border-hover);
+}
+
+/* ===== Expandable Section ===== */
+.tet-card__expand {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  animation: expandSlide 0.25s ease-out;
+}
+
+@keyframes expandSlide {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    max-height: 300px;
+    transform: translateY(0);
+  }
+}
+
+.tet-card__expand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tet-card__expand-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent, #e11d48);
+  background: rgba(225, 29, 72, 0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* ===== Subtask List ===== */
+.tet-card__subtask-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tet-card__subtask {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 3px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.tet-card__subtask:hover {
+  background: var(--bg-glass);
+}
+
+.tet-card__subtask svg {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}
+
+.tet-card__subtask--done {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.tet-card__subtask--done svg {
+  color: #059669;
+}
+
+/* Avatars (legacy support) */
 .tet-card__avatars {
   display: flex;
   align-items: center;
@@ -333,9 +618,4 @@
     opacity: 0;
     filter: blur(8px) brightness(1.5);
   }
-}
-
-/* Progress fill for cancelled */
-.tet-card__progress-fill--cancelled {
-  background: linear-gradient(90deg, #78716c, #a8a29e);
 }

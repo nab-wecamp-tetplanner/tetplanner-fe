@@ -85,7 +85,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
 
         setTitle('');
         setPriority('medium');
-        setcategory_id('General');
+        setcategory_id(categories.length > 0 ? categories[0].id : '');
         setDeadline('');
         setSubTasks({});    
         setIsShopping(false);
@@ -124,12 +124,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, status, on
                 <div className="assignee-picker">
                     {members.map(member => (
                         <button
-                            key={member.id}
+                            key={member.user_id}
                             type="button"
-                            className={`assignee-picker__item ${assignedTo === member.id ? 'assignee-picker__item--active' : ''}`}
-                            onClick={() => setAssignedTo(assignedTo === member.id ? '' : member.id)}
+                            className={`assignee-picker__item ${assignedTo === member.user_id ? 'assignee-picker__item--active' : ''}`}
+                            onClick={() => setAssignedTo(assignedTo === member.user_id ? '' : member.user_id)}
                             title={member.name}
                         >
+                            <script>console.log("Member:", member);</script>
                             <img src={member.avatar} alt={member.name} className="assignee-picker__avatar" />
                             <span className="assignee-picker__name">{member.name}</span>
                         </button>

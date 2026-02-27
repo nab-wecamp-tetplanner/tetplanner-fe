@@ -8,7 +8,7 @@ export const MOCK_INITIAL_TASKS: Task[] = [
         status: "pending",
         is_shopping: false,
         quantity: 1,
-        assigned_to: "user-bo", // Assigned to Dad
+        assigned_to_user: { id: "user-bo" }, // Assigned to Dad
         created_at: new Date().toISOString(),
         is_overdue: false,
         purchased: false
@@ -21,7 +21,7 @@ export const MOCK_INITIAL_TASKS: Task[] = [
         is_shopping: true,
         estimated_price: 500000,
         quantity: 1,
-        assigned_to: "user-me", // Assigned to Mom
+        assigned_to_user: { id: "user-me" }, // Assigned to Mom
         created_at: new Date().toISOString(),
         is_overdue: false,
         purchased: false
