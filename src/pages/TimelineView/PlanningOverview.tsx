@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertCircle,
   Calendar,
@@ -6,12 +6,15 @@ import {
   Clock,
   ListTodo,
 } from "lucide-react";
-import TimelineModule from "../Timeline";
+import TimelineModule from "./Timeline";
 import CalendarPage from "../Calendar/Calendar";
 import type { OverviewConfig } from "../../types/overview.types";
 import { useAppStore } from "../../stores/useAppStore";
 import apiClient from "../../services/apiClient";
-import type { TodoItem } from "../../types/todo.types";
+import type { TaskCreateRequest, TodoItem } from "../../types/todo.types";
+import type { CategoryResponse } from "../../types/categories.type";
+import { useLoading } from "../../contexts/LoadingContext";
+import { toast } from "react-toastify";
 
 // types.ts hoặc để trên đầu file
 export interface AppTask {
@@ -25,60 +28,219 @@ export interface AppTask {
   progress: number; // Dùng cho Timeline
 }
 
+interface StatProps {
+  total: number;
+  completed: number;
+  overdue: number;
+}
 export default function PlanningOverview() {
   const [activeView, setActiveView] = useState<"calendar" | "timeline">(
     "calendar",
   );
-  const {configId} = useAppStore();
+  const { configId } = useAppStore();
+  const { showLoading, hideLoading } = useLoading();
 
   // Dữ liệu mẫu tập trung
   const [tasksByPhase, setTasksByPhase] = useState<OverviewConfig>();
-
+  const [catergories, setCategories] = useState<CategoryResponse[]>([]);
+  const [stats, setStats] = useState<StatProps>({
+    total: 0,
+    completed: 0,
+    overdue: 0,
+  });
 
   // Hàm cập nhật task chung cho cả 2 component
-  const handleUpdateTask = async (id:string, updatedTask: TodoItem) => {
-    const newTask = await apiClient.todos.update(id , {
-      ... updatedTask
-    });
+  const handleUpdateTask = async (id: string, updatedTask: any) => {
+    try {
+      console.log("UPDATE TASK: ", updatedTask, id);
+      if (!configId) return;
+      showLoading();
+      const response = await apiClient.todos.update(id, updatedTask);
+      const savedTask = response.todo_item || response;
+
+      setTasksByPhase((prevData) => {
+        if (!prevData || !prevData.phases) return prevData;
+
+        const updatedPhases = prevData.phases.map((phase) => {
+          const isTargetPhase = phase.id === savedTask.timeline_phase.id;
+          const isTaskInPhase = phase.tasks.some((t) => t.id === id);
+
+          // Trường hợp 1: Task vẫn ở phase cũ (hoặc đây là phase đích)
+          if (isTargetPhase) {
+            if (isTaskInPhase) {
+              return {
+                ...phase,
+                tasks: phase.tasks.map((t) => (t.id === id ? savedTask : t)),
+              };
+            } else {
+              // Task từ phase khác chuyển đến -> Thêm vào cuối (vì trước đó nó không có vị trí ở đây)
+              return {
+                ...phase,
+                tasks: [...phase.tasks, savedTask],
+              };
+            }
+          }
+
+          // Trường hợp 2: Task không thuộc phase này sau khi update, nhưng trước đó thì có
+          // Nghĩa là task đã chuyển sang phase khác -> Xóa nó khỏi phase này
+          if (isTaskInPhase) {
+            return {
+              ...phase,
+              tasks: phase.tasks.filter((t) => t.id !== id),
+            };
+          }
+
+          // Trường hợp 3: Phase không liên quan
+          return phase;
+        });
+
+        return { ...prevData, phases: updatedPhases };
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Error in updating!");
+    } finally {
+      hideLoading();
+    }
   };
+
+  // Create tassk
+  const createTask = async (newTask: TaskCreateRequest) => {
+    try {
+      console.log("New task 1: ", newTask);
+      const savedTask: TodoItem = await apiClient.todos.create(newTask);
+      console.log("NEW TASSK: ", newTask);
+      setTasksByPhase((prevData) => {
+        if (!prevData || !prevData.phases) return prevData;
+
+        // add New task to selected phase
+        const updatedPhases = prevData.phases.map((phase) => {
+          if (phase.id === savedTask.timeline_phase.id) {
+            return {
+              ...phase,
+              tasks: [...(phase.tasks || []), savedTask],
+            };
+          }
+          return phase;
+        });
+
+        // return new state
+        return {
+          ...prevData,
+          phases: updatedPhases,
+        };
+      });
+    } catch (error) {
+      console.error("Lỗi khi tạo task:", error);
+      toast.error("Error in creating tassk");
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      if (!id) return;
+      // showLoading();
+      await apiClient.todos.delete(id);
+
+      setTasksByPhase((prevData) => {
+        if (!prevData || !prevData.phases) return prevData;
+
+        const updatedPhases = prevData.phases.map((phase) => {
+          // 1. Xóa task khỏi phase hiện tại (dù nó có ở đây hay không)
+          const filteredTasks = phase.tasks.filter((t) => t.id !== id);
+          return {
+            ...phase,
+            tasks: filteredTasks,
+          };
+        });
+
+        return { ...prevData, phases: updatedPhases };
+      });
+    } catch (error) {
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const fetchCategories = async () => {
+    if (!configId) return;
+    try {
+      // showLoading();
+      const categoriesData =
+        await apiClient.categories.getByTetConfig(configId);
+      setCategories(categoriesData);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const featchData = async () => {
+    if (!configId) return {};
+
+    const [configInfo, budgetSumamry, phases] = await Promise.all([
+      apiClient.tetConfigs.getConfigById(configId),
+      apiClient.tetConfigs.getBudgetSummary(configId),
+      apiClient.timelinePhases.getByConfigId(configId),
+    ]);
+
+    const fullPhaseData = await Promise.all(
+      phases.map(async (phase) => {
+        const tasks = await apiClient.todos.getAll({
+          tetConfigId: configId,
+          timelinePhaseId: phase.id,
+        });
+
+        return {
+          ...phase,
+          tet_config: {
+            id: configId,
+          },
+          tasks: tasks,
+        };
+      }),
+    );
+
+    const data: OverviewConfig = {
+      ...configInfo,
+      config_summary: budgetSumamry,
+      phases: fullPhaseData,
+    };
+
+    console.log(`Full overview data: `, data);
+    setTasksByPhase(data);
+  };
+
+  const calculateTaskStats = () => {
+    if (!tasksByPhase) return;
+    const statsData = tasksByPhase.phases.reduce(
+      (acc, phase) => {
+        const tasks = phase.tasks || []; // Đề phòng tasks bị undefined
+
+        acc.total += tasks.length;
+        acc.completed += tasks.filter(
+          (task) => task.status === "completed",
+        ).length;
+        acc.overdue += tasks.filter((task) => task.is_overdue).length;
+
+        return acc;
+      },
+      { total: 0, completed: 0, overdue: 0 },
+    );
+    setStats(statsData);
+  };
+
+  useEffect(() => {
+    calculateTaskStats();
+  }, [tasksByPhase]);
 
   // Fetch data
   useEffect(() => {
     if (!configId) return;
-
-    const featchData = async () => {
-      const [configInfo, budgetSumamry, phases] = await Promise.all([
-        apiClient.tetConfigs.getConfigById(configId),
-        apiClient.tetConfigs.getBudgetSummary(configId),
-        apiClient.timelinePhases.getByConfigId(configId)
-      ])
-      
-      const fullPhaseData = await Promise.all(
-        phases.map(async (phase) => {
-          const tasks = await apiClient.todos.getAll({
-            tetConfigId: configId,
-            timelinePhaseId: phase.id
-          })
-
-          return {
-            ... phase,
-            tasks: tasks
-          }
-        })
-      )
-
-      const data : OverviewConfig = {
-        ...configInfo,
-        config_summary: budgetSumamry,
-        phases: fullPhaseData
-      }
-      
-      console.log(`Full overview data: `, data)
-      setTasksByPhase(data);
-    }
-
     featchData();
-  }, [configId])
+    fetchCategories();
+  }, [configId]);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -96,7 +258,9 @@ export default function PlanningOverview() {
                   <p className="text-xs text-muted-foreground font-medium">
                     Done
                   </p>
-                  <p className="text-xl font-bold text-planner-green">85%</p>
+                  <p className="text-xl font-bold text-planner-green">
+                    {stats.completed}
+                  </p>
                 </div>
               </div>
 
@@ -108,7 +272,9 @@ export default function PlanningOverview() {
                   <p className="text-xs text-muted-foreground font-medium">
                     Overdue
                   </p>
-                  <p className="text-xl font-bold text-planner-pink">03</p>
+                  <p className="text-xl font-bold text-planner-pink">
+                    {stats.overdue}
+                  </p>
                 </div>
               </div>
 
@@ -121,17 +287,17 @@ export default function PlanningOverview() {
                     Total Tasks
                   </p>
                   <p className="text-xl font-bold text-planner-blue">
-                    {tasksByPhase?.phases.reduce((acc, curr) => (acc + curr.tasks.length), 0)}
+                    {stats.total}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex bg-muted/50 p-1.5 rounded-2xl border border-border shadow-sm w-fit">
+          <div className=" flex bg-muted/50 p-1.5 rounded-2xl border border-border shadow-sm">
             <button
               onClick={() => setActiveView("calendar")}
-              className={`flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-xl transition-all ${
+              className={`h-full w-full flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-xl transition-all ${
                 activeView === "calendar"
                   ? "bg-background text-planner-blue shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -156,13 +322,19 @@ export default function PlanningOverview() {
         <div className="transition-all duration-500 ease-in-out">
           {activeView === "calendar" && !!tasksByPhase ? (
             <CalendarPage
-              tasks={tasksByPhase}
+              overviewConfig={tasksByPhase}
+              categories={catergories}
               setTasks={setTasksByPhase}
               onUpdateTask={handleUpdateTask}
+              onCreateTask={createTask}
+              onDeleteTask={handleDeleteTask}
             />
           ) : (
             <TimelineModule
-              tasks={tasksByPhase}
+              overviewConfig={tasksByPhase}
+              categories={catergories}
+              onCreateTask={createTask}
+              onDeleteTask={handleDeleteTask}
               setTasks={setTasksByPhase}
               onUpdateTask={handleUpdateTask}
             />

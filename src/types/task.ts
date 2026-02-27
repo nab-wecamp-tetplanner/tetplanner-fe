@@ -13,12 +13,12 @@ export interface Task {
     estimated_price?: number;
     quantity: number;
     purchased: boolean;
-    assigned_to?: string;
+    assigned_to_user?: { id: string } | null;
     created_at: string;
     deleted_at?: string;
     tet_config_id?: string;
     timeline_phase_id?: string;
-    category_id?: string;
+    category_id?: string;   
     subtasks?: Record<string, boolean>;
 }
 
@@ -51,6 +51,7 @@ export interface Member {
     id: string;
     name: string;
     avatar: string;
+    user_id: string;
 }
 
 export interface ManagePhasesModalProps {

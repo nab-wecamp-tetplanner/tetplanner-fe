@@ -6,14 +6,14 @@ export interface TodoItem {
   id: string;
   title: string;
   priority: "low" | "medium" | "high" | "urgent";
-  status: "pending" | "in_progress" | "completed"| "cancelled";
+  status: "pending" | "in_progress" | "completed" | "cancelled";
   deadline: string;
   is_overdue: boolean;
   is_shopping: boolean;
   estimated_price?: number;
   quantity?: number;
   purchased: boolean;
-  assigned_to?: string;
+  assigned_to_user: { id: string } | null;
   created_at: string;
   deleted_at?: string;
   tet_config: BaseReference;
@@ -21,4 +21,18 @@ export interface TodoItem {
   category: BaseReference;
   done_percentage?: number;
   subtasks?: Record<string, boolean>;
+}
+
+export interface TaskCreateRequest {
+  title: string;
+  priority: "low" | "medium" | "high" | "urgent";
+  status: "pending" | "in_progress" | "completed" | "cancelled";
+  deadline: string;
+  is_shopping: boolean;
+  estimated_price?: number;
+  quantity?: number;
+  assigned_to?: string;
+  tet_config_id: string;
+  timeline_phase_id: string;
+  category_id: string;
 }

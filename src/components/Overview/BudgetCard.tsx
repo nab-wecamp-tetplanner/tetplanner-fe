@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { Edit3, Trash2 } from "lucide-react";
 
 type BudgetCardProps = {
   id: string; 
@@ -27,32 +27,14 @@ export default function BudgetCard({
   const isWarning = progress > SAFE_PERCENTAGE;
 
   return (
-    <div className="p-5 bg-white rounded-2xl shadow-md border border-slate-50 w-full group">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 flex items-center justify-center bg-white shadow-sm border border-slate-100 rounded-md text-md">
-            {icon}
-          </div>
-          <h3 className="font-bold text-md text-slate-800">{title}</h3>
+    <div className="p-5 bg-white rounded-[2.5rem] shadow-sm border border-slate-200/60 group transition-all hover:shadow-md">
+    <div className="flex justify-between items-start mb-2">
+      <div className="flex items-center gap-2">
+        <div className="w-12 h-12 flex items-center justify-center bg-slate-50 rounded-2xl text-xl shadow-inner">
+          {icon}
         </div>
-        
-        <button 
-          onClick={() => onDelete(id)}
-          className="opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-red-500 transition-all"
-          title="Delete Category"
-        >
-          <Trash2 size={18} />
-        </button>
-      </div>
-
-      <div className="flex justify-between items-center mb-4">
-        <button 
-          onClick={() => onUpdate(id)}
-          className="text-[11px] px-3 py-1.5 bg-slate-100 text-slate-500 font-bold uppercase rounded hover:bg-slate-900 hover:text-white transition-all"
-        >
-          Update Budget
-        </button>
-        <div
+        <h3 className="font-bold text-lg text-slate-800">{title}</h3>
+         <div
           className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${
             isWarning 
               ? "text-rose-500 bg-rose-50 border-rose-100" 
@@ -61,6 +43,29 @@ export default function BudgetCard({
         >
           {isWarning ? "Warning" : "Safe"}
         </div>
+      </div>
+
+      <div className="flex flex-row gap-3">
+      <button 
+          onClick={() => onUpdate(id)}
+          className="text-[11px] px-3 py-1.5 bg-slate-100 text-slate-500 font-bold uppercase rounded  hover:text-green-400 transition-all"
+        >
+          <Edit3 className="w-4 h-4" />
+        </button>
+        <button 
+          onClick={() => onDelete(id)}
+          className="group-hover:opacity-100 p-2 text-slate-300 hover:text-red-500 transition-all"
+          title="Delete Category"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+         
+      </div>
+
+      <div className="flex justify-between items-center mb-4">
+       
+       
       </div>
 
       <div className="space-y-2">

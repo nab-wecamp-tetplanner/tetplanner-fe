@@ -1,809 +1,582 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  ShoppingCart,
-  Gift,
-  Sparkles,
-  Package,
-  Search,
-  Calendar,
-  Edit2,
-  Trash2,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-  X,
-} from "lucide-react";
-import { ProgressRing } from "../components/ProgressRing";
-import type {
-  ShoppingItem,
-  ShoppingCategory,
-  Budget,
-  CategorySummary,
-  CustomCategory,
-} from "../types/shopping.types";
+import  { useState, useEffect, useMemo, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, FolderPlus, ChevronDown, Check, LayoutGrid } from "lucide-react";
 
-// ==========================================
-// CONSTANTS
-// ==========================================
+import { BudgetOverview } from "../components/finance/BudgetOverview";
+import { CategoryCards } from "../components/finance/CategoryCards";
+import { ShoppingList } from "../components/finance/ShoppingList";
+import { AddItemModal } from "../components/finance/AddItemModal";
+import { AddCategoryModal } from "../components/finance/AddCategoryModal";
+import { AddPhaseModal } from "../components/finance/AddPhaseModal";
+import { TimelinePhasesSection } from "../components/finance/TimelinePhasesSection";
+import { DEFAULT_CATEGORIES } from "../constants/finance";
+import financeApi from "../services/financeApi";
+import apiClient from "../services/apiClient";
+import { SuccessModal } from "../components/finance/SuccessModal";
+import { DeleteConfirmationModal } from "../components/finance/DeleteConfirmationModal";
 
-const DEFAULT_CATEGORIES: CustomCategory[] = [
-  {
-    id: "food",
-    name: "Food",
-    icon: "ShoppingCart",
-    color: "planner-blue",
-    isDefault: true,
-  },
-  {
-    id: "gift",
-    name: "Gift",
-    icon: "Gift",
-    color: "planner-pink",
-    isDefault: true,
-  },
-  {
-    id: "decoration",
-    name: "Decoration",
-    icon: "Sparkles",
-    color: "planner-purple",
-    isDefault: true,
-  },
-  {
-    id: "other",
-    name: "Other",
-    icon: "Package",
-    color: "planner-green",
-    isDefault: true,
-  },
-];
+import type { ShoppingItem, Budget } from "../types/shopping.types";
+import type { Timeline } from "../types/timeline.types";
+import type { Category } from "../types/dashboard.types";
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  ShoppingCart,
-  Gift,
-  Sparkles,
-  Package,
-  TrendingUp,
-  Calendar,
-  CheckCircle2,
-  Clock,
-};
+// --- Component PlanSelector ---
+const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const selectedPlan = configs.find((c: any) => c.id === selectedId);
 
-const COLOR_CONFIG: Record<
-  string,
-  {
-    tokenColor: string;
-    tokenBg: string;
-    tokenBorder: string;
-    iconBg: string;
-  }
-> = {
-  "planner-blue": {
-    tokenColor: "text-planner-blue",
-    tokenBg: "bg-planner-blue-light",
-    tokenBorder: "border-planner-blue/20",
-    iconBg: "bg-planner-blue",
-  },
-  "planner-pink": {
-    tokenColor: "text-planner-pink",
-    tokenBg: "bg-planner-pink-light",
-    tokenBorder: "border-planner-pink/20",
-    iconBg: "bg-planner-pink",
-  },
-  "planner-purple": {
-    tokenColor: "text-planner-purple",
-    tokenBg: "bg-planner-purple-light",
-    tokenBorder: "border-planner-purple/20",
-    iconBg: "bg-planner-purple",
-  },
-  "planner-green": {
-    tokenColor: "text-planner-green",
-    tokenBg: "bg-planner-green-light",
-    tokenBorder: "border-planner-green/20",
-    iconBg: "bg-planner-green",
-  },
-  "planner-amber": {
-    tokenColor: "text-planner-amber",
-    tokenBg: "bg-planner-amber-light",
-    tokenBorder: "border-planner-amber/20",
-    iconBg: "bg-planner-amber",
-  },
-};
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      )
+        setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-const INITIAL_BUDGET: Budget = { total: 5000000, used: 0 };
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-3 px-4 py-2 bg-card border border-border rounded-2xl shadow-sm hover:bg-muted/50 transition-all"
+      >
+        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <LayoutGrid className="w-4 h-4" />
+        </div>
+        <div className="text-left hidden sm:block">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground leading-none mb-1">
+            Kế hoạch
+          </p>
+          <p className="text-sm font-bold text-foreground leading-none">
+            {selectedPlan
+              ? `${selectedPlan.name} (${selectedPlan.year})`
+              : "Chọn kế hoạch"}
+          </p>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-muted-foreground ml-2 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
 
-const MOCK_ITEMS: ShoppingItem[] = [
-  {
-    id: "1",
-    name: "Sticky rice cake",
-    category: "Food",
-    price: 150000,
-    quantity: 4,
-    dueDate: "2026-02-15",
-    status: "pending",
-    notes: "Need to pre-order",
-  },
-  {
-    id: "2",
-    name: "Candied fruit",
-    category: "Food",
-    price: 200000,
-    quantity: 2,
-    dueDate: "2026-02-14",
-    status: "pending",
-  },
-  {
-    id: "3",
-    name: "Apricot blossom",
-    category: "Decoration",
-    price: 500000,
-    quantity: 1,
-    dueDate: "2026-02-10",
-    status: "purchased",
-  },
-  {
-    id: "4",
-    name: "Red envelopes",
-    category: "Gift",
-    price: 50000,
-    quantity: 10,
-    dueDate: "2026-02-16",
-    status: "pending",
-  },
-  {
-    id: "5",
-    name: "Cookies & candies",
-    category: "Food",
-    price: 300000,
-    quantity: 3,
-    dueDate: "2026-02-13",
-    status: "pending",
-  },
-  {
-    id: "6",
-    name: "Gift basket",
-    category: "Gift",
-    price: 400000,
-    quantity: 2,
-    dueDate: "2026-02-12",
-    status: "pending",
-  },
-  {
-    id: "7",
-    name: "Couplets",
-    category: "Decoration",
-    price: 100000,
-    quantity: 3,
-    dueDate: "2026-02-11",
-    status: "purchased",
-  },
-];
-
-// ==========================================
-// UTILITIES
-// ==========================================
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-    amount,
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-2xl shadow-xl z-50 py-2 animate-in fade-in zoom-in duration-200">
+          {configs.map((config: any) => (
+            <button
+              key={config.id}
+              onClick={() => {
+                onSelect(config.id);
+                setIsOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted transition-colors text-left"
+            >
+              <span
+                className={`text-sm ${selectedId === config.id ? "font-bold text-primary" : "text-foreground"}`}
+              >
+                {config.name} ({config.year})
+              </span>
+              {selectedId === config.id && (
+                <Check className="w-4 h-4 text-primary" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
+};
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
+export default function FinanceDashboard() {
+  const queryClient = useQueryClient();
+
+  // State
+  const [tetConfigId, setTetConfigId] = useState<string | null>(
+    localStorage.getItem("tetConfigId"),
+  );
+  const [allConfigs, setAllConfigs] = useState<any[]>([]);
+  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
+  
+  // Áp dụng chuẩn Category mới
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  
+  const [phases, setPhases] = useState<Timeline[]>([]);
+  const [defaultPhaseId, setDefaultPhaseId] = useState<string | null>(null);
+
+  // Modals state
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
+  const [editingPhase, setEditingPhase] = useState<Timeline | null>(null);
+  const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
+  
+  // Chỉnh sửa state editingCategory dùng chuẩn mới
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  
+  const [successModal, setSuccessModal] = useState<{
+    isOpen: boolean;
+    message: string;
+  }>({
+    isOpen: false,
+    message: "",
+  });
+  
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
   });
 
-// ==========================================
-// SUB-COMPONENTS
-// ==========================================
+  // 1. Lấy danh sách kế hoạch
+  useQuery({
+    queryKey: ["allTetConfigs"],
+    queryFn: async () => {
+      const data = await financeApi.getTetConfigs();
+      if (data && data.length > 0) {
+        setAllConfigs(data);
+        if (!tetConfigId) {
+          const firstId = data[0].id;
+          setTetConfigId(firstId);
+          localStorage.setItem("tetConfigId", firstId);
+        }
+      }
+      return data;
+    },
+  });
 
-// interface PageHeaderProps {
-//   onAddCategory: () => void;
-// }
+  // 2. Tải dữ liệu chính
+  useEffect(() => {
+    if (!tetConfigId) return;
 
-// const PageHeader: React.FC<PageHeaderProps> = ({ onAddCategory }) => (
-//   <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8">
-//     <div>
-//       <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
-//         Budget Planner
-//       </p>
-//       <h1 className="text-4xl font-serif text-foreground mb-1">
-//         Shopping Manager
-//       </h1>
-//       <p className="text-muted-foreground text-sm">
-//         Track expenses and manage Tet shopping budget
-//       </p>
-//     </div>
-//     <div className="mt-4 md:mt-0 flex items-center gap-2">
-//       <button
-//         onClick={onAddCategory}
-//         className="inline-flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
-//       >
-//         <FolderPlus className="w-4 h-4" />
-//         Add category
-//       </button>
-//       <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm">
-//         <Plus className="w-4 h-4" />
-//         Add item
-//       </button>
-//     </div>
-//   </div>
-// );
+    const fetchData = async () => {
+      try {
+        const configId = tetConfigId;
+        const [budgetData, itemsData, categoriesData, phasesData] =
+          await Promise.all([
+            financeApi.getBudget(configId),
+            financeApi.getItems(configId),
+            financeApi.getCategories(configId),
+            apiClient.get<Timeline[]>(
+              `/timeline-phases/tet-config/${configId}`,
+            ),
+          ]);
 
-interface BudgetOverviewProps {
-  budget: Budget;
-  itemCount: number;
-  purchasedCount: number;
-}
+        setBudget({ total: budgetData.total, used: budgetData.used });
+        setItems(itemsData);
+        setPhases(phasesData || []);
+        if (phasesData && phasesData.length > 0)
+          setDefaultPhaseId(phasesData[0].id);
 
-const BudgetOverview: React.FC<BudgetOverviewProps> = ({
-  budget,
-  itemCount,
-  purchasedCount,
-}) => {
-  const percentage = (budget.used / budget.total) * 100;
-  const remaining = budget.total - budget.used;
+        // Map data từ API về chuẩn Category mới
+        if (categoriesData && categoriesData.length > 0) {
+          const mappedCategories: Category[] = categoriesData.map((cat: any) => ({
+             id: cat.id,
+             name: cat.name,
+             icon: cat.icon || "Package",
+             colorClass: `text-${cat.color || "planner-blue"}`,
+             bgClass: `bg-${cat.color || "planner-blue"}/20`,
+             percent: "0%",
+             is_system: cat.is_system || false,
+             transactions: [] 
+          }));
+          setCategories(mappedCategories);
+        }
 
-  return (
-    <div
-      className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8"
-      style={{ animationDelay: "0.1s" }}
-    >
-      {/* Main budget card */}
-      <div className="lg:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
-        <div className="flex items-start gap-6">
-          <ProgressRing percentage={percentage} />
-          <div className="flex-1 min-w-0">
-            <h2 className="font-serif text-xl text-foreground mb-4">
-              Budget overview
-            </h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-xs text-muted-foreground font-medium mb-1">
-                  Total budget
-                </p>
-                <p className="text-lg font-bold text-foreground">
-                  {formatCurrency(budget.total)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground font-medium mb-1">
-                  Spent
-                </p>
-                <p className="text-lg font-bold text-primary">
-                  {formatCurrency(budget.used)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground font-medium mb-1">
-                  Remaining
-                </p>
-                <p className="text-lg font-bold text-accent">
-                  {formatCurrency(remaining)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      } catch (err) {
+        console.error("Failed to fetch finance data:", err);
+      }
+    };
+    fetchData();
+  }, [tetConfigId]);
 
-      {/* Quick stats */}
-      <div className="flex flex-col gap-4">
-        <div className="flex-1 bg-card rounded-2xl border border-border p-5 shadow-sm flex items-center gap-4">
-          <div className="h-11 w-11 rounded-xl bg-planner-amber-light flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-planner-amber" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">
-              Total items
-            </p>
-            <p className="text-2xl font-bold text-foreground">{itemCount}</p>
-          </div>
-        </div>
-        <div className="flex-1 bg-card rounded-2xl border border-border p-5 shadow-sm flex items-center gap-4">
-          <div className="h-11 w-11 rounded-xl bg-planner-green-light flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5 text-planner-green" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">
-              Purchased
-            </p>
-            <p className="text-2xl font-bold text-foreground">
-              {purchasedCount}/{itemCount}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+  // --- HANDLERS ---
 
-interface CategoryCardsProps {
-  categorySummaries: CategorySummary[];
-  categories: CustomCategory[];
-}
+  const handlePlanChange = (id: string) => {
+    setTetConfigId(id);
+    localStorage.setItem("tetConfigId", id);
+    queryClient.invalidateQueries({ queryKey: ["allTetConfigs"] });
+  };
 
-const CategoryCards: React.FC<CategoryCardsProps> = ({
-  categorySummaries,
-  categories,
-}) => (
-  <div
-    className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8"
-    style={{ animationDelay: "0.2s" }}
-  >
-    {categorySummaries.map((summary) => {
-      const category = categories.find((c) => c.name === summary.category);
-      if (!category) return null;
-
-      const Icon = ICON_MAP[category.icon] || Package;
-      const config = COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
-
-      return (
-        <div
-          key={summary.category}
-          className="group bg-card rounded-2xl border border-border p-5 hover:shadow-md transition-all duration-200 cursor-pointer"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div
-              className={`h-10 w-10 rounded-xl ${config.iconBg} flex items-center justify-center group-hover:scale-105 transition-transform`}
-            >
-              <Icon className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span
-              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${config.tokenBg} ${config.tokenColor} border ${config.tokenBorder}`}
-            >
-              {summary.itemCount}
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground font-medium mb-0.5">
-            {summary.category}
-          </p>
-          <p className={`text-xl font-bold ${config.tokenColor}`}>
-            {formatCurrency(summary.total)}
-          </p>
-        </div>
-      );
-    })}
-  </div>
-);
-
-interface ShoppingListProps {
-  items: ShoppingItem[];
-  categories: CustomCategory[];
-}
-
-const ShoppingList: React.FC<ShoppingListProps> = ({ items, categories }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState<
-    ShoppingCategory | "All"
-  >("All");
-
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      const matchesSearch = item.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        filterCategory === "All" || item.category === filterCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [items, searchTerm, filterCategory]);
-
-  return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="p-5 border-b border-border">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="font-serif text-xl text-foreground">
-              Shopping list
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {filteredItems.length} items
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 w-44"
-              />
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
-            </div>
-            <select
-              value={filterCategory}
-              onChange={(e) =>
-                setFilterCategory(e.target.value as ShoppingCategory | "All")
-              }
-              className="px-3 py-2 border border-border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring/30"
-            >
-              <option value="All">All</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Items */}
-      <div className="divide-y divide-border">
-        {filteredItems.map((item) => {
-          const category = categories.find((c) => c.name === item.category);
-          const Icon = category ? ICON_MAP[category.icon] || Package : Package;
-          const config = category
-            ? COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"]
-            : COLOR_CONFIG["planner-green"];
-          const total = item.price * item.quantity;
-          const isPurchased = item.status === "purchased";
-
-          return (
-            <div
-              key={item.id}
-              className={`flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors ${isPurchased ? "opacity-70" : ""}`}
-            >
-              {/* Status indicator */}
-              <button
-                className={`shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${isPurchased ? "bg-accent border-accent" : "border-border hover:border-primary"}`}
-              >
-                {isPurchased && (
-                  <CheckCircle2 className="w-3 h-3 text-accent-foreground" />
-                )}
-              </button>
-
-              {/* Category icon */}
-              <div
-                className={`shrink-0 h-9 w-9 rounded-lg ${config.tokenBg} flex items-center justify-center`}
-              >
-                <Icon className={`w-4 h-4 ${config.tokenColor}`} />
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`font-medium text-foreground text-sm ${isPurchased ? "line-through" : ""}`}
-                  >
-                    {item.name}
-                  </span>
-                  <span
-                    className={`text-xs px-1.5 py-0.5 rounded ${config.tokenBg} ${config.tokenColor} font-medium`}
-                  >
-                    {item.category}
-                  </span>
-                </div>
-                {item.notes && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {item.notes}
-                  </p>
-                )}
-              </div>
-
-              {/* Quantity */}
-              <span className="text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded-lg shrink-0">
-                x{item.quantity}
-              </span>
-
-              {/* Due date */}
-              <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                <Calendar className="w-3.5 h-3.5" />
-                {formatDate(item.dueDate)}
-              </div>
-
-              {/* Status badge */}
-              <div className="hidden md:block shrink-0">
-                {isPurchased ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-accent bg-planner-green-light px-2 py-1 rounded-lg">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Purchased
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-planner-amber bg-planner-amber-light px-2 py-1 rounded-lg">
-                    <Clock className="w-3 h-3" />
-                    Pending
-                  </span>
-                )}
-              </div>
-
-              {/* Total */}
-              <span className="font-bold text-sm text-foreground shrink-0 w-28 text-right">
-                {formatCurrency(total)}
-              </span>
-
-              {/* Actions */}
-              <div className="flex items-center gap-0.5 shrink-0">
-                <button className="p-1.5 hover:bg-muted rounded-lg transition-colors">
-                  <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
-                <button className="p-1.5 hover:bg-destructive/10 rounded-lg transition-colors">
-                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-
-        {filteredItems.length === 0 && (
-          <div className="text-center py-16">
-            <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-foreground font-medium mb-1">No items found</p>
-            <p className="text-muted-foreground text-sm">
-              Try changing your filter
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// ADD CATEGORY MODAL
-// ==========================================
-
-interface AddCategoryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAdd: (category: Omit<CustomCategory, "id" | "isDefault">) => void;
-}
-
-const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
-  isOpen,
-  onClose,
-  onAdd,
-}) => {
-  const [name, setName] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState("Package");
-  const [selectedColor, setSelectedColor] = useState("planner-blue");
-
-  const availableIcons = [
-    { name: "ShoppingCart", icon: ShoppingCart },
-    { name: "Gift", icon: Gift },
-    { name: "Sparkles", icon: Sparkles },
-    { name: "Package", icon: Package },
-    { name: "TrendingUp", icon: TrendingUp },
-    { name: "Calendar", icon: Calendar },
-    { name: "CheckCircle2", icon: CheckCircle2 },
-    { name: "Clock", icon: Clock },
-  ];
-
-  const availableColors = [
-    { name: "Blue", value: "planner-blue" },
-    { name: "Pink", value: "planner-pink" },
-    { name: "Purple", value: "planner-purple" },
-    { name: "Green", value: "planner-green" },
-    { name: "Amber", value: "planner-amber" },
-  ];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim()) {
-      onAdd({
-        name: name.trim(),
-        icon: selectedIcon,
-        color: selectedColor,
-      });
-      setName("");
-      setSelectedIcon("Package");
-      setSelectedColor("planner-blue");
-      onClose();
+  const handleEditTotalBudget = async () => {
+    if (!tetConfigId) return;
+    const newBudgetStr = prompt(
+      "Nhập ngân sách tổng mới (VND):",
+      budget.total.toString(),
+    );
+    if (newBudgetStr && !isNaN(Number(newBudgetStr))) {
+      try {
+        await financeApi.updateBudget(tetConfigId, Number(newBudgetStr));
+        setBudget((prev) => ({ ...prev, total: Number(newBudgetStr) }));
+        setSuccessModal({
+          isOpen: true,
+          message: "Cập nhật ngân sách thành công!",
+        });
+      } catch (err) {
+        alert("Lỗi cập nhật ngân sách.");
+      }
     }
   };
 
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-2xl border border-border shadow-xl max-w-md w-full">
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <h2 className="font-serif text-xl text-foreground">
-            Add new category
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-muted rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
-          {/* Category Name */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Category name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Electronics, Clothing"
-              className="w-full px-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
-              autoFocus
-            />
-          </div>
-
-          {/* Icon Selection */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Choose icon
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {availableIcons.map((iconItem) => {
-                const Icon = iconItem.icon;
-                const isSelected = selectedIcon === iconItem.name;
-                const config = COLOR_CONFIG[selectedColor];
-                return (
-                  <button
-                    key={iconItem.name}
-                    type="button"
-                    onClick={() => setSelectedIcon(iconItem.name)}
-                    className={`p-3 rounded-xl border-2 transition-all ${
-                      isSelected
-                        ? `${config.iconBg} border-${selectedColor}`
-                        : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <Icon
-                      className={`w-6 h-6 mx-auto ${isSelected ? "text-primary-foreground" : "text-muted-foreground"}`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Color Selection */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Choose color
-            </label>
-            <div className="flex gap-2">
-              {availableColors.map((colorItem) => {
-                const config = COLOR_CONFIG[colorItem.value];
-                const isSelected = selectedColor === colorItem.value;
-                return (
-                  <button
-                    key={colorItem.value}
-                    type="button"
-                    onClick={() => setSelectedColor(colorItem.value)}
-                    className={`flex-1 p-3 rounded-xl border-2 transition-all ${config.tokenBg} ${
-                      isSelected
-                        ? `border-${colorItem.value} ring-2 ring-${colorItem.value}/30`
-                        : "border-transparent"
-                    }`}
-                  >
-                    <div
-                      className={`h-6 w-6 rounded-full ${config.iconBg} mx-auto`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Preview */}
-          <div className="bg-muted rounded-xl p-4">
-            <p className="text-xs text-muted-foreground mb-2">Preview</p>
-            <div className="flex items-center gap-3">
-              <div
-                className={`h-10 w-10 rounded-xl ${COLOR_CONFIG[selectedColor].iconBg} flex items-center justify-center`}
-              >
-                {React.createElement(
-                  ICON_MAP[selectedIcon] || Package,
-                  { className: "w-5 h-5 text-primary-foreground" }
-                )}
-              </div>
-              <span className="font-medium text-foreground">
-                {name || "Category name"}
-              </span>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-muted transition-colors font-medium text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!name.trim()}
-              className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity font-medium text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Add category
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// MAIN
-// ==========================================
-
-export default function FinanceDashboard() {
-  const [items] = useState<ShoppingItem[]>(MOCK_ITEMS);
-  const [categories, setCategories] = useState<CustomCategory[]>(() => {
-    const saved = localStorage.getItem("shopping-categories");
-    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
-  });
-  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
-
-  // Save categories to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("shopping-categories", JSON.stringify(categories));
-  }, [categories]);
-
-  const budgetUsed = useMemo(
-    () => items.reduce((total, item) => total + item.price * item.quantity, 0),
-    [items],
-  );
-
-  const budget: Budget = useMemo(
-    () => ({ total: INITIAL_BUDGET.total, used: budgetUsed }),
-    [budgetUsed],
-  );
-
-  const purchasedCount = useMemo(
-    () => items.filter((i) => i.status === "purchased").length,
-    [items],
-  );
-
-  const categorySummaries = useMemo<CategorySummary[]>(() => {
-    return categories.map((category) => {
-      const categoryItems = items.filter((item) => item.category === category.name);
-      const total = categoryItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0,
+  const handleAddItem = async (newItem: Omit<ShoppingItem, "id">) => {
+    if (!tetConfigId || !defaultPhaseId) return;
+    try {
+      const created = await financeApi.addItem(
+        tetConfigId,
+        newItem,
+        newItem.timelinePhaseId || defaultPhaseId,
       );
-      const config = COLOR_CONFIG[category.color] || COLOR_CONFIG["planner-green"];
+      setItems((prev) => [...prev, created]);
+      setSuccessModal({
+        isOpen: true,
+        message: "Đã thêm món đồ vào danh sách mua sắm!",
+      });
+      const budgetData = await financeApi.getBudget(tetConfigId);
+      setBudget({ total: budgetData.total, used: budgetData.used });
+      setIsAddItemModalOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditItem = async (updatedItem: Omit<ShoppingItem, "id">) => {
+    if (!tetConfigId || !editingItem) return;
+    try {
+      await financeApi.updateItem(
+        editingItem.id,
+        updatedItem,
+        tetConfigId,
+        updatedItem.timelinePhaseId, // Fix lỗi TimelineId
+      );
+      const [budgetData, itemsData] = await Promise.all([
+        financeApi.getBudget(tetConfigId),
+        financeApi.getItems(tetConfigId),
+      ]);
+      setBudget({ total: budgetData.total, used: budgetData.used });
+      setItems(itemsData);
+      setEditingItem(null);
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật món đồ thành công!",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleStatus = async (itemId: string, currentStatus: string) => {
+    if (!tetConfigId) return;
+    try {
+      const currentItem = items.find((i) => i.id === itemId);
+      if (!currentItem) return;
+      const res = await financeApi.toggleItemStatus(
+        itemId,
+        currentStatus !== "purchased",
+        tetConfigId,
+        currentItem,
+      );
+      setItems((prev) => prev.map((i) => (i.id === itemId ? res.item : i)));
+      setBudget({ total: res.budget.total, used: res.budget.used });
+      setSuccessModal({
+        isOpen: true,
+        message: "Đã cập nhật trạng thái món đồ!",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddCategory = async (newCat: any) => {
+    if (!tetConfigId) return;
+    try {
+      const created = await financeApi.addCategory(tetConfigId, newCat);
+      
+      const newCategory: Category = {
+        ...created,
+        percent: "0%", 
+        colorClass: `text-${newCat.color || "planner-blue"}`, 
+        bgClass: `bg-${newCat.color || "planner-blue"}/20`,
+        is_system: false,
+        transactions: [], 
+      };
+
+      setCategories((prev) => [...prev, newCategory]);
+      setSuccessModal({
+        isOpen: true,
+        message: "Đã thêm danh mục mới!",
+      });
+      setIsAddCategoryModalOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditCategory = async (category: Category, updates: any) => {
+    try {
+      await financeApi.updateCategory(category.id, {
+        name: updates.name,
+        color: updates.color,
+        allocated_budget: updates.allocated,
+      });
+      setCategories((prev) =>
+        prev.map((c) => (c.id === category.id ? { 
+          ...c, 
+          name: updates.name,
+          colorClass: `text-${updates.color}`,
+          bgClass: `bg-${updates.color}/20` 
+        } : c)),
+      );
+      setEditingCategory(null);
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật danh mục thành công!",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddPhase = async (data: any) => {
+    if (!tetConfigId) return;
+    try {
+      const res = await apiClient.post("/timeline-phases", {
+        ...data,
+        tet_config_id: tetConfigId,
+      });
+      setPhases((prev) => [...prev, res as Timeline]); // Fix lỗi ép kiểu
+      setSuccessModal({ isOpen: true, message: "Đã thêm giai đoạn mới!" });
+      setIsAddPhaseModalOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdatePhase = async (data: any) => {
+    if (!editingPhase) return;
+    try {
+      const res = await apiClient.patch(
+        `/timeline-phases/${editingPhase.id}`,
+        data,
+      );
+      setPhases((prev) =>
+        prev.map((p) => (p.id === editingPhase.id ? (res as Timeline) : p)),
+      );
+      setEditingPhase(null);
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật giai đoạn thành công!",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteItem = (itemId: string) => {
+    setDeleteModal({
+      isOpen: true,
+      title: "Delete Item",
+      message:
+        "Are you sure you want to remove this item from your shopping list?",
+      onConfirm: async () => {
+        try {
+          await financeApi.deleteItem(itemId);
+          setItems((prev) => prev.filter((i) => i.id !== itemId));
+          const budgetData = await financeApi.getBudget(tetConfigId!);
+          setBudget({ total: budgetData.total, used: budgetData.used });
+          setSuccessModal({
+            isOpen: true,
+            message: "Item deleted successfully!",
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    });
+  };
+
+  const handleDeleteCategory = (id: string) => {
+    const cat = categories.find((c) => c.id === id);
+    setDeleteModal({
+      isOpen: true,
+      title: "Delete Category",
+      message: `Are you sure you want to delete "${cat?.name}"? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          await financeApi.deleteCategory(id);
+          setCategories((prev) => prev.filter((c) => c.id !== id));
+          setSuccessModal({ isOpen: true, message: "Category deleted!" });
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    });
+  };
+
+  const handleDeletePhase = (id: string) => {
+    const phase = phases.find((p) => p.id === id);
+    setDeleteModal({
+      isOpen: true,
+      title: "Delete Phase",
+      message: `Delete phase "${phase?.name}"? Items linked to this phase might lose their timing info.`,
+      onConfirm: async () => {
+        try {
+          await apiClient.delete(`/timeline-phases/${id}`);
+          setPhases((prev) => prev.filter((p) => p.id !== id));
+          setSuccessModal({ isOpen: true, message: "Phase deleted!" });
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    });
+  };
+
+  const categorySummaries = useMemo(() => {
+    return categories.map((cat) => {
+      const catItems = items.filter((i) => i.category === cat.id);
+      const purchasedTotal = catItems
+        .filter((i) => i.status === "purchased")
+        .reduce((s, i) => s + i.price * i.quantity, 0);
+
       return {
-        category: category.name,
-        total,
-        itemCount: categoryItems.length,
-        icon: category.icon,
-        color: config.tokenColor,
-        bgColor: config.tokenBg,
+        category: cat.name,
+        total: purchasedTotal, 
+        itemCount: catItems.length, 
+        icon: cat.icon,
+        color: cat.colorClass, // Fix thuộc tính color -> colorClass
+        bgColor: cat.bgClass, // Fix thuộc tính bgColor -> bgClass
       };
     });
   }, [items, categories]);
 
-  const handleAddCategory = (newCategory: Omit<CustomCategory, "id" | "isDefault">) => {
-    const category: CustomCategory = {
-      ...newCategory,
-      id: `custom-${Date.now()}`,
-      isDefault: false,
-    };
-    setCategories((prev) => [...prev, category]);
-  };
+  const purchasedCount = items.filter((i) => i.status === "purchased").length;
 
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
+          <div>
+            <p className="text-sm font-medium text-primary mb-1 uppercase">
+              Budget Planner
+            </p>
+            <h1 className="text-4xl font-serif text-foreground mb-1">
+              Shopping Manager
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Quản lý chi tiêu Tết
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <PlanSelector
+              configs={allConfigs}
+              selectedId={tetConfigId}
+              onSelect={handlePlanChange}
+            />
+            <button
+              onClick={() => setIsAddCategoryModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-xl hover:bg-muted text-sm font-medium"
+            >
+              <FolderPlus className="w-4 h-4" /> Category
+            </button>
+            <button
+              onClick={() => setIsAddItemModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:opacity-90 text-sm font-medium shadow-sm"
+            >
+              <Plus className="w-4 h-4" /> Add Item
+            </button>
+          </div>
+        </div>
+
         <BudgetOverview
           budget={budget}
           itemCount={items.length}
           purchasedCount={purchasedCount}
+          onEditBudget={handleEditTotalBudget}
         />
-        <CategoryCards categorySummaries={categorySummaries} categories={categories} />
-        <ShoppingList items={items} categories={categories} />
+
+        <TimelinePhasesSection
+          phases={phases}
+          onAddPhase={() => setIsAddPhaseModalOpen(true)}
+          onEditPhase={(p : any) => {
+            setEditingPhase(p);
+            setIsAddPhaseModalOpen(true);
+          }}
+          onDeletePhase={handleDeletePhase}
+        />
+
+        <CategoryCards
+          categorySummaries={categorySummaries}
+          categories={categories as any} // Ép kiểu tạm thời nếu components con chưa kịp đổi Type
+          onDeleteCategory={handleDeleteCategory}
+          onEditCategory={setEditingCategory as any}
+        />
+
+        <ShoppingList
+          items={items}
+          categories={categories as any} // Ép kiểu tạm thời nếu components con chưa kịp đổi Type
+          onAddItem={() => setIsAddItemModalOpen(true)}
+          onEditItem={setEditingItem}
+          onToggleStatus={handleToggleStatus}
+          onDeleteItem={handleDeleteItem}
+        />
+
+        <DeleteConfirmationModal
+          isOpen={deleteModal.isOpen}
+          title={deleteModal.title}
+          message={deleteModal.message}
+          onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+          onConfirm={deleteModal.onConfirm}
+        />
       </main>
 
+      {/* MODALS */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        message={successModal.message}
+      />
+
+      <AddItemModal
+        isOpen={isAddItemModalOpen || !!editingItem}
+        onClose={() => {
+          setIsAddItemModalOpen(false);
+          setEditingItem(null);
+        }}
+        onAdd={editingItem ? handleEditItem : handleAddItem}
+        categories={categories as any} // Ép kiểu tạm thời
+        phases={phases}
+        defaultPhaseId={defaultPhaseId}
+        initialData={editingItem || undefined}
+      />
+
       <AddCategoryModal
-        isOpen={isAddCategoryModalOpen}
-        onClose={() => setIsAddCategoryModalOpen(false)}
-        onAdd={handleAddCategory}
+        isOpen={isAddCategoryModalOpen || !!editingCategory}
+        onClose={() => {
+          setIsAddCategoryModalOpen(false);
+          setEditingCategory(null);
+        }}
+        onAdd={(data) =>
+          editingCategory
+            ? handleEditCategory(editingCategory, data)
+            : handleAddCategory(data)
+        }
+        initialData={editingCategory as any} // Ép kiểu tạm thời
+      />
+
+      <AddPhaseModal
+        isOpen={isAddPhaseModalOpen || !!editingPhase}
+        onClose={() => {
+          setIsAddPhaseModalOpen(false);
+          setEditingPhase(null);
+        }}
+        onSave={editingPhase ? handleUpdatePhase : handleAddPhase}
+        editingPhase={editingPhase}
       />
     </div>
   );

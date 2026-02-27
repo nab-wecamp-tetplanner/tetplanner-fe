@@ -16,6 +16,9 @@ export interface OverviewConfig{
         start_date: string,
         end_date: string,
         display_order: number;
+        tet_config: {
+            id: string
+        },
         tasks: TodoItem[]
     }[],
     

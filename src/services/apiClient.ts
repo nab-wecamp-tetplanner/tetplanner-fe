@@ -1,9 +1,9 @@
 import api from "./api";
 import type { UserPermissions } from "../types/auth.types";
 import { type AxiosRequestConfig } from "axios";
-import type { TodoItem } from "../types/todo.types";
+import type { TaskCreateRequest, TodoItem } from "../types/todo.types";
 import type { TetConfig } from "../types/tetConfig.types";
-import type { Category } from "../types/categories.type";
+import type { CategoryResponse } from "../types/categories.type";
 import type { User } from "../types/auth.types";
 import type { Transaction } from "../types/transaction.types";
 import type { Timeline } from "../types/timeline.types";
@@ -66,7 +66,7 @@ export class ApiClient {
       name?: string;
       image_url?: string;
     }): ApiResponse<User> => {
-      return this.put("/users/me", data);
+      return this.patch("/users/me", data);
     },
     uploadAvatar: (file: File): ApiResponse<User> => {
       const formData = new FormData();
@@ -130,15 +130,15 @@ export class ApiClient {
       icon: string;
       allocated_budget: number;
       tet_config_id: string;
-    }): ApiResponse<Category> => {
+    }): ApiResponse<CategoryResponse> => {
       return this.post("/categories", data);
     },
 
-    getByTetConfig: (tetConfigId: string): ApiResponse<Category[]> => {
+    getByTetConfig: (tetConfigId: string): ApiResponse<CategoryResponse[]> => {
       return this.get("/categories?tet_config_id=" + tetConfigId);
     },
 
-    getById: (id: string): ApiResponse<Category> => {
+    getById: (id: string): ApiResponse<CategoryResponse> => {
       return this.get("/categories/" + id);
     },
 
@@ -149,7 +149,7 @@ export class ApiClient {
         icon?: string;
         allocated_budget?: number;
       },
-    ): ApiResponse<Category> => {
+    ): ApiResponse<CategoryResponse> => {
       return this.patch("/categories/" + id, data);
     },
 
@@ -160,19 +160,7 @@ export class ApiClient {
 
   // To-do endpoints
   todos = {
-    create: (data: {
-      title: string;
-      priority: "low" | "medium" | "high" | "urgent";
-      status: "pending" | "in_progress" | "completed" | "cancelled";
-      deadline: string;
-      is_shopping: boolean;
-      estimated_price?: number;
-      quantity?: number;
-      assigned_to?: string;
-      tet_config_id: string;
-      timeline_phase_id: string;
-      category_id: string;
-    }): ApiResponse<any> => {
+    create: (data: TaskCreateRequest): ApiResponse<TodoItem> => {
       return this.post("/todo-items", data);
     },
 
@@ -243,6 +231,24 @@ export class ApiClient {
       return this.get("/timeline-phases/tet-config/" + id);
     }
   };
+
+  // Notification endpoints
+  notifications = {
+    getAll: (): ApiResponse<any> => {
+      return this.get("/notifications");
+    },
+
+    markAsRead: (id: string): ApiResponse<any> => {
+      return this.patch("/notifications/" + id + "/read", {});
+    },
+
+    markAllRead: (): ApiResponse<any> => {
+      return this.patch("/notifications/read-all", {});
+    },
+  };
+
+  // Recent tasks endpoints
+  
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     // AxiosResponse.data bây giờ là BackendResponse<T>

@@ -13,14 +13,14 @@ const columnHelper = createColumnHelper<Transaction>();
 
 export default function TransactionsTableWidget() {
   const [data, setData] = useState<Transaction[]>([]);
-  const {showLoading, hideLoading} = useLoading();
+  const { showLoading, hideLoading } = useLoading();
   const configId = useAppStore((state) => state.configId);
   useEffect(() => {
     console.log("Configs in TransactionsTableWidget:", configId);
 
     const fetchTransactions = async () => {
       try {
-        if(!configId) return;
+        if (!configId) return;
         showLoading();
         const result = await apiClient.transactions.getByConfig(configId);
         const allTransactions = result.flat();
@@ -33,8 +33,8 @@ export default function TransactionsTableWidget() {
       }
     };
     if (configId) {
-        fetchTransactions();
-      }
+      fetchTransactions();
+    }
   }, [configId]);
 
   const columns = useMemo(
@@ -109,12 +109,12 @@ export default function TransactionsTableWidget() {
   });
 
   return (
-    <div className="p-4  rounded-3xl">
-      <div className="flex justify-between items-center px-4 mb-6">
-        <h2 className="font-bold text-slate-800 text-md">
+    <div className="p-6 bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm">
+      <div className="flex justify-between items-center  mb-6">
+        <h2 className="font-bold text-lg text-slate-800">
           Recent Transactions
         </h2>
-        <button className="text-xs text-[#5B63D3] font-semibold hover:underline tracking-tight">
+        <button className="text-xs text-planner-purple font-semibold hover:underline">
           View All
         </button>
       </div>
@@ -123,7 +123,7 @@ export default function TransactionsTableWidget() {
         {table.getRowModel().rows.map((row) => (
           <div
             key={row.id}
-            className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 rounded-2xl transition-all border-l-4 border-transparent hover:border-[#5B63D3]"
+            className="flex items-center justify-between px-4 py-3 hover:bg-slate-50 rounded-2xl transition-all border-l-4 border-transparent "
           >
             {row.getVisibleCells().map((cell, idx) => (
               <div

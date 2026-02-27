@@ -1,0 +1,18 @@
+
+/* ========================================================
+   CÁC RULE CSS MỚI ĐỂ XỬ LÝ TEXT CHO THANH BAR 
+   ======================================================== */
+
+/* 1. Xử lý text cho Task Đã hoàn thành (Chìm đi, gạch ngang chữ) */
+/* Tìm group chứa thanh màu xám #9ca3af để style cho text bên trong nó */
+.gantt .bar-wrapper:has(rect[fill="#9ca3af" i]) .bar-label,
+.gantt .bar-wrapper:has(rect[fill="#e5e7eb" i]) .bar-label {
+  text-decoration: line-through !important;
+  font-style: italic !important;
+  fill: #4b5563 !important; /* Đổi màu chữ thành xám đậm để dễ đọc trên nền xám nhạt */
+}
+
+/* 2. Xử lý text cho Task Quá hạn (Overdue) */
+.gantt .bar-wrapper:has(rect[fill="#ef4444" i]) .bar-label {
+  font-weight: 800 !important; /* Làm đậm chữ hơn một chút để báo động */
+}

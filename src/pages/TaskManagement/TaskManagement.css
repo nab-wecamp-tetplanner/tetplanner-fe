@@ -502,7 +502,7 @@
 /* ===== Progress Section ===== */
 .tet-progress-section {
   position: relative;
-  z-index: 2;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 16px;
