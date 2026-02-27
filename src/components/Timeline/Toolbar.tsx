@@ -5,8 +5,6 @@ export type ViewType = "day" | "week" | "month";
 interface TaskToolbarProps {
   activeView: ViewType;
   onViewChange: (view: ViewType) => void;
-  searchTerm: string;
-  onSearchChange: (term: string) => void;
   onAddClick: () => void;
 }
 

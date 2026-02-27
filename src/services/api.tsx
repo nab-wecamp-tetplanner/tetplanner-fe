@@ -58,17 +58,18 @@ api.interceptors.response.use(
                     // Gọi hàm logout() hoặc redirect về /login
                     break;
                 case 403:
-                    toast.error("Bạn không có quyền thực hiện thao tác này!");
+                    toast.error(serverMessage);
                     break;
                 case 404:
-                    toast.info("Không tìm thấy dữ liệu yêu cầu.");
+                    toast.info(serverMessage);
                     break;
                 case 500:
-                    toast.error("Lỗi hệ thống! Vui lòng thử lại sau.");
+                    toast.error(serverMessage);
                     break;
                 default:
                     toast.error(serverMessage);
             }
+            console.log(serverMessage);
         }
 
         if (isAuthEndpoint || originalRequest._retry) {
