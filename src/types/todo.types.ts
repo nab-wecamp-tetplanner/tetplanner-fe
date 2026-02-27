@@ -15,9 +15,10 @@ export interface TodoItem {
   purchased: boolean;
   assigned_to_user: { id: string } | null;
   created_at: string;
-  deleted_at: string | null;
+  deleted_at?: string;
   tet_config: BaseReference;
   timeline_phase: BaseReference;
   category: BaseReference;
+  done_percentage?: number;
   subtasks?: Record<string, boolean>;
 }

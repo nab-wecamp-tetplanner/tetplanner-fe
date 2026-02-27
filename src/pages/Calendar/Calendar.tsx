@@ -1,361 +1,4 @@
-// import { useState, useMemo, useRef } from "react";
-// import FullCalendar from "@fullcalendar/react";
-// import dayGridPlugin from "@fullcalendar/daygrid";
-// import interactionPlugin from "@fullcalendar/interaction";
-// import { format } from "date-fns";
-// import { Plus, Trash2, X, Edit3, CheckCircle2 } from "lucide-react";
-// import {
-//   useReactTable,
-//   getCoreRowModel,
-//   flexRender,
-//   createColumnHelper,
-// } from "@tanstack/react-table";
-// import timeGridPlugin from "@fullcalendar/timegrid"; 
-// import listPlugin from "@fullcalendar/list"; 
-
-// const MOCK_TASKS: Task[] = [
-//   {
-//     id: "1",
-//     title: "Design UI Dashboard",
-//     date: "2026-02-12",
-//     priority: "High",
-//     project: "Work",
-//     status: "todo",
-//   },
-//   {
-//     id: "2",
-//     title: "Go shopping",
-//     date: "2026-02-12",
-//     priority: "Normal",
-//     project: "Home",
-//     status: "done",
-//   },
-//   {
-//     id: "3",
-//     title: "Family reunion",
-//     date: "2026-02-28",
-//     priority: "High",
-//     project: "Family",
-//     status: "todo",
-//   },
-//   {
-//     id: "4",
-//     title: "Documentation update",
-//     date: "2026-02-15",
-//     priority: "Low",
-//     project: "Docs",
-//     status: "todo",
-//   },
-// ];
-
-// interface Task {
-//   id: string;
-//   title: string;
-//   date: string;
-//   priority: "High" | "Normal" | "Low";
-//   project: string;
-//   status: "todo" | "done";
-// }
-
-// const columnHelper = createColumnHelper<Task>();
-
-// export default function CalendarPage() {
-//   const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
-//   const [selectedDate, setSelectedDate] = useState(new Date());
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [editingTask, setEditingTask] = useState<Task | null>(null);
-
-//   const calendarRef = useRef<FullCalendar>(null); 
-//   const handleDateClick = (arg: any) => {
-//     setSelectedDate(new Date(arg.dateStr));
-//     const allDays = document.querySelectorAll(".fc-daygrid-day");
-//     allDays.forEach((el) => el.classList.remove("selected-day-active"));
-//     arg.dayEl.classList.add("selected-day-active");
-//   };
-
-//   // --- FULLCALENDAR CONFIG ---
-//   // Add and update tasks
-//   const handleSaveTask = (e: React.SubmitEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-//     const formData = new FormData(e.currentTarget);
-//     const title = formData.get("title") as string;
-//     const priority = formData.get("priority") as any;
-//     const project = formData.get("project") as string;
-
-//     if (editingTask) {
-//       setTasks((prev) =>
-//         prev.map((t) =>
-//           t.id === editingTask.id ? { ...t, title, priority, project } : t,
-//         ),
-//       );
-//     } else {
-//       const newTask: Task = {
-//         id: Date.now().toString(),
-//         title,
-//         date: format(selectedDate, "yyyy-MM-dd"),
-//         priority,
-//         project,
-//         status: "todo",
-//       };
-//       setTasks((prev) => [...prev, newTask]);
-//     }
-//     closeModal();
-//   };
-
-//   const deleteTask = (id: string) => {
-//     if (confirm("Do you want to delete this task?")) {
-//       setTasks((prev) => prev.filter((t) => t.id !== id));
-//     }
-//   };
-
-//   const toggleStatus = (id: string) => {
-//     setTasks((prev) =>
-//       prev.map((t) =>
-//         t.id === id
-//           ? { ...t, status: t.status === "done" ? "todo" : "done" }
-//           : t,
-//       ),
-//     );
-//   };
-
-//   const openEditModal = (task: Task) => {
-//     setEditingTask(task);
-//     setIsModalOpen(true);
-//   };
-
-//   const closeModal = () => {
-//     setIsModalOpen(false);
-//     setEditingTask(null);
-//   };
-
-//   // --- TANSTACK TABLE CONFIG ---
-//   const filteredTasks = useMemo(() => {
-//     return tasks.filter((t) => t.date === format(selectedDate, "yyyy-MM-dd"));
-//   }, [tasks, selectedDate]);
-
-//   const columns = [
-//     columnHelper.display({
-//       id: "status",
-//       cell: (info) => (
-//         <button onClick={() => toggleStatus(info.row.original.id)}>
-//           <CheckCircle2
-//             size={18}
-//             className={
-//               info.row.original.status === "done"
-//                 ? "text-emerald-500"
-//                 : "text-slate-200"
-//             }
-//           />
-//         </button>
-//       ),
-//     }),
-//     columnHelper.accessor("title", {
-//       header: "work",
-//       cell: (info) => (
-//         <div
-//           className={`flex flex-col ${info.row.original.status === "done" ? "line-through opacity-50" : ""}`}
-//         >
-//           <span className="font-semibold text-slate-700 text-sm">
-//             {info.getValue()}
-//           </span>
-//           <span className="text-[10px] text-slate-400 font-bold uppercase">
-//             {info.row.original.project}
-//           </span>
-//         </div>
-//       ),
-//     }),
-//     columnHelper.display({
-//       id: "actions",
-//       cell: (info) => (
-//         <div className="flex gap-2">
-//           <button
-//             onClick={() => openEditModal(info.row.original)}
-//             className="text-slate-400 hover:text-blue-500"
-//           >
-//             <Edit3 size={14} />
-//           </button>
-//           <button
-//             onClick={() => deleteTask(info.row.original.id)}
-//             className="text-slate-400 hover:text-red-500"
-//           >
-//             <Trash2 size={14} />
-//           </button>
-//         </div>
-//       ),
-//     }),
-//   ];
-
-//   const table = useReactTable({
-//     data: filteredTasks,
-//     columns,
-//     getCoreRowModel: getCoreRowModel(),
-//   });
-
-//   // --- FULLCALENDAR EVENTS ---
-//   const calendarEvents = useMemo(() => {
-//     return tasks.map((t) => ({
-//       id: t.id,
-//       title: t.title,
-//       start: t.date,
-//       color:
-//         t.status === "done"
-//           ? "#cbd5e1"
-//           : t.priority === "High"
-//             ? "#ef4444"
-//             : "#3b82f6",
-//     }));
-//   }, [tasks]);
-
-//   return (
-//     <div className="bg-white min-h-screen w-full">
-//       <main className="grid grid-cols-12 min-h-[85vh]">
-//         {/* Calendar (Left column) */}
-//         <div className="col-span-8 p-6 border-r border-slate-100">
-//           <FullCalendar
-//             ref={calendarRef}
-//             plugins={[
-//               dayGridPlugin,
-//               timeGridPlugin,
-//               listPlugin,
-//               interactionPlugin,
-//             ]}
-//             initialView="dayGridMonth"
-//             // Toolbar configuration
-//             headerToolbar={{
-//               left: "title",
-//               center: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
-//               right: "prev,next today",
-//             }}
-//             buttonText={{
-//               month: "Month",
-//               week: "Week",
-//               day: "Day",
-//               list: "List",
-//             }}
-//             events={calendarEvents}
-//             dateClick={handleDateClick}
-//             height="80%"
-//             nowIndicator={true} 
-//             editable={true}
-//             selectable={true}
-//             dayMaxEvents={3}
-//           />
-//           <div className="mt-8 grid grid-cols-3 gap-4 border-t border-slate-200 pt-6">
-//             <div className="p-4 bg-blue-50 rounded-2xl">
-//               <p className="text-xs text-blue-600 font-bold uppercase">
-//                 Done
-//               </p>
-//               <p className="text-2xl font-black text-blue-900">85%</p>
-//             </div>
-//             <div className="p-4 bg-red-50 rounded-2xl">
-//               <p className="text-xs text-red-600 font-bold uppercase">
-//                 Overdue
-//               </p>
-//               <p className="text-2xl font-black text-red-900">03</p>
-//             </div>
-//             <div className="p-4 bg-emerald-50 rounded-2xl">
-//               <p className="text-xs text-emerald-600 font-bold uppercase">
-//                 Total Tasks
-//               </p>
-//               <p className="text-2xl font-black text-emerald-900">42</p>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* TASK LIST (RIGHT COLUMN) */}
-//         <div className="col-span-4 p-8 bg-slate-50/50">
-//           <div className="flex justify-between items-center mb-6">
-//             <h2 className="text-xl font-bold">
-//               Tasks: {format(selectedDate, "dd/MM")}
-//             </h2>
-//             <button
-//               onClick={() => setIsModalOpen(true)}
-//               className="p-2 bg-slate-900 text-white rounded-lg"
-//             >
-//               <Plus size={20} />
-//             </button>
-//           </div>
-
-//           <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-//             <table className="w-full">
-//               <tbody>
-//                 {table.getRowModel().rows.map((row) => (
-//                   <tr
-//                     key={row.id}
-//                     className="border-b last:border-0 border-slate-50"
-//                   >
-//                     {row.getVisibleCells().map((cell) => (
-//                       <td key={cell.id} className="p-4">
-//                         {flexRender(
-//                           cell.column.columnDef.cell,
-//                           cell.getContext(),
-//                         )}
-//                       </td>
-//                     ))}
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//             {filteredTasks.length === 0 && (
-//               <p className="p-10 text-center text-slate-400 italic">
-//                 No task
-//               </p>
-//             )}
-//           </div>
-//         </div>
-//       </main>
-
-//       {/* MODAL FOR ADD AND UPDATE*/}
-//       {isModalOpen && (
-//         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-//           <form
-//             onSubmit={handleSaveTask}
-//             className="bg-white p-6 rounded-2xl w-96 shadow-xl"
-//           >
-//             <div className="flex justify-between mb-4">
-//               <h3 className="font-bold text-md">
-//                 {editingTask ? "Edit task" : "Add a new task"}
-//               </h3>
-//               <button type="button" onClick={closeModal}>
-//                 <X />
-//               </button>
-//             </div>
-//             <div className="space-y-4">
-//               <input
-//                 name="title"
-//                 defaultValue={editingTask?.title}
-//                 placeholder="Task name"
-//                 className="w-full p-3 border rounded-xl"
-//                 required
-//               />
-//               <input
-//                 name="project"
-//                 defaultValue={editingTask?.project}
-//                 placeholder="Project"
-//                 className="w-full p-3 border rounded-xl"
-//               />
-//               <select
-//                 name="priority"
-//                 defaultValue={editingTask?.priority || "Normal"}
-//                 className="w-full p-3 border rounded-xl"
-//               >
-//                 <option value="High">High</option>
-//                 <option value="Normal">Normal</option>
-//                 <option value="Low">Low</option>
-//               </select>
-//               <button className="w-full py-3 bg-slate-900 text-white rounded-xl font-semibold">
-//                 Save changes
-//               </button>
-//             </div>
-//           </form>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, type Dispatch, type SetStateAction } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -363,45 +6,99 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import { format } from "date-fns";
 import { 
-  Plus, 
   Trash2, 
   X, 
   Edit3, 
   CheckCircle2, 
   Clock, 
-  AlertCircle,
-  ListTodo,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
 } from "lucide-react";
-import "./calendar.css"
-// ==========================================
-// TYPES & MOCK DATA
-// ==========================================
-interface Task {
-  id: string;
-  title: string;
-  date: string;
-  priority: "High" | "Normal" | "Low";
-  project: string;
-  status: "todo" | "done";
+import "./calendar.css";
+import TaskToolbar, { type ViewType } from "../../components/Timeline/Toolbar";
+import type { OverviewConfig } from "../../types/overview.types";
+import type { TodoItem } from "../../types/todo.types";
+import apiClient from "../../services/apiClient";
+
+// Định nghĩa một type mở rộng nhẹ để lưu thêm tên Phase dùng cho giao diện
+interface FlattenedTodo extends TodoItem {
+  phaseName: string;
 }
 
-const MOCK_TASKS: Task[] = [
-  { id: "1", title: "Design UI Dashboard", date: "2026-02-12", priority: "High", project: "Work", status: "todo" },
-  { id: "2", title: "Go shopping", date: "2026-02-12", priority: "Normal", project: "Home", status: "done" },
-  { id: "3", title: "Family reunion", date: "2026-02-28", priority: "High", project: "Family", status: "todo" },
-  { id: "4", title: "Documentation update", date: "2026-02-15", priority: "Low", project: "Docs", status: "todo" },
-];
-
-export default function CalendarPage() {
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+export default function CalendarPage({
+  tasks: overviewConfig,
+  onUpdateTask
+}: {
+  tasks?: OverviewConfig;
+  setTasks: Dispatch<SetStateAction<OverviewConfig | undefined>>;
+  onUpdateTask: (id: string, updatedTask: TodoItem) => Promise<void>;
+}) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] = useState<FlattenedTodo | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentView, setCurrentView] = useState<ViewType>("month");
 
   const calendarRef = useRef<FullCalendar>(null);
 
-  // --- HANDLERS ---
+  // ==========================================
+  // DATA FLATTENING & COMPUTATION
+  // ==========================================
+
+  // 1. Trải phẳng dữ liệu từ OverviewConfig
+  const allTasks = useMemo(() => {
+    if (!overviewConfig || !overviewConfig.phases) return [];
+    
+    const flat: FlattenedTodo[] = [];
+    overviewConfig.phases.forEach((phase) => {
+      phase.tasks?.forEach((todo) => {
+        flat.push({
+          ...todo,
+          phaseName: phase.name, // Đính kèm tên phase để hiển thị
+        });
+      });
+    });
+    return flat;
+  }, [overviewConfig]);
+
+  // 2. Lọc theo thanh tìm kiếm
+  const searchedTasks = useMemo(() => {
+    if (!searchTerm) return allTasks;
+    return allTasks.filter(t => t.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [allTasks, searchTerm]);
+
+  // 3. Lọc theo ngày được click (Bên cột phải)
+  const filteredTasks = useMemo(() => {
+    return searchedTasks.filter((t) => {
+      if (!t.deadline) return false;
+      const taskDateStr = format(new Date(t.deadline), "yyyy-MM-dd");
+      const selectedDateStr = format(new Date(selectedDate), "yyyy-MM-dd");
+      return taskDateStr === selectedDateStr;
+    });
+  }, [searchedTasks, selectedDate]);
+
+  // 4. Map dữ liệu vào giao diện của FullCalendar
+  const calendarEvents = useMemo(() => {
+    return searchedTasks.map((t) => {
+      let color = "#3b82f6"; // planner-blue (Mặc định)
+      if (t.status === "completed") color = "#10b981"; // planner-green
+      else if (t.priority === "high" || t.priority === "urgent") color = "#ec4899"; // planner-pink
+
+      return {
+        id: t.id,
+        title: t.title,
+        start: t.deadline, // Dùng deadline làm mốc hiển thị trên lịch
+        color: color,
+        extendedProps: { raw: t } // Giữ lại data gốc nếu cần dùng cho các sự kiện click
+      };
+    });
+  }, [searchedTasks]);
+
+  // ==========================================
+  // HANDLERS
+  // ==========================================
+
   const handleDateClick = (arg: any) => {
     setSelectedDate(new Date(arg.dateStr));
     const allDays = document.querySelectorAll(".fc-daygrid-day");
@@ -409,44 +106,70 @@ export default function CalendarPage() {
     arg.dayEl.classList.add("selected-day-active");
   };
 
-  const handleSaveTask = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleViewChange = (view: ViewType) => {
+    setCurrentView(view);
+    const calendarApi = calendarRef.current?.getApi();
+    if (calendarApi) {
+      const fcView = view === "day" ? "timeGridDay" : view === "week" ? "timeGridWeek" : "dayGridMonth";
+      calendarApi.changeView(fcView);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+    try {
+      await apiClient.todos.delete(id);
+      // Refresh lại data (giả sử setTasks sẽ trigger re-render từ component cha)
+      // Nếu không, bạn cần gọi lại hàm fetch data ở đây
+      alert("Deleted successfully!");
+    } catch (error) {
+      console.error("Delete failed", error);
+    }
+  };
+
+  // Nối thẳng hàm Check/Uncheck vào API thật
+  const toggleStatus = async (task: FlattenedTodo) => {
+    const newStatus = task.status === "completed" ? "pending" : "completed";
+    const updatedTask: TodoItem = { ...task, status: newStatus };
+    
+    // Gọi hàm update prop truyền từ cha xuống
+    await onUpdateTask(task.id, updatedTask);
+  };
+
+
+  const handleSaveTask = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     const formData = new FormData(e.currentTarget);
-    const title = formData.get("title") as string;
-    const priority = formData.get("priority") as Task["priority"];
-    const project = formData.get("project") as string;
+    const payload = {
+      title: formData.get("title") as string,
+      priority: formData.get("priority") as any,
+      status: formData.get("status") as any,
+      deadline: formData.get("deadline") as string,
+      timeline_phase_id: formData.get("timeline_phase_id") as string,
+      tet_config_id: overviewConfig?.id || "", 
+      category_id: editingTask?.category.id || overviewConfig?.phases[0]?.tasks?.[0]?.category.id || "", 
+      is_shopping: editingTask?.is_shopping || false,
+    };
 
-    if (editingTask) {
-      setTasks((prev) =>
-        prev.map((t) => (t.id === editingTask.id ? { ...t, title, priority, project } : t))
-      );
-    } else {
-      const newTask: Task = {
-        id: Date.now().toString(),
-        title,
-        date: format(selectedDate, "yyyy-MM-dd"),
-        priority,
-        project,
-        status: "todo",
-      };
-      setTasks((prev) => [...prev, newTask]);
+    try {
+      if (editingTask) {
+        await apiClient.todos.update(editingTask.id, payload);
+      } else {
+        await apiClient.todos.create(payload as any);
+      }
+      closeModal();
+      // Reload lại data hoặc gọi callback refresh
+      window.location.reload(); 
+    } catch (error) {
+      console.error("Submit failed", error);
+    } finally {
+      setIsSubmitting(false);
     }
-    closeModal();
   };
 
-  const deleteTask = (id: string) => {
-    if (confirm("Do you want to delete this task?")) {
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-    }
-  };
-
-  const toggleStatus = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: t.status === "done" ? "todo" : "done" } : t))
-    );
-  };
-
-  const openEditModal = (task: Task) => {
+  const openEditModal = (task: FlattenedTodo) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
@@ -456,37 +179,30 @@ export default function CalendarPage() {
     setEditingTask(null);
   };
 
-  // --- DATA COMPUTATION ---
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((t) => t.date === format(selectedDate, "yyyy-MM-dd"));
-  }, [tasks, selectedDate]);
+  // ==========================================
+  // RENDER
+  // ==========================================
 
-  const calendarEvents = useMemo(() => {
-    return tasks.map((t) => {
-      // Tương tự bảng màu của planner
-      let color = "#3b82f6"; // planner-blue
-      if (t.status === "done") color = "#10b981"; // planner-green
-      else if (t.priority === "High") color = "#ec4899"; // planner-pink
-
-      return {
-        id: t.id,
-        title: t.title,
-        start: t.date,
-        color: color,
-      };
-    });
-  }, [tasks]);
+  if (!overviewConfig) {
+    return <div className="p-10 text-center text-muted-foreground">Loading calendar...</div>;
+  }
 
   return (
-    <div className=" bg-background">
-      <main className="mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-6">
+    <div className="bg-background min-h-screen">
+      <main className="mx-auto px-4 sm:px-6 lg:px-8 ">
         
+        <TaskToolbar 
+          activeView={currentView}
+          onViewChange={handleViewChange}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onAddClick={() => setIsModalOpen(true)}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* ================= CỘT TRÁI: CALENDAR VÀ QUICK STATS (8 Cột) ================= */}
+          {/* CỘT TRÁI: CALENDAR */}
           <div className="lg:col-span-8 flex flex-col gap-6">
-            
-            {/* Calendar Card */}
             <div className="bg-card rounded-2xl border border-border shadow-sm p-5 sm:p-6 overflow-hidden">
               <FullCalendar
                 ref={calendarRef}
@@ -494,59 +210,23 @@ export default function CalendarPage() {
                 initialView="dayGridMonth"
                 headerToolbar={{
                   left: "title",
-                  center: "dayGridMonth,timeGridWeek,timeGridDay,listMonth",
+                  center: "",
                   right: "prev,next today",
                 }}
-                buttonText={{ month: "Month", week: "Week", day: "Day", list: "List", today: "Today" }}
                 events={calendarEvents}
                 dateClick={handleDateClick}
-                height={450}
+                height="auto"
                 contentHeight={450}
                 nowIndicator={true}
-                editable={true}
+                editable={false} // Tắt kéo thả của FullCalendar vì ta dùng onUpdateTask riêng
                 selectable={true}
                 dayMaxEvents={3}
               />
             </div>
-
-            {/* Quick Stats (Đồng bộ với QuickStats bên Transaction) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
-                <div className="h-11 w-11 rounded-xl bg-planner-green-light flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-planner-green" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Done</p>
-                  <p className="text-xl font-bold text-planner-green">85%</p>
-                </div>
-              </div>
-
-              <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
-                <div className="h-11 w-11 rounded-xl bg-planner-pink-light flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-planner-pink" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Overdue</p>
-                  <p className="text-xl font-bold text-planner-pink">03</p>
-                </div>
-              </div>
-
-              <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
-                <div className="h-11 w-11 rounded-xl bg-planner-blue-light flex items-center justify-center">
-                  <ListTodo className="w-5 h-5 text-planner-blue" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Total Tasks</p>
-                  <p className="text-xl font-bold text-planner-blue">42</p>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* ================= CỘT PHẢI: TASK LIST (4 Cột) ================= */}
+          {/* CỘT PHẢI: TASK LIST CHO NGÀY ĐANG CHỌN */}
           <div className="lg:col-span-4 bg-card rounded-2xl border border-border shadow-sm overflow-hidden sticky top-6">
-            
-            {/* Header Task List */}
             <div className="font-semibold p-5 border-b border-border flex justify-between items-center bg-card">
               <div>
                 <h2 className="text-xl text-foreground">Tasks schedule</h2>
@@ -555,31 +235,25 @@ export default function CalendarPage() {
                   {format(selectedDate, "dd MMM yyyy")}
                 </p>
               </div>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="h-9 w-9 bg-primary text-primary-foreground rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
             </div>
 
-            {/* List Body */}
-            <div className="divide-y divide-border max-h-[600px] overflow-y-auto custom-scrollbar">
+            <div className="divide-y divide-border overflow-y-auto max-h-[450px] custom-scrollbar">
               {filteredTasks.length === 0 ? (
                 <div className="text-center py-16">
                   <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
-                  <p className="text-foreground font-medium mb-1">No tasks assigned</p>
+                  <p className="text-foreground font-medium mb-1">
+                    {searchTerm ? "No matching tasks" : "No tasks assigned"}
+                  </p>
                   <p className="text-muted-foreground text-sm">Enjoy your free time!</p>
                 </div>
               ) : (
                 filteredTasks.map((task) => {
-                  const isDone = task.status === "done";
+                  const isDone = task.status === "completed";
                   return (
                     <div key={task.id} className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors group">
-                      
-                      {/* Checkbox Icon */}
+                      {/* Nút Check/Uncheck đã kết nối API */}
                       <button 
-                        onClick={() => toggleStatus(task.id)}
+                        onClick={() => toggleStatus(task)}
                         className={`shrink-0 h-9 w-9 rounded-xl flex items-center justify-center transition-colors ${
                           isDone 
                             ? "bg-planner-green-light text-planner-green" 
@@ -589,26 +263,24 @@ export default function CalendarPage() {
                         <CheckCircle2 className="w-5 h-5" />
                       </button>
 
-                      {/* Info */}
                       <div className="flex-1 min-w-0">
                         <span className={`font-medium text-sm block truncate ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>
                           {task.title}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                            {task.project}
+                            {task.phaseName} {/* Hiển thị tên Phase thực tế */}
                           </span>
                           <span className="w-1 h-1 bg-border rounded-full" />
                           <span className={`text-[10px] font-bold uppercase tracking-wide ${
-                            task.priority === "High" ? "text-planner-pink" : 
-                            task.priority === "Normal" ? "text-planner-blue" : "text-planner-amber"
+                            task.priority === "urgent" || task.priority === "high" ? "text-planner-pink" : 
+                            task.priority === "medium" ? "text-planner-blue" : "text-planner-amber"
                           }`}>
                             {task.priority}
                           </span>
                         </div>
                       </div>
 
-                      {/* Actions */}
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                         <button
                           onClick={() => openEditModal(task)}
@@ -617,13 +289,12 @@ export default function CalendarPage() {
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => deleteTask(task.id)}
+                          onClick={() => handleDeleteTask(task.id)}
                           className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-planner-pink transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-
                     </div>
                   );
                 })
@@ -633,64 +304,85 @@ export default function CalendarPage() {
         </div>
       </main>
 
-      {/* ================= MODAL ================= */}
+      {/* MODAL (Giữ nguyên cấu trúc UI của bạn) */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <form
-            onSubmit={handleSaveTask}
-            className="bg-card p-6 rounded-2xl w-full max-w-sm border border-border shadow-lg animate-in fade-in zoom-in duration-200"
-          >
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="font-serif text-lg text-foreground">
-                {editingTask ? "Edit task" : "New task"}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <form onSubmit={handleSaveTask} className="bg-card p-6 rounded-2xl w-full max-w-md border border-border shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-foreground">
+                {editingTask ? "Update Task" : "Create New Task"}
               </h3>
-              <button 
-                type="button" 
-                onClick={closeModal}
-                className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
-              >
-                <X className="w-5 h-5" />
+              <button type="button" onClick={closeModal} className="p-1 hover:bg-muted rounded-full">
+                <X className="w-6 h-6" />
               </button>
             </div>
             
             <div className="space-y-4">
+              {/* Title */}
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase mb-1.5 block">Title</label>
-                <input
-                  name="title"
-                  defaultValue={editingTask?.title}
-                  placeholder="E.g. Design UI Dashboard"
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 text-foreground"
+                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Title</label>
+                <input 
+                  name="title" 
+                  defaultValue={editingTask?.title} 
+                  required 
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-planner-blue outline-none" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Deadline */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Deadline</label>
+                  <input 
+                    name="deadline" 
+                    type="date"
+                    defaultValue={editingTask?.deadline ? format(new Date(editingTask.deadline), "yyyy-MM-dd") : format(selectedDate, "yyyy-MM-dd")} 
+                    required 
+                    className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm" 
+                  />
+                </div>
+                {/* Priority */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Priority</label>
+                  <select name="priority" defaultValue={editingTask?.priority || "medium"} className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Phase Selection */}
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Timeline Phase</label>
+                <select 
+                  name="timeline_phase_id" 
+                  defaultValue={editingTask?.timeline_phase.id || overviewConfig?.phases[0]?.id} 
                   required
-                  autoFocus
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase mb-1.5 block">Project</label>
-                <input
-                  name="project"
-                  defaultValue={editingTask?.project}
-                  placeholder="E.g. Work, Home..."
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 text-foreground"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase mb-1.5 block">Priority</label>
-                <select
-                  name="priority"
-                  defaultValue={editingTask?.priority || "Normal"}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 text-foreground"
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm"
                 >
-                  <option value="High">High</option>
-                  <option value="Normal">Normal</option>
-                  <option value="Low">Low</option>
+                  {overviewConfig?.phases.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
                 </select>
               </div>
 
-              <button className="w-full py-3 mt-2 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity">
-                {editingTask ? "Save changes" : "Create task"}
+              {/* Status */}
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">Status</label>
+                <select name="status" defaultValue={editingTask?.status || "pending"} className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm">
+                  <option value="pending">Pending</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+
+              <button 
+                disabled={isSubmitting}
+                className="w-full py-3 mt-4 bg-planner-blue hover:bg-blue-600 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+              >
+                {isSubmitting ? "Processing..." : editingTask ? "Save Changes" : "Create Task"}
               </button>
             </div>
           </form>

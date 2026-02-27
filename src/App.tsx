@@ -7,7 +7,6 @@ import "./App.css";
 import Header from "./components/Header/Header";
 import TaskManagement from "./pages/TaskManagement/TaskManagement";
 import Overview from "./pages/Overview";
-import CalendarPage from "./pages/Calendar/Calendar";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Auth/LoginPage";
@@ -18,6 +17,7 @@ import { ToastProvider } from "./context/ToastContext";
 import { LoadingProvider } from "./contexts/LoadingContext";
 import ConfigGuard from "./routes/ConfigGuard";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
+import PlanningOverview from "./pages/TimelineView/PlanningOverview";
 
 const queryClient = new QueryClient();
 
@@ -60,7 +60,7 @@ export default function App() {
                   <Route element={<ConfigGuard />}>
                     <Route path="/" element={<Overview />} />
                     <Route path="/task" element={<TaskManagement />} />
-                    <Route path="/calendar" element={<CalendarPage />} />
+                    <Route path="/calendar" element={<PlanningOverview />} />
                     <Route path="/finance" element={<FinanceDashboard />} />
                     <Route path="/transaction" element={<Transaction />} />
                     <Route path="/dashboard" element={<Dashboard />} />

@@ -7,36 +7,35 @@ import {
 } from "@tanstack/react-table";
 import type { Transaction } from "../../types/transaction.types";
 import apiClient from "../../services/apiClient";
+import { useAppStore } from "../../stores/useAppStore";
+import { useLoading } from "../../contexts/LoadingContext";
 const columnHelper = createColumnHelper<Transaction>();
 
-export default function TransactionsTableWidget({
-  tetConfigs,
-}: {
-  tetConfigs: string[];
-}) {
+export default function TransactionsTableWidget() {
   const [data, setData] = useState<Transaction[]>([]);
-
+  const {showLoading, hideLoading} = useLoading();
+  const configId = useAppStore((state) => state.configId);
   useEffect(() => {
-    console.log("Configs in TransactionsTableWidget:", tetConfigs);
+    console.log("Configs in TransactionsTableWidget:", configId);
+
     const fetchTransactions = async () => {
       try {
-        const promises = tetConfigs.map(async (config) => {
-          console.log(`Fetching transactions for config: ${config}`);
-          const response = await apiClient.transactions.getByConfig(config);
-          return response;
-        });
-        const results = await Promise.all(promises);
-        const allTransactions = results.flat();
+        if(!configId) return;
+        showLoading();
+        const result = await apiClient.transactions.getByConfig(configId);
+        const allTransactions = result.flat();
         console.log("Fetched transactions:", allTransactions);
         setData(allTransactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
+      } finally {
+        hideLoading();
       }
     };
-    if (tetConfigs.length > 0) {
+    if (configId) {
         fetchTransactions();
       }
-  }, [tetConfigs]);
+  }, [configId]);
 
   const columns = useMemo(
     () => [
