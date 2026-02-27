@@ -71,6 +71,9 @@ const Header = () => {
         <span className="font-bold text-text-main text-lg transition-colors duration-300">
           NY Planner
         </span>
+        <span className="font-bold text-text-main text-lg transition-colors duration-300">
+          NY Planner
+        </span>
       </Link>
 
       {/* Navigation isAuthenticated*/}
