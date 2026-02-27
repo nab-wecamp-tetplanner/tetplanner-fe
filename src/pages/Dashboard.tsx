@@ -34,7 +34,7 @@ export default function Dashboard() {
           <div className="flex flex-col gap-4 w-full md:max-w-[50%]">
             <TaskQuickStats />
             <div className="flex gap-4">
-              <TaskListWidget tetConfigs={tetConfigIds} />
+              <TaskListWidget />
               <BudgetCardsSection />
             </div>
           </div>

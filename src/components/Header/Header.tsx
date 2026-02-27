@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
 
 const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthContext();
-  // const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
 
