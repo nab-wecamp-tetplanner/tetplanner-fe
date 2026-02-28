@@ -38,7 +38,7 @@ const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthContext();
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const [isEdit, ] = useState<boolean>(false);
+  const [isEdit] = useState<boolean>(false);
   const [editConfig, setEditConfig] = useState<ConfigInfo | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -115,7 +115,7 @@ const Header = () => {
           name: data.name,
           total_budget: data.total_budget,
         });
-      } catch (e) {
+      } catch (error) {
         toast.error("Error in creating config");
       }
     }
@@ -123,7 +123,7 @@ const Header = () => {
 
   return (
     <header
-      className={`flex items-center justify-between px-8 py-4 border-b border-accent transition-colors duration-300 relative z-10 ${isAuthenticated ? "bg-(--bg)" : "bg-white"}`}
+      className={`sticky top-0 z-50 flex items-center justify-between px-8 py-4 border-b border-accent transition-colors duration-300 ${isAuthenticated ? "bg-(--bg)" : "bg-white"}`}
     >
       {/* Logo */}
       <Link to="/" className="flex items-center">
