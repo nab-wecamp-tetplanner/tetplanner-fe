@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import {  useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus, FolderPlus, LayoutGrid, ChevronDown, Check } from "lucide-react";
 
 import { BudgetOverview } from "../components/Finance/BudgetOverview";
@@ -28,6 +28,7 @@ import {
   CloudMotif,
   TraditionalCake,
 } from "../components/Decoratives/Decoratives";
+import type { TetConfig } from "../types/tetConfig.types";
 
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
@@ -37,17 +38,17 @@ const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const selectedPlan = configs.find((c: any) => c.id === selectedId);
 
-//   useEffect(() => {
-//     const handleClickOutside = (event: MouseEvent) => {
-//       if (
-//         dropdownRef.current &&
-//         !dropdownRef.current.contains(event.target as Node)
-//       )
-//         setIsOpen(false);
-//     };
-//     document.addEventListener("mousedown", handleClickOutside);
-//     return () => document.removeEventListener("mousedown", handleClickOutside);
-//   }, []);
+  //   useEffect(() => {
+  //     const handleClickOutside = (event: MouseEvent) => {
+  //       if (
+  //         dropdownRef.current &&
+  //         !dropdownRef.current.contains(event.target as Node)
+  //       )
+  //         setIsOpen(false);
+  //     };
+  //     document.addEventListener("mousedown", handleClickOutside);
+  //     return () => document.removeEventListener("mousedown", handleClickOutside);
+  //   }, []);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -111,12 +112,14 @@ export default function FinanceDashboard() {
   // const [allConfigs, setAllConfigs] = useState<any[]>([]);
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
-  
+
   // Apply new Category standard
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
 
   const [phases, setPhases] = useState<Timeline[]>([]);
   const [defaultPhaseId, setDefaultPhaseId] = useState<string | null>(null);
+
+  const [configs, setConfigs] = useState<TetConfig[]>([]);
 
   // Modals state
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
@@ -124,9 +127,22 @@ export default function FinanceDashboard() {
   const [isAddPhaseModalOpen, setIsAddPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<Timeline | null>(null);
   const [editingItem, setEditingItem] = useState<ShoppingItem | null>(null);
-  
+
   // Edit editingCategory state using new standard
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        const allConfigs = await apiClient.tetConfigs.getMyConfigs();
+        setConfigs(allConfigs);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách config:", error);
+      }
+    };
+
+    fetchConfigs();
+  }, [tetConfigId]);
 
   const [successModal, setSuccessModal] = useState<{
     isOpen: boolean;
@@ -147,7 +163,6 @@ export default function FinanceDashboard() {
     message: "",
     onConfirm: () => {},
   });
-
 
   // 2. Fetch main data
   useEffect(() => {
@@ -351,8 +366,11 @@ export default function FinanceDashboard() {
         ...data,
         tet_config_id: tetConfigId,
       });
-      setPhases((prev) => [...prev, res as Timeline]); 
-      setSuccessModal({ isOpen: true, message: "New phase added successfully!" });
+      setPhases((prev) => [...prev, res as Timeline]);
+      setSuccessModal({
+        isOpen: true,
+        message: "New phase added successfully!",
+      });
       setIsAddPhaseModalOpen(false);
     } catch (err) {
       console.error(err);
@@ -450,8 +468,8 @@ export default function FinanceDashboard() {
         total: purchasedTotal,
         itemCount: catItems.length,
         icon: cat.icon,
-        color: cat.colorClass, 
-        bgColor: cat.bgClass, 
+        color: cat.colorClass,
+        bgColor: cat.bgClass,
       };
     });
   }, [items, categories]);
@@ -460,11 +478,13 @@ export default function FinanceDashboard() {
 
   return (
     <div className="relative min-h-screen bg-(--bg) text-(--text) transition-colors duration-500 overflow-hidden font-sans">
-      
       {/* 1. Background Pattern & Warm Overlay */}
       <div
         className="absolute inset-0 pointer-events-none z-0 tet-deco-element transition-opacity duration-500"
-        style={{ backgroundImage: BACKGROUND_PATTERN, opacity: 'var(--pattern-opacity)' }}
+        style={{
+          backgroundImage: BACKGROUND_PATTERN,
+          opacity: "var(--pattern-opacity)",
+        }}
       ></div>
       <div
         className="absolute inset-0 pointer-events-none z-0 tet-deco-element transition-opacity duration-500"
@@ -474,15 +494,24 @@ export default function FinanceDashboard() {
       ></div>
 
       {/* 2. Decorative Elements lơ lửng phía sau */}
-      <div className="tet-deco-element"><FallingPetals count={15} /></div>
-      <Lantern className="absolute top-12 right-[10%] animate-[swing_4s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element" size="md" />
-      <BlossomBranch className="absolute top-24 -left-10 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-90" variant="apricot" />
+      <div className="tet-deco-element">
+        <FallingPetals count={15} />
+      </div>
+      <Lantern
+        className="absolute top-12 right-[10%] animate-[swing_4s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element"
+        size="md"
+      />
+      <BlossomBranch
+        className="absolute top-24 -left-10 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-90"
+        variant="apricot"
+      />
       <CloudMotif className="absolute top-40 right-[20%] animate-[float_7s_ease-in-out_infinite_reverse] z-0 opacity-50 tet-deco-element" />
-      <TraditionalCake className="absolute bottom-10 left-[5%] z-0 opacity-30 animate-[float_4s_ease-in-out_infinite] tet-deco-element" variant="tet" />
+      <TraditionalCake
+        className="absolute bottom-10 left-[5%] z-0 opacity-30 animate-[float_4s_ease-in-out_infinite] tet-deco-element"
+        variant="tet"
+      />
 
-      {/* 3. MAIN CONTENT - Đặt relative và z-10 để giữ nguyên màu trắng nổi lên trên nền */}
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
           <div>
@@ -498,18 +527,16 @@ export default function FinanceDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <PlanSelector
-              configs={{}}
+              configs={configs} 
               selectedId={tetConfigId}
               onSelect={handlePlanChange}
             />
-            {/* Giữ nút màu xám nhạt/bg-card như nguyên bản */}
             <button
               onClick={() => setIsAddCategoryModalOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2 border border-(--border) bg-(--bg-card) text-(--text-heading) rounded-xl hover:bg-(--bg)/50 text-sm font-medium shadow-sm transition-colors"
             >
               <FolderPlus className="w-4 h-4" /> Category
             </button>
-            {/* Đổi màu nút Add Item theo Primary của Theme */}
             <button
               onClick={() => setIsAddItemModalOpen(true)}
               className="inline-flex items-center gap-2 px-5 py-2 bg-(--primary) text-white rounded-xl hover:opacity-90 text-sm font-medium shadow-sm transition-colors"
@@ -519,7 +546,6 @@ export default function FinanceDashboard() {
           </div>
         </div>
 
-        {/* --- CÁC COMPONENT CON GIỮ NGUYÊN HOÀN TOÀN BG-WHITE BÊN TRONG --- */}
         <BudgetOverview
           budget={budget}
           itemCount={items.length}
@@ -539,14 +565,14 @@ export default function FinanceDashboard() {
 
         <CategoryCards
           categorySummaries={categorySummaries}
-          categories={categories as any} 
+          categories={categories as any}
           onDeleteCategory={handleDeleteCategory}
           onEditCategory={setEditingCategory as any}
         />
 
         <ShoppingList
           items={items}
-          categories={categories as any} 
+          categories={categories as any}
           onAddItem={() => setIsAddItemModalOpen(true)}
           onEditItem={setEditingItem}
           onToggleStatus={handleToggleStatus}
@@ -593,7 +619,7 @@ export default function FinanceDashboard() {
             ? handleEditCategory(editingCategory, data)
             : handleAddCategory(data)
         }
-        initialData={editingCategory as any} 
+        initialData={editingCategory as any}
       />
 
       <AddPhaseModal
