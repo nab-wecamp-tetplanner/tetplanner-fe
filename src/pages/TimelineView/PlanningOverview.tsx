@@ -16,6 +16,15 @@ import type { CategoryResponse } from "../../types/categories.type";
 import { useLoading } from "../../contexts/LoadingContext";
 import { toast } from "react-toastify";
 
+// DECORATIVE COMPONENTS MỚI THÊM VÀO
+import FallingPetals from "../../components/FallingPetals/FallingPetals";
+import {
+  Lantern,
+  BlossomBranch,
+  CloudMotif,
+  TraditionalCake,
+} from "../../components/Decoratives/Decoratives";
+
 // types.ts hoặc để trên đầu file
 export interface AppTask {
   id: string;
@@ -33,6 +42,10 @@ interface StatProps {
   completed: number;
   overdue: number;
 }
+
+// KHAI BÁO BACKGROUND PATTERN
+const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
+
 export default function PlanningOverview() {
   const [activeView, setActiveView] = useState<"calendar" | "timeline">(
     "calendar",
@@ -65,7 +78,6 @@ export default function PlanningOverview() {
           const isTargetPhase = phase.id === savedTask.timeline_phase.id;
           const isTaskInPhase = phase.tasks.some((t) => t.id === id);
 
-          // Trường hợp 1: Task vẫn ở phase cũ (hoặc đây là phase đích)
           if (isTargetPhase) {
             if (isTaskInPhase) {
               return {
@@ -73,7 +85,6 @@ export default function PlanningOverview() {
                 tasks: phase.tasks.map((t) => (t.id === id ? savedTask : t)),
               };
             } else {
-              // Task từ phase khác chuyển đến -> Thêm vào cuối (vì trước đó nó không có vị trí ở đây)
               return {
                 ...phase,
                 tasks: [...phase.tasks, savedTask],
@@ -81,8 +92,6 @@ export default function PlanningOverview() {
             }
           }
 
-          // Trường hợp 2: Task không thuộc phase này sau khi update, nhưng trước đó thì có
-          // Nghĩa là task đã chuyển sang phase khác -> Xóa nó khỏi phase này
           if (isTaskInPhase) {
             return {
               ...phase,
@@ -90,7 +99,6 @@ export default function PlanningOverview() {
             };
           }
 
-          // Trường hợp 3: Phase không liên quan
           return phase;
         });
 
@@ -104,7 +112,7 @@ export default function PlanningOverview() {
     }
   };
 
-  // Create tassk
+  // Create task
   const createTask = async (newTask: TaskCreateRequest) => {
     try {
       console.log("New task 1: ", newTask);
@@ -113,7 +121,6 @@ export default function PlanningOverview() {
       setTasksByPhase((prevData) => {
         if (!prevData || !prevData.phases) return prevData;
 
-        // add New task to selected phase
         const updatedPhases = prevData.phases.map((phase) => {
           if (phase.id === savedTask.timeline_phase.id) {
             return {
@@ -124,7 +131,6 @@ export default function PlanningOverview() {
           return phase;
         });
 
-        // return new state
         return {
           ...prevData,
           phases: updatedPhases,
@@ -139,14 +145,12 @@ export default function PlanningOverview() {
   const handleDeleteTask = async (id: string) => {
     try {
       if (!id) return;
-      // showLoading();
       await apiClient.todos.delete(id);
 
       setTasksByPhase((prevData) => {
         if (!prevData || !prevData.phases) return prevData;
 
         const updatedPhases = prevData.phases.map((phase) => {
-          // 1. Xóa task khỏi phase hiện tại (dù nó có ở đây hay không)
           const filteredTasks = phase.tasks.filter((t) => t.id !== id);
           return {
             ...phase,
@@ -165,9 +169,7 @@ export default function PlanningOverview() {
   const fetchCategories = async () => {
     if (!configId) return;
     try {
-      // showLoading();
-      const categoriesData =
-        await apiClient.categories.getByTetConfig(configId);
+      const categoriesData = await apiClient.categories.getByTetConfig(configId);
       setCategories(categoriesData);
     } catch (error) {
       console.log(error);
@@ -216,7 +218,7 @@ export default function PlanningOverview() {
     if (!tasksByPhase) return;
     const statsData = tasksByPhase.phases.reduce(
       (acc, phase) => {
-        const tasks = phase.tasks || []; // Đề phòng tasks bị undefined
+        const tasks = phase.tasks || [];
 
         acc.total += tasks.length;
         acc.completed += tasks.filter(
@@ -243,50 +245,75 @@ export default function PlanningOverview() {
   }, [configId]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="mx-auto">
+    <div className="relative min-h-screen bg-((--bg) text-((--text) transition-colors duration-500 overflow-hidden font-sans pb-10">
+      
+      {/* Background Pattern & Warm Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0 tet-deco-element"
+        style={{ backgroundImage: BACKGROUND_PATTERN, opacity: 'var(--pattern-opacity)' }}
+      ></div>
+      <div
+        className="absolute inset-0 pointer-events-none z-0 tet-deco-element"
+        style={{
+          background: `radial-gradient(ellipse at 20% 0%, var(--gradient-bg-1) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, var(--gradient-bg-2) 0%, transparent 50%)`,
+        }}
+      ></div>
+
+      {/* Decorative Elements - Định vị ở các góc, ẩn đi trong theme Minimal */}
+      <div className="tet-deco-element"><FallingPetals count={15} /></div>
+      <Lantern className="absolute top-6 right-20 animate-[swing_4s_ease-in-out_infinite] z-0 opacity-70 tet-deco-element" size="sm" />
+      <BlossomBranch className="absolute top-24 -left-10 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-75" variant="apricot" />
+      <BlossomBranch className="absolute top-40 -right-8 animate-[float_5s_ease-in-out_infinite_reverse] z-0 transform scale-x-[-1] scale-75 opacity-80 tet-deco-element" variant="peach" />
+      <CloudMotif className="absolute top-10 left-[25%] animate-[float_7s_ease-in-out_infinite] z-0 opacity-40 tet-deco-element" />
+      <TraditionalCake className="absolute bottom-5 left-8 z-0 opacity-30 animate-[float_4s_ease-in-out_infinite] tet-deco-element" variant="tet" />
+
+      {/* MAIN CONTENT WRAPPER (Z-index cao để đè lên trang trí) */}
+      <div className="relative z-10 mx-auto p-4 ">
         {/* Header điều hướng riêng của Planner */}
-        <header className="flex flex-row md:flex-row md:items-center justify-between gap-4 px-6 mb-2">
-          <div className="w-8/12 p-2">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
-                <div className="h-11 w-11 rounded-xl bg-planner-green-light flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-planner-green" />
+        <header className=" flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 lg:px-6 mb-6 mt-4">
+          <div className="w-full md:w-8/12">
+            {/* Quick Stats - Cập nhật glassmorphism & màu theo theme */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Stat: Done */}
+              <div className="bg-white backdrop-blur-md rounded-2xl border border-((--border) p-5 flex items-center gap-4 shadow-sm group hover:shadow-[0_4px_20px_var(--shadow-accent) hover:border-((--border-hover) transition-all duration-300">
+                <div className="h-11 w-11 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="w-5 h-5 text-((--success)" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">
+                  <p className="text-xs text-((--text-muted) font-bold uppercase tracking-wider">
                     Done
                   </p>
-                  <p className="text-xl font-bold text-planner-green">
+                  <p className="text-2xl font-black text-((--success) drop-shadow-sm">
                     {stats.completed}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
-                <div className="h-11 w-11 rounded-xl bg-planner-pink-light flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-planner-pink" />
+              {/* Stat: Overdue */}
+              <div className="bg-white  backdrop-blur-md rounded-2xl border border-((--border) p-5 flex items-center gap-4 shadow-sm group hover:shadow-[0_4px_20px_var(--shadow-accent) hover:border-((--border-hover) transition-all duration-300">
+                <div className="h-11 w-11 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-transform">
+                  <AlertCircle className="w-5 h-5 text-((--danger)" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">
+                  <p className="text-xs text-((--text-muted) font-bold uppercase tracking-wider">
                     Overdue
                   </p>
-                  <p className="text-xl font-bold text-planner-pink">
+                  <p className="text-2xl font-black text-((--danger) drop-shadow-sm">
                     {stats.overdue}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
-                <div className="h-11 w-11 rounded-xl bg-planner-blue-light flex items-center justify-center">
-                  <ListTodo className="w-5 h-5 text-planner-blue" />
+              {/* Stat: Total Tasks */}
+              <div className="bg-white  backdrop-blur-md rounded-2xl border border-((--border) p-5 flex items-center gap-4 shadow-sm group hover:shadow-[0_4px_20px_var(--shadow-accent) hover:border-((--border-hover) transition-all duration-300">
+                <div className="h-11 w-11 rounded-xl bg-((--primary)/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ListTodo className="w-5 h-5 text-((--primary)" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">
+                  <p className="text-xs text-((--text-muted) font-bold uppercase tracking-wider">
                     Total Tasks
                   </p>
-                  <p className="text-xl font-bold text-planner-blue">
+                  <p className="text-2xl font-black text-((--primary) drop-shadow-sm">
                     {stats.total}
                   </p>
                 </div>
@@ -294,23 +321,24 @@ export default function PlanningOverview() {
             </div>
           </div>
 
-          <div className=" flex bg-muted/50 p-1.5 rounded-2xl border border-border shadow-sm">
+          {/* Nút Toggle View (Calendar / Timeline) */}
+          <div className="flex bg-((--bg-glass) backdrop-blur-md p-1.5 rounded-2xl border border-((--border) shadow-sm">
             <button
               onClick={() => setActiveView("calendar")}
-              className={`h-full w-full flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-xl transition-all ${
+              className={`flex-1 md:flex-none flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
                 activeView === "calendar"
-                  ? "bg-background text-planner-blue shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-((--bg-card) text-((--primary) shadow-[0_2px_10px_var(--shadow)"
+                  : "text-((--text-muted) hover:text-((--text-heading) hover:bg-((--bg)/50"
               }`}
             >
               <Calendar className="w-4 h-4" /> Calendar
             </button>
             <button
               onClick={() => setActiveView("timeline")}
-              className={`flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-xl transition-all ${
+              className={`flex-1 md:flex-none flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
                 activeView === "timeline"
-                  ? "bg-background text-planner-blue shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-(--bg-card) text-(--primary) shadow-[0_2px_10px_var(--shadow)"
+                  : "text-(--text-muted) hover:text-((--text-heading) hover:bg-((--bg)/50"
               }`}
             >
               <Clock className="w-4 h-4" /> Timeline
@@ -318,27 +346,29 @@ export default function PlanningOverview() {
           </div>
         </header>
 
-        {/* Nội dung thay đổi dựa trên View */}
-        <div className="transition-all duration-500 ease-in-out">
-          {activeView === "calendar" && !!tasksByPhase ? (
-            <CalendarPage
-              overviewConfig={tasksByPhase}
-              categories={catergories}
-              setTasks={setTasksByPhase}
-              onUpdateTask={handleUpdateTask}
-              onCreateTask={createTask}
-              onDeleteTask={handleDeleteTask}
-            />
-          ) : (
-            <TimelineModule
-              overviewConfig={tasksByPhase}
-              categories={catergories}
-              onCreateTask={createTask}
-              onDeleteTask={handleDeleteTask}
-              setTasks={setTasksByPhase}
-              onUpdateTask={handleUpdateTask}
-            />
-          )}
+        {/* Nội dung thay đổi dựa trên View - Đặt trong khung kính nhẹ */}
+        <div className="transition-all duration-500 ease-in-out px-2 lg:px-6">
+          <div className="bg-((--bg-card) backdrop-blur-sm rounded-4xl  border border-(--border) shadow-sm p-4 md:p-6 overflow-hidden min-h-150">
+            {activeView === "calendar" && !!tasksByPhase ? (
+              <CalendarPage
+                overviewConfig={tasksByPhase}
+                categories={catergories}
+                setTasks={setTasksByPhase}
+                onUpdateTask={handleUpdateTask}
+                onCreateTask={createTask}
+                onDeleteTask={handleDeleteTask}
+              />
+            ) : (
+              <TimelineModule
+                overviewConfig={tasksByPhase}
+                categories={catergories}
+                onCreateTask={createTask}
+                onDeleteTask={handleDeleteTask}
+                setTasks={setTasksByPhase}
+                onUpdateTask={handleUpdateTask}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

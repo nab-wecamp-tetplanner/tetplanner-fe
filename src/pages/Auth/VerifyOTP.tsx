@@ -29,7 +29,9 @@ const VerifyOTP = () => {
     setIsSubmitting(true);
     try {
       // Call verify endpoint from your refactored apiClient
-      await apiClient.auth.verify({ email, code: otp });
+      console.log("Email: ", email)
+      console.log("otp: ", otp)
+      await apiClient.auth.verify({ email, otp: otp });
       toast.success("Verification successful! You can now log in.");
       navigate("/login");
     } catch (error: any) {

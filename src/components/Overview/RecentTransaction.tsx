@@ -109,7 +109,7 @@ export default function TransactionsTableWidget() {
   });
 
   return (
-    <div className="p-6 bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm">
+    <div className="p-6 bg-white rounded-[2.5rem] border border-slate-200/60 ">
       <div className="flex justify-between items-center  mb-6">
         <h2 className="font-bold text-lg text-slate-800">
           Recent Transactions

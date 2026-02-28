@@ -9,6 +9,11 @@ import { useAppStore } from "../../stores/useAppStore";
 
 import AuthenticatedActions from "./AuthenticatedActions";
 import UnauthenticatedActions from "./UnauthenticatedActions";
+<<<<<<< HEAD
+=======
+import { ConfigModal } from "../ConfigModal";
+import { toast } from "react-toastify";
+>>>>>>> origin/main
 
 type NavItem = {
   name: string;
@@ -35,11 +40,25 @@ const navItems: NavItem[] = [
 const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthContext();
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
+<<<<<<< HEAD
+=======
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+  const [isEdit, ] = useState<boolean>(false);
+  const [editConfig, setEditConfig] = useState<ConfigInfo | null>(null);
+>>>>>>> origin/main
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Logic Synchronization with Store
   const configId = useAppStore((state) => state.configId);
   const setConfigId = useAppStore((state) => state.setConfigId);
+<<<<<<< HEAD
+=======
+
+  useEffect(() => {
+    if (!configId || isAuthenticated || configId == null) return;
+    setEditConfig(configs.find((c) => c.id === configId) ?? null);
+  }, [configId, isAuthenticated]);
+>>>>>>> origin/main
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -53,7 +72,23 @@ const Header = () => {
     if (isAuthenticated) fetchConfigs();
   }, [isAuthenticated]);
 
+<<<<<<< HEAD
   // Fetch notifications on mount
+=======
+  useEffect(() => {
+    const handleClick = () => {
+      // if (
+      //   settingsRef.current &&
+      //   !settingsRef.current.contains(e.target as Node)
+      // ) {
+      //   setShowSettings(false);
+      // }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+>>>>>>> origin/main
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -67,6 +102,41 @@ const Header = () => {
     fetchNotifications();
   }, []);
 
+<<<<<<< HEAD
+=======
+  // const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  // HANDLE ACTIONS
+  const handleSubmit = async (data: {
+    year: number;
+    name: string;
+    total_budget: number;
+  }) => {
+    if (!isEdit) {
+      try {
+        if (configId || configId == null) return;
+        await apiClient.tetConfigs.updateConfig(configId, {
+          year: data.year,
+          name: data.name,
+          total_budget: data.total_budget,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+        await apiClient.tetConfigs.create({
+          year: data.year,
+          name: data.name,
+          total_budget: data.total_budget,
+        });
+      } catch (e) {
+        toast.error("Error in creating config");
+      }
+    }
+  };
+
+>>>>>>> origin/main
   return (
     <header
       className={`flex items-center justify-between px-8 py-4 border-b border-accent transition-colors duration-300 relative z-10 ${isAuthenticated ? "bg-(--bg)" : "bg-white"}`}
@@ -118,6 +188,16 @@ const Header = () => {
           <UnauthenticatedActions />
         )}
       </div>
+
+      {isOpenModal && (
+        <ConfigModal
+          isOpen={isOpenModal}
+          setIsOpen={setIsOpenModal}
+          isEdit={isEdit}
+          editConfig={editConfig}
+          onSubmit={handleSubmit}
+        />
+      )}
     </header>
   );
 };

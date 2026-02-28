@@ -1,6 +1,10 @@
 import React, { createContext, useState, useEffect, type ReactNode } from 'react';
 
+<<<<<<< HEAD
 export type TetTheme = 'spring-blossom' | 'jade-prosperity' | 'morning-lantern' | 'midnight-dragon';
+=======
+export type TetTheme = 'spring-blossom' | 'jade-prosperity' | 'morning-lantern' | 'midnight-dragon' | 'minimal';
+>>>>>>> origin/main
 
 export interface ThemeContextType {
   theme: TetTheme;

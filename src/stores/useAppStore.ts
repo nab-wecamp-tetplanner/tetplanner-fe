@@ -1,5 +1,8 @@
 import { create } from "zustand";
+<<<<<<< HEAD
 import { persist } from "zustand/middleware";
+=======
+>>>>>>> origin/main
 
 interface AppState {
   configId: string | null;
@@ -9,6 +12,7 @@ interface AppState {
   triggerRefresh: () => void;
 }
 
+<<<<<<< HEAD
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
@@ -27,3 +31,14 @@ export const useAppStore = create<AppState>()(
     },
   ),
 );
+=======
+// Xóa bỏ middleware persist
+export const useAppStore = create<AppState>((set) => ({
+  configId: null,
+  setConfigId: (newId) => set({ configId: newId }),
+  clearConfig: () => set({ configId: null }),
+  refreshKey: 0,
+  triggerRefresh: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
+  resetAll: () => set({ configId: null, refreshKey: 0 }),
+}));
+>>>>>>> origin/main

@@ -5,6 +5,13 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+export const formatNumber = (amount: number | string): string => {
+  if (!amount) return "";
+  const num = typeof amount === "string" ? parseInt(amount.replace(/\D/g, ""), 10) : amount;
+  if (isNaN(num)) return "";
+  return new Intl.NumberFormat("vi-VN").format(num);
+};
+
 export const formatDate = (dateString: string): string => {
   if (!dateString) return "No date";
   const date = new Date(dateString);

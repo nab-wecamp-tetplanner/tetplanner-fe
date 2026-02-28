@@ -13,45 +13,35 @@ export default function HeroSection() {
       label: "Active Users",
       value: "2,500+",
       icon: CheckCircle2,
-      color: "text-planner-green",
-      bg: "bg-planner-green-light",
     },
     {
       label: "Plans Created",
       value: "12,000+",
       icon: TrendingUp,
-      color: "text-planner-blue",
-      bg: "bg-planner-blue-light",
     },
     {
       label: "Average Savings",
       value: "30%",
       icon: Sparkles,
-      color: "text-planner-amber",
-      bg: "bg-planner-amber-light",
     },
   ];
 
   return (
-    <section className="relative overflow-hidden pt-16 pb-20 bg-gradient-to-b from-white via-white/80 to-transparent">
-      {/* Decorative blobs - Seamless background decorations */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
-      <div className="absolute top-20 right-1/4 w-96 h-96 bg-planner-purple/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-20 left-1/3 w-96 h-96 bg-planner-amber/10 rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+    // Bỏ background gradient cứng, để nền trong suốt ăn theo Overview
+    <section className="relative pt-16 pb-20 overflow-hidden">
+      <div className="relative z-10 text-center max-w-4xl mx-auto px-6 animate-fade-in">
         {/* Modern Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-xs font-bold tracking-widest uppercase text-primary mb-8 shadow-sm">
-          <Gift className="w-4 h-4" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-(--gradient-bg-1) border border-(--border) text-xs font-bold tracking-widest uppercase text-(--primary-dark) mb-8 shadow-sm">
+          <Gift className="w-4 h-4 animate-[swing_3s_ease-in-out_infinite]" />
           <span>Ready for Tet 2026</span>
         </div>
 
-        <h1 className="font-serif text-5xl md:text-7xl text-foreground mb-6 leading-[1.1] tracking-tight">
-          Plan your <span className="text-primary">Tet</span> <br />
+        <h1 className="font-serif text-5xl md:text-7xl text-(--text-heading) mb-6 leading-[1.1] tracking-tight transition-colors duration-500">
+          Plan your <span className="text-(--primary)">Tet</span> <br />
           with absolute ease
         </h1>
 
-        <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
+        <p className="text-lg text-(--text-muted) mb-10 max-w-xl mx-auto leading-relaxed transition-colors duration-500">
           Manage tasks, shopping lists, track your budget in real-time, ensure
           everything is perfectly prepared for the Lunar New Year.
         </p>
@@ -60,36 +50,47 @@ export default function HeroSection() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
           <Link
             to="/task"
-            className="group inline-flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl hover:opacity-95 transition-all font-bold text-base shadow-xl shadow-primary/20 hover:-translate-y-0.5"
+            className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl transition-all font-bold text-base hover:-translate-y-1"
+            // Dùng gradient từ theme
+            style={{
+              background: "var(--gradient-warm)",
+              color: "white",
+              boxShadow: "0 4px 20px var(--shadow-accent)",
+            }}
           >
             Get started
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
 
-          <div className="px-7 py-4 bg-white/60 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm flex items-center gap-3 text-sm font-bold text-foreground hover:opacity-95 transition-all hover:-translate-y-0.5">
-            <Link to="/finance"className="group inline-flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-planner-amber group-hover:-translate-x-0.5 transition-transform" />
+          <div className="px-7 py-4 bg-(--bg-glass) backdrop-blur-md rounded-2xl border border-(--border) shadow-sm flex items-center gap-3 text-sm font-bold text-(--text-heading) hover:bg-(--bg-card) transition-all hover:-translate-y-1">
+            <Link
+              to="/finance"
+              className="group inline-flex items-center gap-3"
+            >
+              <Sparkles className="w-5 h-5 text-(--primary-light) group-hover:rotate-12 group-hover:scale-110 transition-transform" />
               <span>Expense Tracking</span>
             </Link>
           </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          {stats.map((stat) => (
+        {/* Stats Row - Thêm animation delay cho hiệu ứng gõ nhịp (Stagger) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          {stats.map((stat, i) => (
             <div
               key={stat.label}
-              className={`text-center p-8 rounded-[2.5rem] ${stat.bg} border border-white shadow-sm backdrop-blur-sm group hover:scale-105 transition-transform duration-300`}
+              className="text-center p-8 rounded-[2.5rem] bg-(--bg-card) border border-(--border) shadow-sm backdrop-blur-sm group hover:scale-105 hover:shadow-[0_8px_30px_var(--shadow-accent) hover:border-(--border-hover) transition-all duration-300 animate-[fadeInUp_0.6s_ease-out_forwards]"
+              style={{ animationDelay: `${i * 0.15}s`, opacity: 0 }}
             >
-              <div
-                className={`h-11 w-11 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-border/40 shadow-inner group-hover:rotate-6 transition-transform`}
-              >
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+              <div className="h-11 w-11 rounded-2xl bg-(--bg) flex items-center justify-center mx-auto mb-4 border border-(--border) shadow-inner group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300">
+                <stat.icon
+                  className="w-5 h-5"
+                  style={{ color: "var(--primary)" }}
+                />
               </div>
-              <p className="text-3xl font-black text-foreground mb-1 tracking-tight">
+              <p className="text-3xl font-black text-(--text-heading) mb-1 tracking-tight">
                 {stat.value}
               </p>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em]">
+              <p className="text-[10px] text-(--text-subtle) font-bold uppercase tracking-[0.2em]">
                 {stat.label}
               </p>
             </div>

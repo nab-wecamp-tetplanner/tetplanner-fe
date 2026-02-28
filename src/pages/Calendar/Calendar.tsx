@@ -156,7 +156,7 @@ export default function CalendarPage({
   }
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen">
       <main className="mx-auto px-4 sm:px-6 lg:px-8 ">
         <TaskToolbar
           activeView={currentView}

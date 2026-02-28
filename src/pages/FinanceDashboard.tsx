@@ -192,7 +192,7 @@ export default function FinanceDashboard() {
         if (phasesData && phasesData.length > 0)
           setDefaultPhaseId(phasesData[0].id);
 
-        // Map data từ API về chuẩn Category mới
+        // Map data from API to new Category standard
         if (categoriesData && categoriesData.length > 0) {
           const mappedCategories: Category[] = categoriesData.map((cat) => ({
             ...cat, // Giữ lại toàn bộ trường từ API (bao gồm tet_config)
@@ -213,8 +213,6 @@ export default function FinanceDashboard() {
     fetchData();
   }, [tetConfigId]);
 
-  // --- HANDLERS (KHÔI PHỤC LẠI ĐẦY ĐỦ) ---
-
   // const handlePlanChange = (id: string) => {
   //   setConfigId(id);
   //   queryClient.invalidateQueries({ queryKey: ["allTetConfigs"] });
@@ -223,7 +221,7 @@ export default function FinanceDashboard() {
   const handleEditTotalBudget = async () => {
     if (!tetConfigId) return;
     const newBudgetStr = prompt(
-      "Nhập ngân sách tổng mới (VND):",
+      "Enter new total budget (VND):",
       budget.total.toString(),
     );
     if (newBudgetStr && !isNaN(Number(newBudgetStr))) {
@@ -232,10 +230,10 @@ export default function FinanceDashboard() {
         setBudget((prev) => ({ ...prev, total: Number(newBudgetStr) }));
         setSuccessModal({
           isOpen: true,
-          message: "Cập nhật ngân sách thành công!",
+          message: "Budget updated successfully!",
         });
       } catch {
-        alert("Lỗi cập nhật ngân sách.");
+        alert("Failed to update budget.");
       }
     }
   };
@@ -251,7 +249,7 @@ export default function FinanceDashboard() {
       setItems((prev) => [...prev, created]);
       setSuccessModal({
         isOpen: true,
-        message: "Đã thêm món đồ vào danh sách mua sắm!",
+        message: "Item added to shopping list successfully!",
       });
       const budgetData = await financeApi.getBudget(tetConfigId);
       setBudget({ total: budgetData.total, used: budgetData.used });
@@ -279,7 +277,7 @@ export default function FinanceDashboard() {
       setEditingItem(null);
       setSuccessModal({
         isOpen: true,
-        message: "Cập nhật món đồ thành công!",
+        message: "Item updated successfully!",
       });
     } catch (err) {
       console.error(err);
@@ -301,7 +299,7 @@ export default function FinanceDashboard() {
       setBudget({ total: res.budget.total, used: res.budget.used });
       setSuccessModal({
         isOpen: true,
-        message: "Đã cập nhật trạng thái món đồ!",
+        message: "Item status updated!",
       });
     } catch (err) {
       console.error(err);
@@ -366,7 +364,7 @@ export default function FinanceDashboard() {
       setEditingCategory(null);
       setSuccessModal({
         isOpen: true,
-        message: "Update categories successfully!",
+        message: "Category updated successfully!",
       });
     } catch (err) {
       // Ép kiểu err để truy cập message nếu cần, hoặc giữ nguyên console.error
@@ -506,10 +504,10 @@ export default function FinanceDashboard() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
           <div>
-            <p className="text-sm font-medium text-primary mb-1 uppercase">
+            <p className="text-sm font-bold text-(--primary) mb-1 uppercase tracking-wide">
               Budget Planner
             </p>
-            <h1 className="text-4xl font-serif text-foreground mb-1">
+            <h1 className="text-4xl font-serif text-(--text-heading) mb-1">
               Shopping Manager
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -519,13 +517,13 @@ export default function FinanceDashboard() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsAddCategoryModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-xl hover:bg-muted text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-(--border) bg-(--bg-card) text-(--text-heading) rounded-xl hover:bg-(--bg)/50 text-sm font-medium shadow-sm transition-colors"
             >
               <FolderPlus className="w-4 h-4" /> Category
             </button>
             <button
               onClick={() => setIsAddItemModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:opacity-90 text-sm font-medium shadow-sm"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-(--primary) text-white rounded-xl hover:opacity-90 text-sm font-medium shadow-sm transition-colors"
             >
               <Plus className="w-4 h-4" /> Add Item
             </button>

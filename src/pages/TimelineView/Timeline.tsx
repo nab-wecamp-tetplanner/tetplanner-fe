@@ -349,7 +349,7 @@ export default function TimelineModule({
   }
 
   return (
-    <div className="bg-background">
+    <div className="">
       <main className="mx-auto px-4 sm:px-6 lg:px-8">
         <TaskToolbar
           activeView={currentView}
@@ -357,7 +357,7 @@ export default function TimelineModule({
           onAddClick={handleAddOpen}
         />
 
-        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <Gantt
               tasks={ganttTasks}
