@@ -20,7 +20,7 @@ import {
 import { transactionApi } from "../services/transactionService";
 import { financeApi } from "../services/financeApi";
 import type { TransactionResponse } from "../services/transactionService";
-import { AddTransactionModal } from "../components/transaction/AddTransactionModal"; 
+import { AddTransactionModal } from "../components/Transaction/AddTransactionModal"; 
 
 // Decoratives
 import FallingPetals from "../components/FallingPetals/FallingPetals";
@@ -30,6 +30,7 @@ import {
   CloudMotif,
   TraditionalCake,
 } from "../components/Decoratives/Decoratives";
+import { useAppStore } from "../stores/useAppStore";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles: Sparkles,
@@ -136,9 +137,10 @@ const QuickStats = ({ transactions }: { transactions: TransactionType[] }) => {
 // ==========================================
 
 export default function Transaction() {
-  const [tetConfigId, setTetConfigId] = useState<string>(
-    localStorage.getItem("tetConfigId") || "",
-  );
+  // Get configId from Zustand store
+  const tetConfigId = useAppStore((state) => state.configId);
+  const setConfigId = useAppStore((state) => state.setConfigId);
+
   const [allConfigs, setAllConfigs] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
@@ -149,7 +151,9 @@ export default function Transaction() {
   const [editingTransaction, setEditingTransaction] = useState<TransactionType | null>(null);
   const [modalDefaultType, setModalDefaultType] = useState<"income" | "expense">("expense");
 
-  const fetchTxns = async (configId: string, silent = false) => {
+  // Hàm tải danh sách giao dịch (để gọi lại sau khi thêm/sửa/xóa)
+  // Cập nhật hàm fetchTxns bên trong component Transaction
+  const fetchTxns = async (configId: string | null, silent = false) => {
     if (!configId) return;
     if (!silent) setLoading(true);
 
@@ -181,8 +185,9 @@ export default function Transaction() {
 
         if (configsData.length > 0) {
           const currentId = tetConfigId || configsData[0].id;
-          setTetConfigId(currentId);
-          localStorage.setItem("tetConfigId", currentId);
+          if (!tetConfigId) {
+            setConfigId(currentId);
+          }
 
           const catsData = await financeApi.getCategories(currentId);
           setCategories(catsData);
@@ -194,6 +199,7 @@ export default function Transaction() {
       }
     };
     initData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tetConfigId]);
 
   const handleOpenAddModal = (type: "income" | "expense") => {
@@ -273,22 +279,9 @@ export default function Transaction() {
             <p className="text-sm font-bold text-(--primary) mb-1 tracking-wide uppercase">
               Transactions
             </p>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-serif text-(--text-heading)">
-                Transactions
-              </h1>
-              <select
-                value={tetConfigId}
-                onChange={(e) => setTetConfigId(e.target.value)}
-                className="ml-4 p-2 bg-card border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
-              >
-                {allConfigs.map((config) => (
-                  <option key={config.id} value={config.id}>
-                    {config.name} ({config.year})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <h1 className="text-4xl font-serif text-foreground">
+              Transactions
+            </h1>
           </div>
           <div className="flex items-center gap-1 bg-card p-1 rounded-xl border border-border text-sm font-medium text-muted-foreground shadow-sm">
             <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold">

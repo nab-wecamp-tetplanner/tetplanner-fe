@@ -34,8 +34,6 @@ export default function Dashboard() {
     fetchConfigs();
   }, []);
 
-  // const tetConfigIds = configs.map((config) => config.id);
-
   return (
     <div className="relative min-h-screen bg-(--bg) text-(--text) transition-colors duration-500 overflow-hidden font-sans">
       

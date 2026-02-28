@@ -1,19 +1,20 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, FolderPlus, ChevronDown, Check, LayoutGrid } from "lucide-react";
+import {  useQueryClient } from "@tanstack/react-query";
+import { Plus, FolderPlus, LayoutGrid, ChevronDown, Check } from "lucide-react";
 
-import { BudgetOverview } from "../components/finance/BudgetOverview";
-import { CategoryCards } from "../components/finance/CategoryCards";
-import { ShoppingList } from "../components/finance/ShoppingList";
-import { AddItemModal } from "../components/finance/AddItemModal";
-import { AddCategoryModal } from "../components/finance/AddCategoryModal";
-import { AddPhaseModal } from "../components/finance/AddPhaseModal";
-import { TimelinePhasesSection } from "../components/finance/TimelinePhasesSection";
+import { BudgetOverview } from "../components/Finance/BudgetOverview";
+import { CategoryCards } from "../components/Finance/CategoryCards";
+import { ShoppingList } from "../components/Finance/ShoppingList";
+import { AddItemModal } from "../components/Finance/AddItemModal";
+import { AddCategoryModal } from "../components/Finance/AddCategoryModal";
+import { AddPhaseModal } from "../components/Finance/AddPhaseModal";
+import { TimelinePhasesSection } from "../components/Finance/TimelinePhasesSection";
 import { DEFAULT_CATEGORIES } from "../constants/finance";
 import financeApi from "../services/financeApi";
 import apiClient from "../services/apiClient";
-import { SuccessModal } from "../components/finance/SuccessModal";
-import { DeleteConfirmationModal } from "../components/finance/DeleteConfirmationModal";
+import { SuccessModal } from "../components/Finance/SuccessModal";
+import { DeleteConfirmationModal } from "../components/Finance/DeleteConfirmationModal";
+import { useAppStore } from "../stores/useAppStore";
 
 import type { ShoppingItem, Budget } from "../types/shopping.types";
 import type { Timeline } from "../types/timeline.types";
@@ -36,17 +37,17 @@ const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const selectedPlan = configs.find((c: any) => c.id === selectedId);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      )
-        setIsOpen(false);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+//   useEffect(() => {
+//     const handleClickOutside = (event: MouseEvent) => {
+//       if (
+//         dropdownRef.current &&
+//         !dropdownRef.current.contains(event.target as Node)
+//       )
+//         setIsOpen(false);
+//     };
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => document.removeEventListener("mousedown", handleClickOutside);
+//   }, []);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -102,17 +103,18 @@ const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
 export default function FinanceDashboard() {
   const queryClient = useQueryClient();
 
+  // Get configId from Zustand store
+  const tetConfigId = useAppStore((state) => state.configId);
+  const setConfigId = useAppStore((state) => state.setConfigId);
+
   // State
-  const [tetConfigId, setTetConfigId] = useState<string | null>(
-    localStorage.getItem("tetConfigId"),
-  );
-  const [allConfigs, setAllConfigs] = useState<any[]>([]);
+  // const [allConfigs, setAllConfigs] = useState<any[]>([]);
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
   
   // Apply new Category standard
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
-  
+
   const [phases, setPhases] = useState<Timeline[]>([]);
   const [defaultPhaseId, setDefaultPhaseId] = useState<string | null>(null);
 
@@ -125,7 +127,7 @@ export default function FinanceDashboard() {
   
   // Edit editingCategory state using new standard
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  
+
   const [successModal, setSuccessModal] = useState<{
     isOpen: boolean;
     message: string;
@@ -133,7 +135,7 @@ export default function FinanceDashboard() {
     isOpen: false,
     message: "",
   });
-  
+
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -146,22 +148,6 @@ export default function FinanceDashboard() {
     onConfirm: () => {},
   });
 
-  // 1. Fetch configs
-  useQuery({
-    queryKey: ["allTetConfigs"],
-    queryFn: async () => {
-      const data = await financeApi.getTetConfigs();
-      if (data && data.length > 0) {
-        setAllConfigs(data);
-        if (!tetConfigId) {
-          const firstId = data[0].id;
-          setTetConfigId(firstId);
-          localStorage.setItem("tetConfigId", firstId);
-        }
-      }
-      return data;
-    },
-  });
 
   // 2. Fetch main data
   useEffect(() => {
@@ -188,19 +174,20 @@ export default function FinanceDashboard() {
 
         // Map data from API to new Category standard
         if (categoriesData && categoriesData.length > 0) {
-          const mappedCategories: Category[] = categoriesData.map((cat: any) => ({
-             id: cat.id,
-             name: cat.name,
-             icon: cat.icon || "Package",
-             colorClass: `text-${cat.color || "planner-blue"}`,
-             bgClass: `bg-${cat.color || "planner-blue"}/20`,
-             percent: "0%",
-             is_system: cat.is_system || false,
-             transactions: [] 
-          }));
+          const mappedCategories: Category[] = categoriesData.map(
+            (cat: any) => ({
+              id: cat.id,
+              name: cat.name,
+              icon: cat.icon || "Package",
+              colorClass: `text-${cat.color || "planner-blue"}`,
+              bgClass: `bg-${cat.color || "planner-blue"}/20`,
+              percent: "0%",
+              is_system: cat.is_system || false,
+              transactions: [],
+            }),
+          );
           setCategories(mappedCategories);
         }
-
       } catch (err) {
         console.error("Failed to fetch finance data:", err);
       }
@@ -211,8 +198,7 @@ export default function FinanceDashboard() {
   // --- HANDLERS ---
 
   const handlePlanChange = (id: string) => {
-    setTetConfigId(id);
-    localStorage.setItem("tetConfigId", id);
+    setConfigId(id);
     queryClient.invalidateQueries({ queryKey: ["allTetConfigs"] });
   };
 
@@ -308,14 +294,14 @@ export default function FinanceDashboard() {
     if (!tetConfigId) return;
     try {
       const created = await financeApi.addCategory(tetConfigId, newCat);
-      
+
       const newCategory: Category = {
         ...created,
-        percent: "0%", 
-        colorClass: `text-${newCat.color || "planner-blue"}`, 
+        percent: "0%",
+        colorClass: `text-${newCat.color || "planner-blue"}`,
         bgClass: `bg-${newCat.color || "planner-blue"}/20`,
         is_system: false,
-        transactions: [], 
+        transactions: [],
       };
 
       setCategories((prev) => [...prev, newCategory]);
@@ -337,12 +323,16 @@ export default function FinanceDashboard() {
         allocated_budget: updates.allocated,
       });
       setCategories((prev) =>
-        prev.map((c) => (c.id === category.id ? { 
-          ...c, 
-          name: updates.name,
-          colorClass: `text-${updates.color}`,
-          bgClass: `bg-${updates.color}/20` 
-        } : c)),
+        prev.map((c) =>
+          c.id === category.id
+            ? {
+                ...c,
+                name: updates.name,
+                colorClass: `text-${updates.color}`,
+                bgClass: `bg-${updates.color}/20`,
+              }
+            : c,
+        ),
       );
       setEditingCategory(null);
       setSuccessModal({
@@ -457,8 +447,8 @@ export default function FinanceDashboard() {
 
       return {
         category: cat.name,
-        total: purchasedTotal, 
-        itemCount: catItems.length, 
+        total: purchasedTotal,
+        itemCount: catItems.length,
         icon: cat.icon,
         color: cat.colorClass, 
         bgColor: cat.bgClass, 
@@ -508,7 +498,7 @@ export default function FinanceDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <PlanSelector
-              configs={allConfigs}
+              configs={{}}
               selectedId={tetConfigId}
               onSelect={handlePlanChange}
             />
@@ -540,7 +530,7 @@ export default function FinanceDashboard() {
         <TimelinePhasesSection
           phases={phases}
           onAddPhase={() => setIsAddPhaseModalOpen(true)}
-          onEditPhase={(p : any) => {
+          onEditPhase={(p: any) => {
             setEditingPhase(p);
             setIsAddPhaseModalOpen(true);
           }}
