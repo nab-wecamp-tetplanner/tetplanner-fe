@@ -1,123 +1,72 @@
 /* ==========================================
-   HEADER & TITLE
-   ========================================== */
-.custom-calendar-container .fc-toolbar {
-  margin-bottom: 2rem !important;
+   THEME ADAPTATION (REMOVE THE "PALE WHITE")
+
+/* This is the heart of the fix: Force every internal table layer to be transparent.
+   It will reveal the 'bg-card' color from your React wrapper. */
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc-scrollgrid-section-common td,
+.fc-list-day-cushion,
+.fc-list-event:hover td {
+  background-color: transparent !important;
+  border-color: var(--border) !important;
 }
 
-.fc .fc-toolbar-title {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: #0f172a; /* text-slate-900 */
-  text-transform: capitalize;
-}
-/* ==========================================
-   HEADER & TITLE (FIX LAYOUT SHIFT)
-   ========================================== */
-.custom-calendar-container .fc-toolbar {
-  margin-bottom: 2rem !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-}
-
-/* Chia header làm 3 phần bằng nhau tuyệt đối để không bị xô đẩy lẫn nhau */
-.custom-calendar-container .fc-toolbar-chunk {
-  flex: 1 1 0 !important; 
-}
-
-/* Khối bên trái (thường là Prev/Next/Today) */
-.custom-calendar-container .fc-toolbar-chunk:first-child {
-  display: flex;
-  justify-content: flex-start;
-}
-
-/* Khối ở giữa (Title tháng/năm) */
-.custom-calendar-container .fc-toolbar-chunk:nth-child(2) {
-  display: flex;
-  justify-content: center;
-}
-
-/* Khối bên phải (Nút Month/Week/Day) */
-.custom-calendar-container .fc-toolbar-chunk:last-child {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* Style cho Title */
-.fc .fc-toolbar-title {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: #0f172a; /* text-slate-900 */
-  text-transform: capitalize;
-  min-width: 250px; /* Đặt chiều rộng tối thiểu để chữ dài ra không đẩy layout */
-  text-align: center;
-}
-
-/* ==========================================
-   BUTTONS (Nút Tháng/Tuần/Ngày)
-   ========================================== */
-.fc .fc-button-primary {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important; /* border-slate-200 */
-  color: #64748b !important; /* text-slate-500 */
-  font-weight: 600 !important;
-  text-transform: capitalize !important;
-  padding: 2px 1rem !important;
-  border-radius: 0.5rem !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  transition: all 0.2s ease-in-out !important;
-  margin: 4px;
-}
-
-/* Trạng thái Hover của nút */
-.fc .fc-button-primary:hover {
-  background-color: #f8fafc !important; /* bg-slate-50 */
-  color: #0f172a !important; /* text-slate-900 */
-  border-color: #cbd5e1 !important; /* border-slate-300 */
-}
-
-/* Trạng thái Active (Nút đang được chọn) */
-.fc .fc-button-primary:not(:disabled).fc-button-active,
-.fc .fc-button-primary:not(:disabled):active {
-  background-color: #0f172a !important; /* Nền đen slate-900 cực kỳ sang trọng */
-  color: #ffffff !important;
-  border-color: #0f172a !important;
-  box-shadow: none !important;
-}
-
-/* Nút "Today" */
-.fc .fc-today-button {
-  background-color: #f1f5f9 !important; /* bg-slate-100 */
-  color: #0f172a !important;
-}
-
-.fc .fc-today-button:disabled {
-  opacity: 0.5 !important;
-  cursor: not-allowed !important;
-}
-
-/* ==========================================
-   CELL & DAY (Ô lịch)
-   ========================================== */
-.fc-daygrid-day {
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-/* Hover vào ô ngày */
-.fc-daygrid-day:hover {
-  background-color: #f8fafc !important; /* Xám nhạt thay vì xanh lá */
-}
-
-/* Ngày hôm nay (Today) */
-.fc-day-today {
+/* Remove the hidden white background from the calendar cells */
+.fc .fc-daygrid-day,
+.fc .fc-col-header-cell {
   background-color: transparent !important;
 }
 
+/* Day numbers: Must follow theme foreground to be readable on dark backgrounds */
+.fc .fc-daygrid-day-number {
+  color: var(--foreground) !important;
+  font-weight: 500;
+  text-decoration: none !important;
+}
+
+/* ==========================================
+   FIXED COLORS (STAY THE SAME IN DARK/LIGHT)
+   ========================================== */
+
+/* Calendar Title - Fixed Slate-900 */
+.fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  text-align: center;
+}
+
+/* Buttons - Fixed White/Slate style */
+
+.fc .fc-button-primary {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Active State - Fixed Dark Slate */
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+/* Today's Blue Circle - Fixed */
+.fc-day-today {
+  background-color: transparent !important;
+}
 .fc-day-today .fc-daygrid-day-number {
-  background-color: #3b82f6 !important; /* Blue-500 */
+  background-color: #3b82f6 !important;
   color: white !important;
   border-radius: 50%;
   width: 28px;
@@ -125,23 +74,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 4px auto; /* Canh giữa số */
+  margin: 4px auto !important;
 }
 
-/* Ngày đang được click chọn */
+/* Selected Day Outline - Fixed Blue */
 .fc-daygrid-day.selected-day-active {
-  background-color: rgba(59, 130, 246, 0.05) !important; /* Nền xanh dương siêu nhạt */
-  box-shadow: inset 0 0 0 2px #3b82f6 !important; /* Viền trong xanh dương mượt hơn outline */
-}
-
-/* ==========================================
-   EVENTS (Các dấu chấm công việc)
-   ========================================== */
-.fc-daygrid-event {
-  background: transparent !important;
-  border: none !important;
-}
-
-.fc-daygrid-dot-event:hover {
-  background: rgba(0,0,0,0.03) !important; /* Đổi màu nền cực nhẹ khi hover vào task */
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  box-shadow: inset 0 0 0 2px #3b82f6 !important;
 }

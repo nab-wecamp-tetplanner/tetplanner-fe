@@ -4,8 +4,41 @@
    TET PLANNER — Theme System (CSS Custom Properties)
    ============================================================ */
 
-/* ===== 🌸 Spring Blossom (Default) ===== */
 :root,
+/* ===== 🤍 Minimal Clean (Nguyên bản) ===== */
+:root[data-theme="minimal"] {
+  --bg: #F8FAFC;
+  --bg-card: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.95);
+  --bg-overlay: rgba(248, 250, 252, 0.95);
+  --primary: #3b82f6; /* Planner Blue */
+  --primary-light: #60a5fa;
+  --primary-dark: #2563eb;
+  --secondary: #10b981; /* Planner Green */
+  --secondary-light: #34d399;
+  --accent: #f59e0b; /* Planner Amber */
+  --accent-alt: #fef3c7;
+  --text: #334155; /* Slate 700 */
+  --text-heading: #0f172a; /* Slate 900 */
+  --text-muted: #64748b; /* Slate 500 */
+  --text-subtle: #94a3b8; /* Slate 400 */
+  --border: #e2e8f0; /* Slate 200 */
+  --border-hover: #cbd5e1; /* Slate 300 */
+  --shadow: rgba(0, 0, 0, 0.05);
+  --shadow-accent: rgba(59, 130, 246, 0.15);
+  --success: #22c55e;
+  --danger: #ef4444;
+  --gradient-warm: linear-gradient(135deg, #3b82f6, #2563eb);
+  --gradient-bg-1: rgba(59, 130, 246, 0.08); /* Blue nhạt */
+  --gradient-bg-2: rgba(16, 185, 129, 0.08); /* Green nhạt */
+  --pattern-opacity: 0; /* Ẩn pattern chìm */
+}
+
+/* Class tiện ích để tự động ẩn các đồ trang trí khi ở chế độ Minimal */
+:root[data-theme="minimal"] .tet-deco-element {
+  display: none !important;
+}
+/* ===== 🌸 Spring Blossom (Default) ===== */
 :root[data-theme="spring-blossom"] {
   --bg: #fdfbf7;
   --bg-card: rgba(255, 255, 255, 0.72);

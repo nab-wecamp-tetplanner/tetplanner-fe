@@ -48,13 +48,13 @@ export default function BudgetCard({
       <div className="flex flex-row gap-3">
       <button 
           onClick={() => onUpdate(id)}
-          className="text-[11px] px-3 py-1.5 bg-slate-100 text-slate-500 font-bold uppercase rounded  hover:text-green-400 transition-all"
+          className="text-[11px] px-3 py-1.5  text-slate-400 font-bold uppercase rounded  hover:text-green-400 transition-all"
         >
           <Edit3 className="w-4 h-4" />
         </button>
         <button 
           onClick={() => onDelete(id)}
-          className="group-hover:opacity-100 p-2 text-slate-300 hover:text-red-500 transition-all"
+          className="group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"
           title="Delete Category"
         >
           <Trash2 size={18} />

@@ -1,46 +1,39 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import React, { createContext, useState, useEffect, type ReactNode } from 'react';
 
-export type ThemeType = "minimal" | "bloom" | "mai";
+export type TetTheme = 'spring-blossom' | 'jade-prosperity' | 'morning-lantern' | 'midnight-dragon' | 'minimal';
 
-export const THEMES = {
-  minimal: "minimal",
-  bloom: "bloom",
-  mai: "mai",
-} as const;
+export interface ThemeContextType {
+  theme: TetTheme;
+  setTheme: (theme: TetTheme) => void;
+}
 
-type ThemeContextType = {
-  theme: ThemeType;
-  changeTheme: (newTheme: ThemeType) => void;
-};
+export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const ThemeContext = createContext<ThemeContextType>({
-  theme: "minimal",
-  changeTheme: () => {},
-});
-export const ThemeProvider = ({ children } : { children: ReactNode }) => {
-  // Default 'minimal'
-  const [theme, setTheme] = useState<ThemeType>("minimal");
+const THEME_STORAGE_KEY = 'tet-planner-theme';
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('app-theme') || 'minimal';
-    setTheme(savedTheme as typeof THEMES[keyof typeof THEMES]);
-  }, []);
+export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [theme, setThemeState] = useState<TetTheme>(() => {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
+    return (saved as TetTheme) || 'spring-blossom';
+  });
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute('data-theme', theme);
-    localStorage.setItem('app-theme', theme);
-  }, [theme]);
-
-  const changeTheme = (newTheme: ThemeType) => {
-    setTheme(newTheme);
+  const setTheme = (newTheme: TetTheme) => {
+    setThemeState(newTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
   };
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.classList.add('theme-transition');
+    const timer = setTimeout(() => {
+      document.documentElement.classList.remove('theme-transition');
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [theme]);
+
   return (
-    <ThemeContext.Provider value={{ theme, changeTheme }}>  
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
-
-export const useTheme = () => useContext(ThemeContext);

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { X, Plus, Check, Calendar } from 'lucide-react';
-import './ManagePhasesModal.css';
-import { type ManagePhasesModalProps } from '../../types/task';
-import { todoService } from '../../services/todoService';
-import { useToast } from '../../hooks/useToast';
+import React, { useState } from "react";
+import { X, Plus, Check, Calendar } from "lucide-react";
+import "./ManagePhasesModal.css";
+import { type ManagePhasesModalProps } from "../../types/task.types";
+import { todoService } from "../../services/todoService";
+import { useToast } from "../../hooks/useToast";
 
 const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   isOpen,
@@ -15,9 +15,9 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   activePhaseId,
   onSelectPhase,
 }) => {
-  const [name, setName] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [name, setName] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
@@ -26,7 +26,7 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !startDate || !endDate) {
-      toast.warning('Please fill in all fields (name and dates)!');
+      toast.warning("Please fill in all fields (name and dates)!");
       return;
     }
 
@@ -45,13 +45,13 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
       onPhaseCreated(newPhase);
       onSelectPhase(newPhase.id);
 
-      setName('');
-      setStartDate('');
-      setEndDate('');
+      setName("");
+      setStartDate("");
+      setEndDate("");
       onClose();
     } catch (error) {
       console.error(error);
-      toast.error('Error creating timeline phase!');
+      toast.error("Error creating timeline phase!");
     } finally {
       setIsLoading(false);
     }
@@ -59,10 +59,10 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
 
   const formatDate = (dateStr: string) => {
     try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
       });
     } catch {
       return dateStr;
@@ -98,7 +98,7 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
                 return (
                   <div
                     key={p.id}
-                    className={`mpm-phase ${isActive ? 'mpm-phase--active' : ''}`}
+                    className={`mpm-phase ${isActive ? "mpm-phase--active" : ""}`}
                     onClick={() => {
                       onSelectPhase(p.id);
                       onClose();
@@ -167,7 +167,7 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
           </div>
 
           <button className="mpm-submit" type="submit" disabled={isLoading}>
-            {isLoading ? 'Creating…' : 'Save Phase'}
+            {isLoading ? "Creating…" : "Save Phase"}
           </button>
         </form>
       </div>

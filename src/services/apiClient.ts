@@ -34,7 +34,7 @@ export class ApiClient {
       return this.post("/auth/login", data);
     },
 
-    verify: (data: { email: string; code: string }): ApiResponse<void> => {
+    verify: (data: { email: string; otp: string }): ApiResponse<void> => {
       return this.post("/auth/verify-otp", data);
     },
 
@@ -105,6 +105,7 @@ export class ApiClient {
       data: {
         name?: string;
         total_budget?: number;
+        year?: number;
       },
     ): ApiResponse<TetConfig> => {
       return this.patch("/tet-configs/" + id, data);
