@@ -98,7 +98,7 @@ const AuthenticatedActions = ({
             setShowAccount(false);
             setShowConfig(!showConfig);
           }}
-          className="w-fit max-w-40 flex items-center gap-2 px-3 py-2 text-sm font-medium text-text-main border border-accent rounded-lg hover:bg-(--primary)/10 transition-colors"
+          className="w-fit max-w-40 flex items-center gap-2 px-3 py-2 text-sm font-medium text-(--text) border border-accent rounded-lg hover:bg-(--primary)/10 transition-colors"
         >
           <span className="flex-1 truncate">
             {configs.find((c) => c.id === configId)?.name || "Select your plan"}
@@ -122,14 +122,14 @@ const AuthenticatedActions = ({
                   }}
                   className={`w-full text-left px-4 py-2.5 text-sm rounded-md transition-colors ${
                     configId === config.id
-                      ? "bg-(--primary)/10 text-text-main font-semibold"
-                      : "text-text-main hover:bg-(--primary)/10 hover:text-text-main/80"
+                      ? "bg-(--primary)/10 text-(--text) font-semibold"
+                      : "text-(--text) hover:bg-(--primary)/10 hover:text-(--text)/80"
                   }`}
                 >
                   {config.name}
                 </button>
               ))}
-              <button className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2">
+              <button className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2">
                 + Add new plan
               </button>
             </div>
@@ -145,12 +145,9 @@ const AuthenticatedActions = ({
             setShowAccount(false);
             setShowNotifications(!showNotifications);
           }}
-          className="text-text-main hover:text-(--primary) transition-colors relative translate-y-1"
+          className="text-(--text) hover:text-(--primary) transition-colors relative translate-y-1"
         >
-          <Bell
-            className="w-5 h-5"
-            fill={showNotifications ? "currentColor" : undefined}
-          />
+          <Bell className="text-(--text) w-5 h-5" fill="currentColor" />
           {unreadCount > 0 && (
             <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
           )}
@@ -159,15 +156,13 @@ const AuthenticatedActions = ({
         {showNotifications && (
           <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-lg shadow-lg z-50">
             <div className="p-3 border-b border-accent flex justify-between items-center">
-              <span className="font-semibold text-text-main">
-                Notifications
-              </span>
+              <span className="font-semibold text-(--text)">Notifications</span>
               {unreadCount > 0 && (
                 <button
                   onClick={() =>
                     markAllNotificationsAsRead(notifications, setNotifications)
                   }
-                  className="text-xs text-primary hover:opacity-80 transition-opacity"
+                  className="text-xs text-(--text) hover:opacity-80 transition-opacity"
                 >
                   Mark all read
                 </button>
@@ -188,8 +183,8 @@ const AuthenticatedActions = ({
                   }}
                   className={`p-3 cursor-pointer transition-colors text-sm ${
                     n.isRead
-                      ? "bg-transparent text-text-main opacity-60 hover:bg-(--primary)/10"
-                      : "bg-accent font-semibold text-text-main hover:bg-(--primary)/10/80"
+                      ? "bg-transparent text-(--text) opacity-60 hover:bg-(--primary)/10"
+                      : "bg-accent font-semibold text-(--text) hover:bg-(--primary)/10/80"
                   } mb-2 rounded`}
                 >
                   <div className="flex justify-between items-start">
@@ -208,7 +203,7 @@ const AuthenticatedActions = ({
                 </button>
               )}
               {notifications.length === 0 && (
-                <div className="p-8 text-center text-text-main opacity-70">
+                <div className="p-8 text-center text-(--text) opacity-70">
                   <p className="text-sm">No notifications yet</p>
                 </div>
               )}
@@ -231,7 +226,7 @@ const AuthenticatedActions = ({
             <div className="w-8 h-8 rounded-full bg-primary text-bg-main flex items-center justify-center font-semibold  transition-opacity cursor-pointer">
               {currentUser?.name?.charAt(0).toUpperCase()}
             </div>
-            <p className="text-sm font-semibold text-text-main">
+            <p className="text-sm font-semibold text-(--text)">
               {currentUser?.name}
             </p>
           </button>
@@ -239,10 +234,10 @@ const AuthenticatedActions = ({
           {showAccount && (
             <div className="absolute right-0 mt-2 w-64 bg-(--bg) border border-accent rounded-xl shadow-lg z-50">
               <div className="p-4 border-b border-accent">
-                <p className="text-sm font-semibold text-text-main">
+                <p className="text-sm font-semibold text-(--text)">
                   {currentUser?.name}
                 </p>
-                <p className="text-xs text-text-main opacity-60">
+                <p className="text-xs text-(--text) opacity-60">
                   {currentUser?.email}
                 </p>
               </div>
@@ -252,7 +247,7 @@ const AuthenticatedActions = ({
                 <Link
                   to="/settings"
                   onClick={() => setShowAccount(false)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
+                  className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
                 >
                   <Profile size={16} />
                   Profile
@@ -260,13 +255,13 @@ const AuthenticatedActions = ({
                 <Link
                   to="/settings"
                   onClick={() => setShowAccount(false)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-text-main hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
+                  className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
                 >
                   <Settings size={16} />
                   Settings
                 </Link>
                 <div className="w-full px-4 flex flex-col gap-3 border-y border-accent py-3">
-                  <div className="text-left text-sm text-text-main flex items-center gap-3">
+                  <div className="text-left text-sm text-(--text) flex items-center gap-3">
                     <Palette size={16} />
                     Theme
                   </div>
@@ -277,7 +272,7 @@ const AuthenticatedActions = ({
                     logout();
                     setShowAccount(false);
                   }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-text-main rounded-b-xl hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
+                  className="w-full text-left px-4 py-2.5 text-sm text-(--text) rounded-b-xl hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
                 >
                   <LogOut size={16} />
                   Log out

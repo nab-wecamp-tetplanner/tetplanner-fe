@@ -1,6 +1,6 @@
 import React from "react";
 import { useTheme } from "../../hooks/useTheme";
-import type { TetTheme } from "../../context/ThemeContext";
+import type { TetTheme } from "../../contexts/ThemeContext";
 import "./ThemeSelector.css";
 
 const THEMES: {

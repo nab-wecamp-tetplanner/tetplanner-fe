@@ -20,7 +20,8 @@ import {
 import { transactionApi } from "../services/transactionService";
 import { financeApi } from "../services/financeApi";
 import type { TransactionResponse } from "../services/transactionService";
-import { AddTransactionModal } from "../components/transaction/AddTransactionModal"; // Import Modal thêm/sửa
+import { AddTransactionModal } from "../components/Transaction/AddTransactionModal"; // Import Modal thêm/sửa
+import { useAppStore } from "../stores/useAppStore";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles: Sparkles,
@@ -125,9 +126,10 @@ const QuickStats = ({ transactions }: { transactions: TransactionType[] }) => {
 // ==========================================
 
 export default function Transaction() {
-  const [tetConfigId, setTetConfigId] = useState<string>(
-    localStorage.getItem("tetConfigId") || "",
-  );
+  // Get configId from Zustand store
+  const tetConfigId = useAppStore((state) => state.configId);
+  const setConfigId = useAppStore((state) => state.setConfigId);
+
   const [allConfigs, setAllConfigs] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
@@ -144,7 +146,7 @@ export default function Transaction() {
 
   // Hàm tải danh sách giao dịch (để gọi lại sau khi thêm/sửa/xóa)
   // Cập nhật hàm fetchTxns bên trong component Transaction
-  const fetchTxns = async (configId: string, silent = false) => {
+  const fetchTxns = async (configId: string | null, silent = false) => {
     if (!configId) return;
 
     // Chỉ hiện loading nếu không phải là refresh ngầm
@@ -180,8 +182,9 @@ export default function Transaction() {
 
         if (configsData.length > 0) {
           const currentId = tetConfigId || configsData[0].id;
-          setTetConfigId(currentId);
-          localStorage.setItem("tetConfigId", currentId);
+          if (!tetConfigId) {
+            setConfigId(currentId);
+          }
 
           const catsData = await financeApi.getCategories(currentId);
           setCategories(catsData);
@@ -194,6 +197,7 @@ export default function Transaction() {
       }
     };
     initData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tetConfigId]);
 
   // API HANDLERS
@@ -249,7 +253,7 @@ export default function Transaction() {
   }, [searchTerm, transactions]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
@@ -262,8 +266,8 @@ export default function Transaction() {
                 Transactions
               </h1>
               <select
-                value={tetConfigId}
-                onChange={(e) => setTetConfigId(e.target.value)}
+                value={tetConfigId || ""}
+                onChange={(e) => setConfigId(e.target.value)}
                 className="ml-4 p-2 bg-card border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 {allConfigs.map((config) => (
