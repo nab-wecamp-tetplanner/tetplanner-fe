@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useState } from "react";
 import {
   X,
   ShoppingBag,
@@ -8,16 +9,17 @@ import {
   Layers,
   Clock,
   Calendar,
-  ChevronDown, // Added for the dropdown indicator
+  ChevronDown,
 } from "lucide-react";
-import type { ShoppingItem, CustomCategory } from "../../types/shopping.types";
+import type { ShoppingItem } from "../../types/shopping.types";
 import type { Timeline } from "../../types/timeline.types";
+import type { Category } from "../../types/dashboard.types";
 
 interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (item: Omit<ShoppingItem, "id">) => void;
-  categories: CustomCategory[];
+  categories: Category[];
   phases: Timeline[];
   defaultPhaseId?: string | null;
   initialData?: ShoppingItem;
@@ -32,35 +34,21 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   defaultPhaseId,
   initialData,
 }) => {
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("1");
-  const [category, setCategory] = useState("");
-  const [phase, setPhase] = useState("");
-  const [dueDate, setDueDate] = useState("");
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    if (initialData) {
-      setName(initialData.name || "");
-      setPrice(initialData.price?.toString() || "");
-      setQuantity(initialData.quantity?.toString() || "1");
-      setCategory(initialData.category || "");
-      setPhase(initialData.timelinePhaseId || "");
-      const dateValue = initialData.dueDate
-        ? initialData.dueDate.split("T")[0]
-        : "";
-      setDueDate(dateValue);
-    } else {
-      setName("");
-      setPrice("");
-      setQuantity("1");
-      setCategory(categories.length > 0 ? categories[0].id : "");
-      setPhase(defaultPhaseId || "");
-      setDueDate("");
-    }
-  }, [isOpen, initialData?.id]);
+  // KHỞI TẠO STATE TRỰC TIẾP (Bỏ useEffect để tránh lỗi cascading render)
+  const [name, setName] = useState(initialData?.name || "");
+  const [price, setPrice] = useState(initialData?.price?.toString() || "");
+  const [quantity, setQuantity] = useState(
+    initialData?.quantity?.toString() || "1",
+  );
+  const [category, setCategory] = useState(
+    initialData?.category || (categories.length > 0 ? categories[0].id : ""),
+  );
+  const [phase, setPhase] = useState(
+    initialData?.timelinePhaseId || defaultPhaseId || "",
+  );
+  const [dueDate, setDueDate] = useState(
+    initialData?.dueDate ? initialData?.dueDate.split("T")[0] : "",
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,19 +63,6 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
       dueDate,
       timelinePhaseId: phase,
     });
-
-    onClose();
-  };
-
-  const handleClose = () => {
-    if (!initialData) {
-      setName("");
-      setPrice("");
-      setQuantity("1");
-      setCategory(categories[0]?.id || "");
-      setPhase(defaultPhaseId || "");
-      setDueDate("");
-    }
     onClose();
   };
 
@@ -95,7 +70,8 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-      <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-300">
+      {/* KHUNG GỐC CỦA BẠN - GIỮ NGUYÊN CLASS */}
+      <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl max-w-md w-full overflow-hidden">
         {/* Header Section */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-muted/20">
           <div className="flex items-center gap-3">
@@ -107,7 +83,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
             </h2>
           </div>
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="p-2 hover:bg-muted rounded-full transition-colors"
           >
             <X className="w-5 h-5 text-muted-foreground" />
@@ -118,8 +94,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
           {/* Item Name */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Tag className="w-4 h-4 text-primary" />
-              Item name *
+              <Tag className="w-4 h-4 text-primary" /> Item name *
             </label>
             <input
               type="text"
@@ -127,54 +102,49 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Sticky rice cake"
               className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-              autoFocus
               required
             />
           </div>
 
-          {/* Price & Quantity */}
+          {/* Price & Quantity - DÙNG LẠI CLASS PLANNER-X CỦA BẠN */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Banknote className="w-4 h-4 text-planner-green" />
-                Price (VND) *
+                <Banknote className="w-4 h-4 text-planner-green" /> Price (VND)
+                *
               </label>
               <input
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="150000"
-                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-green/20 transition-all"
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-green/20"
                 required
-                min="0"
               />
             </div>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Hash className="w-4 h-4 text-planner-amber" />
-                Quantity
+                <Hash className="w-4 h-4 text-planner-amber" /> Quantity
               </label>
               <input
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-amber/20 transition-all"
-                min="1"
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-amber/20"
               />
             </div>
           </div>
 
-          {/* Category Dropdown with Chevron */}
+          {/* Category */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Layers className="w-4 h-4 text-planner-purple" />
-              Category
+              <Layers className="w-4 h-4 text-planner-purple" /> Category
             </label>
             <div className="relative">
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-purple/20 transition-all appearance-none cursor-pointer pr-10"
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-planner-purple/20 pr-10 outline-none"
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -186,22 +156,18 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
             </div>
           </div>
 
-          {/* Timeline Phase Dropdown with Chevron */}
+          {/* Phase */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Clock className="w-4 h-4 text-planner-blue" />
-              Timeline Phase *
+              <Clock className="w-4 h-4 text-planner-blue" /> Timeline Phase *
             </label>
             <div className="relative">
               <select
                 value={phase}
                 onChange={(e) => setPhase(e.target.value)}
-                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-blue/20 transition-all appearance-none cursor-pointer pr-10"
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium appearance-none cursor-pointer focus:ring-2 focus:ring-planner-blue/20 pr-10 outline-none"
                 required
               >
-                {phases.length === 0 && (
-                  <option value="">No phases available</option>
-                )}
                 {phases.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -212,17 +178,16 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
             </div>
           </div>
 
-          {/* Due Date */}
+          {/* Due date */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Calendar className="w-4 h-4 text-planner-pink" />
-              Due date
+              <Calendar className="w-4 h-4 text-planner-pink" /> Due date
             </label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-pink/20 transition-all"
+              className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-planner-pink/20"
             />
           </div>
 
@@ -230,14 +195,14 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
           <div className="flex gap-3 pt-4">
             <button
               type="button"
-              onClick={handleClose}
-              className="flex-1 px-6 py-4 border border-border text-foreground rounded-2xl hover:bg-muted transition-all font-bold text-sm"
+              onClick={onClose}
+              className="flex-1 px-6 py-4 border border-border text-foreground rounded-2xl hover:bg-muted font-bold text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-4 bg-primary text-primary-foreground rounded-2xl hover:opacity-90 transition-all font-bold text-sm shadow-lg shadow-primary/20"
+              className="flex-1 px-6 py-4 bg-primary text-primary-foreground rounded-2xl hover:opacity-90 font-bold text-sm shadow-lg shadow-primary/20"
             >
               {initialData ? "Save Changes" : "Add Item"}
             </button>

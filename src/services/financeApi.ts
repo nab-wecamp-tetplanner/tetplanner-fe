@@ -1,6 +1,10 @@
 import apiClient from "./apiClient";
 import type { ShoppingItem } from "../types/shopping.types";
 import type { Category } from "../types/dashboard.types";
+import type {
+  CategoryCreateRequest,
+  CategoryResponse,
+} from "../types/categories.type";
 
 // ==========================================
 // TYPES - Backend Structure
@@ -135,31 +139,19 @@ const mapFrontendItemToBackend = (
   return payload;
 };
 
+// Trong financeApi.ts
+
 const mapBackendCategoryToFrontend = (
   cat: BackendCategory,
-  index?: number,
-): {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  allocated: number;
-  spent: number;
-} => {
-  // Default colors for categories without color (rotate through palette)
-  const defaultColors = ["#3b82f6", "#ec4899", "#a855f7", "#10b981", "#f59e0b"];
-  const fallbackColor =
-    index !== undefined
-      ? defaultColors[index % defaultColors.length]
-      : "#94a3b8";
-
+): CategoryResponse => {
   return {
-    id: cat.id, // Already string UUID
+    id: cat.id,
     name: cat.name,
     icon: cat.icon || "Package",
-    color: cat.color || fallbackColor, // Use color from backend or assign from palette
-    allocated: cat.allocated_budget || 0,
-    spent: 0,
+    color: cat.color || "#10b981",
+    is_system: cat.is_system || false,
+    allocated_budget: cat.allocated_budget || 0,
+    tet_config: { id: Number(cat.tet_config_id) },
   };
 };
 
@@ -210,7 +202,7 @@ export const financeApi = {
     const backendItem = mapFrontendItemToBackend(
       { ...item, timelinePhaseId },
       tetConfigId,
-      false, 
+      false,
     );
 
     // Debug logging - FULL OBJECT
@@ -248,7 +240,7 @@ export const financeApi = {
     const backendUpdates = mapFrontendItemToBackend(
       { ...updates, timelinePhaseId },
       tetConfigId,
-      true, 
+      true,
     );
 
     const response = await apiClient.patch<{
@@ -333,15 +325,15 @@ export const financeApi = {
   },
 
   addCategory: async (
-    tetConfigId: string, // Changed to string
-    category: { name: string; icon: string; color: string; allocated: number },
-  ) => {
-    const payload = {
-      name: category.name,
-      icon: category.icon,
-      color: category.color,
-      allocated_budget: category.allocated,
+    tetConfigId: string,
+    category: Omit<CategoryCreateRequest, "tet_config_id">, // We omit ID because it's passed separately
+  ): Promise<CategoryResponse> => {
+    const payload: CategoryCreateRequest = {
+      ...category,
       tet_config_id: tetConfigId,
+      // Ensure allocated_budget is set even if the Modal sends 'allocated'
+      allocated_budget:
+        (category as any).allocated || category.allocated_budget || 0,
     };
 
     console.log("Creating category - payload:", payload);

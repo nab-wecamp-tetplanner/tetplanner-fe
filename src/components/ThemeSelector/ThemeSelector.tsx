@@ -3,12 +3,42 @@ import { useTheme } from "../../hooks/useTheme";
 import type { TetTheme } from "../../contexts/ThemeContext";
 import "./ThemeSelector.css";
 
-const THEMES: { id: TetTheme; label: string; icon: string; colors: [string, string] }[] = [
-  { id: 'spring-blossom',    label: 'Spring Blossom',    icon: '🌸', colors: ['#fbbf24', '#dc2626'] },
-  { id: 'jade-prosperity',   label: 'Jade Prosperity',   icon: '🀄', colors: ['#22c55e', '#ca8a04'] },
-  { id: 'morning-lantern',   label: 'Morning Lantern',   icon: '🏮', colors: ['#fb923c', '#dc2626'] },
-  { id: 'midnight-dragon',   label: 'Midnight Dragon',   icon: '🐉', colors: ['#f59e0b', '#1e293b'] },
-  { id: 'minimal',           label: 'Minimal Clean',     icon: '🤍', colors: ['#3b82f6', '#f8fafc'] },
+const THEMES: {
+  id: TetTheme;
+  label: string;
+  icon: string;
+  colors: [string, string];
+}[] = [
+  {
+    id: "spring-blossom",
+    label: "Spring Blossom",
+    icon: "🌸",
+    colors: ["#fbbf24", "#dc2626"],
+  },
+  {
+    id: "jade-prosperity",
+    label: "Jade Prosperity",
+    icon: "🀄",
+    colors: ["#22c55e", "#ca8a04"],
+  },
+  {
+    id: "morning-lantern",
+    label: "Morning Lantern",
+    icon: "🏮",
+    colors: ["#fb923c", "#dc2626"],
+  },
+  {
+    id: "midnight-dragon",
+    label: "Midnight Dragon",
+    icon: "🐉",
+    colors: ["#f59e0b", "#1e293b"],
+  },
+  {
+    id: "minimal",
+    label: "Minimal Clean",
+    icon: "🤍",
+    colors: ["#3b82f6", "#f8fafc"],
+  },
 ];
 
 const ThemeSelector: React.FC = () => {
