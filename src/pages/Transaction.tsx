@@ -141,7 +141,7 @@ export default function Transaction() {
   const tetConfigId = useAppStore((state) => state.configId);
   const setConfigId = useAppStore((state) => state.setConfigId);
 
-  const [allConfigs, setAllConfigs] = useState<any[]>([]);
+  const [ , setAllConfigs] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [loading, setLoading] = useState(true);
