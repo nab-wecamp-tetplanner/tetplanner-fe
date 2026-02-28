@@ -1,136 +1,121 @@
-import { useState } from 'react';
-import { Save } from 'lucide-react';
+import { useState } from "react";
+import { Save, ShieldCheck } from "lucide-react";
 
 const AccountSection = () => {
   const [formData, setFormData] = useState({
-    email: 'kevin@example.com',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    email: "yennhi.dev@example.com",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordError, setPasswordError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSaveChanges = () => {
-    if (formData.newPassword !== formData.confirmPassword) {
-      setPasswordError('Passwords do not match');
-      return;
-    }
-    console.log('Saving account changes:', formData);
-    setIsEditing(false);
-    setPasswordError('');
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-        Account
-      </h2>
+    <div className="p-6 md:p-8 animate-in fade-in duration-500">
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-stone-900 tracking-tight flex items-center gap-2">
+          <ShieldCheck size={20} className="text-(--primary)" /> Account
+          Security
+        </h2>
+        <p className="text-sm text-stone-500 mt-1">
+          Update your email and password settings.
+        </p>
+      </div>
 
-      <div className="space-y-6">
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Email address
+      <div className="space-y-6 max-w-md">
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-bold text-stone-400 uppercase tracking-widest ml-1">
+            Email Address
           </label>
           <input
-            type="email"
             name="email"
             value={formData.email}
             onChange={handleInputChange}
             disabled={!isEditing}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm font-semibold focus:border-(--primary) outline-none transition-all disabled:bg-stone-50 disabled:text-stone-400"
           />
         </div>
 
         {isEditing && (
-          <>
-            {/* Current Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Current password
+          <div className="p-5 bg-stone-50 rounded-2xl border border-stone-100 space-y-4 animate-in slide-in-from-top-2">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-stone-400 uppercase">
+                Current Password
               </label>
               <input
                 type="password"
                 name="currentPassword"
                 value={formData.currentPassword}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm outline-none focus:border-(--primary)"
               />
             </div>
-
-            {/* New Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                New password
-              </label>
-              <input
-                type="password"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-stone-400 uppercase">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm outline-none focus:border-(--primary)"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-stone-400 uppercase">
+                  Confirm New
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm outline-none focus:border-(--primary)"
+                />
+              </div>
             </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Confirm password
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {passwordError && (
-                <p className="text-sm text-red-600 dark:text-red-400 mt-2">
-                  {passwordError}
-                </p>
-              )}
-            </div>
-          </>
+            {passwordError && (
+              <p className="text-[10px] text-red-500 font-bold">
+                {passwordError}
+              </p>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Footer Buttons */}
-      <div className="flex justify-end gap-3 mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex justify-end gap-3 mt-10 pt-6 border-t border-stone-50">
         {isEditing ? (
           <>
             <button
               onClick={() => {
                 setIsEditing(false);
-                setPasswordError('');
+                setPasswordError("");
               }}
-              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+              className="px-5 py-2 text-xs font-bold text-stone-400"
             >
               Cancel
             </button>
             <button
-              onClick={handleSaveChanges}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              onClick={() => setIsEditing(false)}
+              className="flex items-center gap-2 px-6 py-2 bg-(--primary) text-white rounded-lg text-xs font-bold shadow-md hover:opacity-90 transition-all"
             >
-              <Save size={18} />
-              Save changes
+              <Save size={16} /> Update Account
             </button>
           </>
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-2 bg-stone-900 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-black transition-all"
           >
-            <Save size={18} />
             Edit Account
           </button>
         )}

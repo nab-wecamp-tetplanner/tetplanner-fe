@@ -36,7 +36,7 @@ import TaskFilter, {
 } from "../../components/TaskFilter/TaskFilter";
 import type { TaskFilters } from "../../components/TaskFilter/TaskFilter";
 import { useToast } from "../../hooks/useToast";
-import { useAuthContext } from "../../contexts/AuthContext";
+import { useAuthContext } from "../../contexts/AuthTypes";
 import { useAppStore } from "../../stores/useAppStore";
 
 /* ===== Decorative SVG Background Pattern ===== */

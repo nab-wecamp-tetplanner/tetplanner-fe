@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthContext } from "../../contexts/AuthContext";
+import { useAuthContext } from "../../contexts/AuthTypes";
 import { toast } from "react-toastify";
-import { User, Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  User,
+  Mail,
+  Lock,
+  ArrowRight,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +19,7 @@ const Register = () => {
     confirmPassword: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { register } = useAuthContext();
   const navigate = useNavigate();
 
@@ -25,7 +32,7 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       return toast.error("The confirmation password does not match!");
     }
@@ -37,7 +44,9 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
       });
-      toast.success("Successfully registered! Please check your email to verify your account.");
+      toast.success(
+        "Successfully registered! Please check your email to verify your account.",
+      );
       navigate("/verify-otp", { state: { email: formData.email } });
     } catch (error: any) {
       toast.error(error.message || "Registration failed. Please try again.");
@@ -54,7 +63,9 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Full Name
+              </label>
               <div className="relative">
                 <input
                   name="name"
@@ -71,7 +82,9 @@ const Register = () => {
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email Address
+              </label>
               <div className="relative">
                 <input
                   name="email"
@@ -88,7 +101,9 @@ const Register = () => {
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Password
+              </label>
               <div className="relative">
                 <input
                   name="password"
@@ -105,7 +120,9 @@ const Register = () => {
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Confirm Password
+              </label>
               <div className="relative">
                 <input
                   name="confirmPassword"
@@ -127,10 +144,12 @@ const Register = () => {
                 By creating an account, you agree to our{" "}
                 <a href="/terms" className="text-blue-600 hover:underline">
                   Terms of Service
-                </a>{" "}and{" "}
+                </a>{" "}
+                and{" "}
                 <a href="/privacy" className="text-blue-600 hover:underline">
                   Privacy Policy
-                </a>.
+                </a>
+                .
               </p>
             </div>
 
@@ -155,7 +174,10 @@ const Register = () => {
         {/* Footer Link */}
         <p className="text-center mt-6 text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 font-semibold hover:underline">
+          <Link
+            to="/login"
+            className="text-blue-600 font-semibold hover:underline"
+          >
             Sign in
           </Link>
         </p>

@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
-import { Camera, Trash2, Save } from "lucide-react";
+import {
+  Camera,
+  Trash2,
+  Save,
+  User as UserIcon,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import apiClient from "../../services/apiClient";
 import type { User } from "../../types/auth.types";
+import { useAuthContext } from "../../contexts/AuthTypes";
 
 const ProfileSection = () => {
+  // --- GIỮ NGUYÊN LOGIC ---
   const [formData, setFormData] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const { setCurrentUser } = useAuthContext(); // Lấy hàm từ Context
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -18,23 +29,14 @@ const ProfileSection = () => {
         console.error(err);
       }
     };
-
     fetchUser();
   }, []);
-
-  const [isEditing, setIsEditing] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
+    setFormData((prev) => (prev ? { ...prev, [name]: value } : prev));
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,9 +47,9 @@ const ProfileSection = () => {
         setError(null);
         const updatedUser = await apiClient.users.uploadAvatar(file);
         setFormData(updatedUser);
-      } catch (err) {
+        setCurrentUser(updatedUser);
+      } catch {
         setError("Failed to upload image");
-        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -63,14 +65,13 @@ const ProfileSection = () => {
         image_url: "",
       });
       setFormData(updatedUser);
-    } catch (err) {
-      setError("Failed to delete image");
-      console.error(err);
+      setCurrentUser(updatedUser); // Đồng bộ Header
+    } catch {
+      setError("Failed to delete image"); // Đưa xuống catch mới đúng
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleSaveChanges = async () => {
     if (!formData) return;
     try {
@@ -80,12 +81,23 @@ const ProfileSection = () => {
         name: formData.name,
       });
       setFormData(updatedUser);
+      setCurrentUser(updatedUser); // THÊM DÒNG NÀY để Header cập nhật tên mới
       setIsEditing(false);
-    } catch (err: any) {
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to save changes";
+    } catch (err: unknown) {
+      let errorMessage = "Failed to update profile";
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as any).response === "object" &&
+        (err as any).response !== null &&
+        "data" in (err as any).response &&
+        typeof (err as any).response.data === "object" &&
+        (err as any).response.data !== null &&
+        "message" in (err as any).response.data
+      ) {
+        errorMessage = (err as { response: { data: { message: string } } }).response.data.message;
+      }
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -94,155 +106,170 @@ const ProfileSection = () => {
 
   if (!formData) {
     return (
-      <div className="p-8 flex justify-center items-center">
-        <div className="text-(--text)">Loading profile...</div>
+      <div className="p-8 flex flex-col justify-center items-center space-y-4">
+        <div className="w-8 h-8 border-4 border-(--primary) border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-stone-400 text-sm font-medium animate-pulse">
+          Refining profile...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold text-(--text-heading) mb-8">Profile</h2>
+    <div className="p-4 md:p-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
+      {/* Header - Thu nhỏ size chữ và margin */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-black text-stone-900 tracking-tight">
+          Public Profile
+        </h2>
+        <p className="text-stone-500 text-sm font-medium">
+          Manage how others see you.
+        </p>
+      </div>
 
-      {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-600 dark:text-red-400">{error}</p>
+        <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-600 shadow-sm">
+          <AlertCircle size={18} />
+          <p className="text-xs font-bold">{error}</p>
         </div>
       )}
 
-      {/* Profile Picture Section */}
-      <div className="mb-8">
-        <label className="block text-sm font-medium text-(--text) mb-4">
-          Profile picture
-        </label>
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            {formData.image_url ? (
-              <img
-                src={formData.image_url}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 "
-              />
-            ) : (
-              <div className="w-32 h-32 text-4xl rounded-full bg-primary text-bg-main flex items-center justify-center font-semibold border-4 border-gray-200">
-                {formData.name?.charAt(0).toUpperCase()}
+      <div className="space-y-8">
+        {/* Profile Picture Section - Resize padding, rounded, avatar */}
+        <section className="bg-white p-6 rounded-[1.5rem] border border-stone-100 shadow-lg shadow-stone-200/30">
+          <div className="flex flex-col md:flex-row md:items-center gap-8">
+            <div className="relative group mx-auto md:mx-0">
+              <div className="absolute -inset-1 bg-gradient-to-tr from-(--primary) to-orange-400 rounded-full blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+              {formData.image_url ? (
+                <img
+                  src={formData.image_url}
+                  alt="Profile"
+                  className="relative w-28 h-28 rounded-full object-cover ring-2 ring-white shadow-xl"
+                />
+              ) : (
+                <div className="relative w-28 h-28 text-3xl rounded-full bg-gradient-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center font-black ring-2 ring-white shadow-xl">
+                  {formData.name?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 space-y-4 text-center md:text-left">
+              <div>
+                <h3 className="text-base font-bold text-stone-900">
+                  Your Photo
+                </h3>
+                <p className="text-xs text-stone-500">
+                  JPG, PNG or GIF. Max size of 2MB.
+                </p>
               </div>
-            )}
+              <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    disabled={isLoading}
+                  />
+                  <div className="flex items-center gap-2 px-4 py-2 bg-stone-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50">
+                    <Camera size={14} /> Change
+                  </div>
+                </label>
+                <button
+                  onClick={handleDeleteImage}
+                  disabled={isLoading || !formData.image_url}
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition-all disabled:opacity-30 border border-transparent hover:border-red-50"
+                >
+                  <Trash2 size={14} /> Remove
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-3 pt-4">
-            <label className="relative">
+        </section>
+
+        {/* Form Fields Section - Resize gap và padding input */}
+        <section className="space-y-6 px-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] ml-1">
+                Display Name
+              </label>
               <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                disabled={isLoading}
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className={`w-full px-4 py-3 rounded-xl border transition-all outline-none text-sm font-bold
+                  ${
+                    isEditing
+                      ? "border-stone-200 bg-white focus:ring-2 focus:ring-(--primary)/10 focus:border-(--primary) shadow-sm"
+                      : "border-stone-100 bg-stone-50 text-stone-500 cursor-not-allowed"
+                  }`}
               />
-              <button
-                onClick={() =>
-                  (
-                    document.querySelector(
-                      'input[type="file"]',
-                    ) as HTMLInputElement
-                  )?.click()
-                }
-                disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-(--primary) hover:bg-(--primary-light) text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] ml-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                disabled
+                className="w-full px-4 py-3 rounded-xl border border-stone-100 bg-stone-50/50 text-stone-400 text-sm font-bold cursor-not-allowed opacity-70"
+              />
+            </div>
+          </div>
+
+          {/* Verification Status - Gọn lại */}
+          <div className="pt-4 border-t border-stone-50">
+            <div className="flex items-center justify-between p-4 bg-stone-50/50 rounded-xl border border-stone-100">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`p-1.5 rounded-lg ${formData.is_verified ? "bg-green-100 text-green-600" : "bg-orange-100 text-orange-600"}`}
+                >
+                  <CheckCircle size={16} />
+                </div>
+                <p className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                  Account Status
+                </p>
+              </div>
+              <span
+                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm
+                ${formData.is_verified ? "bg-green-50 text-green-600 border-green-200" : "bg-orange-50 text-orange-600 border-orange-200"}`}
               >
-                <Camera size={18} />
-                Change picture
-              </button>
-            </label>
-            <button
-              onClick={handleDeleteImage}
-              disabled={isLoading || !formData.image_url}
-              className="flex items-center gap-2 px-4 py-2 bg-(--danger) hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Trash2 size={18} />
-              Delete picture
-            </button>
+                {formData.is_verified ? "Verified" : "Pending"}
+              </span>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Form Fields */}
-      <div className="space-y-6">
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-(--text) mb-2">
-            Name
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            disabled={!isEditing}
-            className="w-full px-4 py-2 border border-gray-500  rounded-lg bg-(--secondary-light)/20 text-(--text-muted)  disabled:bg-(--secondary-light)/20 disabled:text-(--text-muted) focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Email (read-only) */}
-        <div>
-          <label className="block text-sm font-medium text-(--text) mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            value={formData.email}
-            disabled
-            className="w-full px-4 py-2 border border-gray-500 dark:border-gray-600 rounded-lg bg-(--secondary-light)/20 text-(--text-muted) cursor-not-allowed"
-          />
-        </div>
-
-        {/* Verification Status */}
-        <div>
-          <label className="block text-sm font-medium text-(--text) mb-2">
-            Account Status
-          </label>
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                formData.is_verified
-                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                  : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
-              }`}
-            >
-              {formData.is_verified ? "Verified" : "Not Verified"}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Buttons */}
-      <div className="flex justify-end gap-3 mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+      {/* Footer Actions - Resize padding và margin top */}
+      <div className="flex justify-end items-center gap-3 mt-10 pt-6 border-t border-stone-100">
         {isEditing ? (
           <>
             <button
               onClick={() => setIsEditing(false)}
-              disabled={isLoading}
-              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 text-xs font-black text-stone-400 uppercase tracking-widest hover:text-stone-900 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSaveChanges}
               disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-2 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-(--primary) hover:bg-(--primary-light)"
+              className="flex items-center gap-2 px-8 py-2.5 bg-gradient-to-r from-(--primary) to-orange-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-red-500/10 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
             >
-              <Save size={18} />
-              {isLoading ? "Saving..." : "Save changes"}
+              <Save size={16} /> Save Changes
             </button>
           </>
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-6 py-2 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-(--primary) hover:bg-(--primary-light)"
+            className="flex items-center gap-2 px-8 py-2.5 bg-stone-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-stone-900/10 hover:bg-black active:scale-95 transition-all"
           >
-            <Save size={18} />
-            Edit Profile
+            <UserIcon size={16} /> Edit Profile
           </button>
         )}
       </div>

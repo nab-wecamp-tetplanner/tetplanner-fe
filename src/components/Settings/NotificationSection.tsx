@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Save } from 'lucide-react';
+import { useState } from "react";
+import { Save, Bell } from "lucide-react";
 
 const NotificationSection = () => {
   const [settings, setSettings] = useState({
@@ -14,84 +14,79 @@ const NotificationSection = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleToggle = (key: keyof typeof settings) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
-
-  const handleSaveChanges = () => {
-    console.log('Saving notification settings:', settings);
-    setIsEditing(false);
-  };
-
-  const notificationOptions = [
-    {
-      key: 'emailNotifications',
-      label: 'Email Notifications',
-      description: 'Receive notifications via email',
-    },
-    {
-      key: 'taskReminders',
-      label: 'Task Reminders',
-      description: 'Get reminded about upcoming tasks',
-    },
-    {
-      key: 'weeklyDigest',
-      label: 'Weekly Digest',
-      description: 'Receive a weekly summary of your activities',
-    },
-    {
-      key: 'desktopNotifications',
-      label: 'Desktop Notifications',
-      description: 'Show notifications on your desktop',
-    },
-    {
-      key: 'soundNotifications',
-      label: 'Sound Notifications',
-      description: 'Play sound when you receive notifications',
-    },
-    {
-      key: 'showNotificationBadge',
-      label: 'Notification Badge',
-      description: 'Show notification badge on app icon',
-    },
-  ];
 
   return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-        Notifications
-      </h2>
+    <div className="p-6 md:p-8 animate-in fade-in duration-500">
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-stone-900 tracking-tight flex items-center gap-2">
+          <Bell size={20} className="text-(--primary)" /> Notifications
+        </h2>
+        <p className="text-sm text-stone-500 mt-1">
+          Configure how you receive alerts and updates.
+        </p>
+      </div>
 
-      <div className="space-y-4">
-        {notificationOptions.map(({ key, label, description }) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {[
+          {
+            key: "emailNotifications",
+            label: "Email Notifications",
+            desc: "Via your registered email",
+          },
+          {
+            key: "taskReminders",
+            label: "Task Reminders",
+            desc: "Alerts for upcoming deadlines",
+          },
+          {
+            key: "weeklyDigest",
+            label: "Weekly Digest",
+            desc: "Summary of your progress",
+          },
+          {
+            key: "desktopNotifications",
+            label: "Desktop Notifications",
+            desc: "Browser push notifications",
+          },
+          {
+            key: "soundNotifications",
+            label: "Sound Notifications",
+            desc: "Play sounds for alerts",
+          },
+          {
+            key: "showNotificationBadge",
+            label: "Notification Badge",
+            desc: "Show red dot on app icon",
+          },
+        ].map((item) => (
           <div
-            key={key}
-            className="flex items-start justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+            key={item.key}
+            className="flex items-center justify-between p-4 bg-white border border-stone-100 rounded-2xl shadow-sm hover:border-stone-200 transition-all group"
           >
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                {label}
+            <div className="flex-1 pr-4">
+              <h3 className="text-sm font-bold text-stone-800 group-hover:text-(--primary) transition-colors">
+                {item.label}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {description}
+              <p className="text-[11px] text-stone-400 mt-0.5 leading-relaxed">
+                {item.desc}
               </p>
             </div>
             <button
-              onClick={() => handleToggle(key as keyof typeof settings)}
+              onClick={() => handleToggle(item.key as keyof typeof settings)}
               disabled={!isEditing}
-              className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors ${
-                settings[key as keyof typeof settings]
-                  ? 'bg-blue-600'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              } ${!isEditing ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}`}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-300 ${
+                settings[item.key as keyof typeof settings]
+                  ? "bg-(--primary)"
+                  : "bg-stone-200"
+              } ${!isEditing ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:scale-110"}`}
             >
               <span
-                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg ${
-                  settings[key as keyof typeof settings]
-                    ? 'translate-x-9'
-                    : 'translate-x-1'
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-300 ${
+                  settings[item.key as keyof typeof settings]
+                    ? "translate-x-5"
+                    : "translate-x-0.5"
                 }`}
               />
             </button>
@@ -99,30 +94,27 @@ const NotificationSection = () => {
         ))}
       </div>
 
-      {/* Footer Buttons */}
-      <div className="flex justify-end gap-3 mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex justify-end gap-3 mt-10 pt-6 border-t border-stone-50">
         {isEditing ? (
           <>
             <button
               onClick={() => setIsEditing(false)}
-              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
+              className="px-5 py-2 text-xs font-bold text-stone-400"
             >
               Cancel
             </button>
             <button
-              onClick={handleSaveChanges}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              onClick={() => setIsEditing(false)}
+              className="flex items-center gap-2 px-6 py-2 bg-(--primary) text-white rounded-lg text-xs font-bold shadow-md hover:opacity-90 transition-all"
             >
-              <Save size={18} />
-              Save changes
+              <Save size={16} /> Save Changes
             </button>
           </>
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-2 bg-stone-900 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-black transition-all"
           >
-            <Save size={18} />
             Edit Settings
           </button>
         )}

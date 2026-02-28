@@ -34,13 +34,11 @@ const formatTimeAgo = (timestamp: string): string => {
   const now = new Date();
   const past = new Date(timestamp);
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-
   if (diffInSeconds < 60) return "Just now";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
   if (diffInSeconds < 604800)
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
-
   return past.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
@@ -62,10 +60,11 @@ const AuthenticatedActions = ({
   const notificationsRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
+  // Ref để xử lý delay khi hover giống Nav.jsx
+  const accountTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-
       if (
         configRef.current &&
         !configRef.current.contains(target) &&
@@ -79,18 +78,13 @@ const AuthenticatedActions = ({
         setShowAccount(false);
       }
     };
-
-    if (showConfig || showNotifications || showAccount) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
-  }, [showConfig, showNotifications, showAccount]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <>
-      {/* Config dropdown */}
+      {/* Config dropdown - Giữ nguyên click */}
       <div className="relative" ref={configRef}>
         <button
           onClick={() => {
@@ -111,7 +105,7 @@ const AuthenticatedActions = ({
         </button>
 
         {showConfig && (
-          <div className="absolute right-0 mt-2 w-56 bg-(--bg) border border-accent rounded-lg shadow-lg z-50">
+          <div className="absolute right-0 mt-2 w-56 bg-(--bg) border border-accent rounded-lg shadow-lg z-50 animate-in fade-in zoom-in-95 duration-200">
             <div className="px-2.5 py-3">
               {configs.map((config) => (
                 <button
@@ -137,7 +131,7 @@ const AuthenticatedActions = ({
         )}
       </div>
 
-      {/* Notifications Dropdown */}
+      {/* Notifications Dropdown - Giữ nguyên click */}
       <div className="relative" ref={notificationsRef}>
         <button
           onClick={() => {
@@ -145,16 +139,16 @@ const AuthenticatedActions = ({
             setShowAccount(false);
             setShowNotifications(!showNotifications);
           }}
-          className="text-(--text) hover:text-(--primary) transition-colors relative translate-y-1"
+          className="text-(--text) hover:text-(--primary) transition-colors relative translate-y-1 p-1"
         >
           <Bell className="text-(--text) w-5 h-5" fill="currentColor" />
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-(--bg)"></span>
           )}
         </button>
 
         {showNotifications && (
-          <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-lg shadow-lg z-50">
+          <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="p-3 border-b border-accent flex justify-between items-center">
               <span className="font-semibold text-(--text)">Notifications</span>
               {unreadCount > 0 && (
@@ -168,119 +162,162 @@ const AuthenticatedActions = ({
                 </button>
               )}
             </div>
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto p-2">
               {notifications.slice(0, 15).map((n, idx) => (
                 <div
                   key={idx}
                   onClick={() => {
-                    if (!n.isRead) {
+                    if (!n.isRead)
                       markNotificationAsRead(
                         n.id,
                         notifications,
                         setNotifications,
                       );
-                    }
                   }}
-                  className={`p-3 cursor-pointer transition-colors text-sm ${
+                  className={`p-3 cursor-pointer transition-colors text-sm rounded-md mb-1 ${
                     n.isRead
-                      ? "bg-transparent text-(--text) opacity-60 hover:bg-(--primary)/10"
-                      : "bg-accent font-semibold text-(--text) hover:bg-(--primary)/10/80"
-                  } mb-2 rounded`}
+                      ? "bg-transparent text-(--text) opacity-60 hover:bg-(--primary)/5"
+                      : "bg-accent/50 font-semibold text-(--text) hover:bg-(--primary)/10"
+                  }`}
                 >
                   <div className="flex justify-between items-start">
                     <span>{n.title}</span>
                     {n.created_at && (
-                      <span className="text-xs opacity-70">
+                      <span className="text-[10px] opacity-70 uppercase tracking-tighter">
                         {formatTimeAgo(n.created_at)}
                       </span>
                     )}
                   </div>
                 </div>
               ))}
-              {notifications.length > 15 && (
-                <button className="w-full p-2 text-xs text-primary hover:bg-(--primary)/10 rounded">
-                  Load More
-                </button>
-              )}
-              {notifications.length === 0 && (
-                <div className="p-8 text-center text-(--text) opacity-70">
-                  <p className="text-sm">No notifications yet</p>
-                </div>
-              )}
             </div>
           </div>
         )}
       </div>
 
-      {/* Account dropdown */}
-      <div className="flex items-center gap-3 transition-colors duration-300">
-        <div className="relative" ref={accountRef}>
-          <button
-            onClick={() => {
-              setShowConfig(false);
-              setShowNotifications(false);
-              setShowAccount(!showAccount);
-            }}
-            className="flex items-center gap-3 hover:opacity-85"
-          >
-            <div className="w-8 h-8 rounded-full bg-primary text-bg-main flex items-center justify-center font-semibold  transition-opacity cursor-pointer">
-              {currentUser?.name?.charAt(0).toUpperCase()}
-            </div>
-            <p className="text-sm font-semibold text-(--text)">
+      {/* User Account Dropdown - Chế độ HOVER XỊN */}
+      <div
+        className="relative"
+        ref={accountRef}
+        onMouseEnter={() => {
+          if (accountTimeoutRef.current)
+            clearTimeout(accountTimeoutRef.current);
+          setShowAccount(true);
+          setShowConfig(false);
+          setShowNotifications(false);
+        }}
+        onMouseLeave={() => {
+          accountTimeoutRef.current = setTimeout(() => {
+            setShowAccount(false);
+          }, 300); // 300ms delay để rê chuột mượt mà
+        }}
+      >
+        {/* Invisible Bridge: Giúp rê chuột từ avatar xuống menu không bị mất hover */}
+        <div className="absolute w-full h-4 bottom-0 left-0 translate-y-full z-10"></div>
+
+        <button className="flex items-center gap-3 py-1 px-2 rounded-full hover:bg-accent/30 transition-all duration-300">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-(--primary) text-white flex items-center justify-center font-bold shadow-sm ring-2 ring-transparent group-hover:ring-(--primary)/30 transition-all">
+            {currentUser?.image_url ? (
+              <img
+                src={currentUser.image_url}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              currentUser?.name?.charAt(0).toUpperCase()
+            )}
+          </div>
+          <div className="hidden md:block text-left">
+            <p className="text-xs font-bold text-(--text) leading-tight">
               {currentUser?.name}
             </p>
-          </button>
+            <p className="text-[10px] text-(--text) opacity-50">Member</p>
+          </div>
+          <ChevronDown
+            size={14}
+            className={`opacity-50 transition-transform duration-300 ${showAccount ? "rotate-180" : ""}`}
+          />
+        </button>
 
-          {showAccount && (
-            <div className="absolute right-0 mt-2 w-64 bg-(--bg) border border-accent rounded-xl shadow-lg z-50">
-              <div className="p-4 border-b border-accent">
-                <p className="text-sm font-semibold text-(--text)">
-                  {currentUser?.name}
-                </p>
-                <p className="text-xs text-(--text) opacity-60">
-                  {currentUser?.email}
-                </p>
-              </div>
-
-              {/* Menu Items */}
-              <div>
-                <Link
-                  to="/settings"
-                  onClick={() => setShowAccount(false)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
-                >
-                  <Profile size={16} />
-                  Profile
-                </Link>
-                <Link
-                  to="/settings"
-                  onClick={() => setShowAccount(false)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
-                >
-                  <Settings size={16} />
-                  Settings
-                </Link>
-                <div className="w-full px-4 flex flex-col gap-3 border-y border-accent py-3">
-                  <div className="text-left text-sm text-(--text) flex items-center gap-3">
-                    <Palette size={16} />
-                    Theme
-                  </div>
-                  <ThemeSelector />
+        {showAccount && (
+          <div className="absolute right-0 mt-2 w-64 bg-(--bg)/95 backdrop-blur-xl border border-accent rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300">
+            {/* Header của menu */}
+            <div className="p-4 bg-accent/20 border-b border-accent">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden shadow-md ring-2 ring-white">
+                  {currentUser?.image_url ? (
+                    <img
+                      src={currentUser.image_url}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-(--primary) to-orange-400 text-white flex items-center justify-center font-bold">
+                      {currentUser?.name?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={() => {
-                    logout();
-                    setShowAccount(false);
-                  }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-(--text) rounded-b-xl hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
-                >
-                  <LogOut size={16} />
-                  Log out
-                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-(--text) truncate">
+                    {currentUser?.name}
+                  </p>
+                  <p className="text-[11px] text-(--text) opacity-50 truncate">
+                    {currentUser?.email}
+                  </p>
+                </div>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Menu Items */}
+            <div className="p-1.5">
+              <Link
+                to="/settings"
+                onClick={() => setShowAccount(false)}
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-xl transition-all group"
+              >
+                <span className="p-2 bg-accent/50 rounded-lg group-hover:bg-white transition-colors">
+                  <Profile size={16} className="text-(--primary)" />
+                </span>
+                Profile
+              </Link>
+              <Link
+                to="/settings"
+                onClick={() => setShowAccount(false)}
+                className="flex items-center gap-3 px-3 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-xl transition-all group"
+              >
+                <span className="p-2 bg-accent/50 rounded-lg group-hover:bg-white transition-colors">
+                  <Settings size={16} className="text-(--primary)" />
+                </span>
+                Settings
+              </Link>
+
+              <div className="my-1.5 border-t border-accent mx-2"></div>
+
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-3 text-xs font-bold text-(--text) opacity-40 uppercase tracking-widest mb-2 px-1">
+                  <Palette size={14} />
+                  Appearance
+                </div>
+                <ThemeSelector />
+              </div>
+
+              <div className="my-1.5 border-t border-accent mx-2"></div>
+
+              <button
+                onClick={() => {
+                  logout();
+                  setShowAccount(false);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-all group"
+              >
+                <span className="p-2 bg-red-50 rounded-lg group-hover:bg-white transition-colors">
+                  <LogOut size={16} />
+                </span>
+                <span className="font-semibold">Log out</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
