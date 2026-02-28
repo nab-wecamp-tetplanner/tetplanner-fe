@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { TetConfig, Task, TaskStatus, Category, Member } from "../../types/task";
+import type {
+  TetConfig,
+  Task,
+  TaskStatus,
+  Category,
+  Member,
+} from "../../types/task.types";
 import { todoService } from "../../services/todoService";
 import { collaboratorService } from "../../services/collaboratorService";
-import {
-  MOCK_INITIAL_TASKS,
-} from "../../data/mockTasks";
+import { MOCK_INITIAL_TASKS } from "../../data/mockTasks";
 import "./TaskManagement.css";
-import {
-  Plus,
-  Search,
-  Calendar,
-} from "lucide-react";
+import { Plus, Search, Calendar } from "lucide-react";
 import TaskColumn from "../../components/TaskColumn/TaskColumn";
 import AddTaskModal from "../../components/AddTaskModal/AddTaskModal";
 import TaskDetailModal from "../../components/TaskDetailModal/TaskDetailModal";
@@ -31,7 +31,9 @@ import {
 import FallingPetals from "../../components/FallingPetals/FallingPetals";
 import SharePlanModal from "../../components/SharePlanModal/SharePlanModal";
 import ManagePhasesModal from "../../components/ManagePhasesModal/ManagePhasesModal";
-import TaskFilter, { EMPTY_FILTERS } from "../../components/TaskFilter/TaskFilter";
+import TaskFilter, {
+  EMPTY_FILTERS,
+} from "../../components/TaskFilter/TaskFilter";
 import type { TaskFilters } from "../../components/TaskFilter/TaskFilter";
 import { useToast } from "../../hooks/useToast";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -46,12 +48,14 @@ const TaskManagement: React.FC = () => {
   const toast = useToast();
   const [phases, setPhases] = useState<any[]>([]);
   const storeConfigId = useAppStore((state) => state.configId);
-  const [activeConfigId, setActiveConfigId] = useState<string>(storeConfigId || "");
+  const [activeConfigId, setActiveConfigId] = useState<string>(
+    storeConfigId || "",
+  );
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [activeColumn, setActiveColumn] = React.useState<TaskStatus>("pending");
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [celebration, setCelebration] = React.useState<{
-    x: number;  
+    x: number;
     y: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,138 +71,163 @@ const TaskManagement: React.FC = () => {
   const [taskFilters, setTaskFilters] = useState<TaskFilters>(EMPTY_FILTERS);
   const { currentUser } = useAuthContext();
 
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        const configList: any = await todoService.getTetConfigs();
+        setConfigs(configList);
 
-    useEffect(() => {
-      const fetchConfigs = async () => {
         try {
-          const configList: any = await todoService.getTetConfigs();
-          setConfigs(configList);
+          const categoriesList: any = await todoService.getCategories();
+          setCategories(categoriesList);
+        } catch (error) {
+          console.error("Error fetching categories:", error);
+        }
 
-          try {
-            const categoriesList: any = await todoService.getCategories();
-            setCategories(categoriesList);
-          } catch (error) {
-            console.error("Error fetching categories:", error);
-          }
+        const urlConfigId = searchParams.get("config");
+        const targetConfigId =
+          urlConfigId ||
+          storeConfigId ||
+          (configList.length > 0 ? configList[0].id : null);
 
-          const urlConfigId = searchParams.get("config");
-          const targetConfigId = urlConfigId || storeConfigId || (configList.length > 0 ? configList[0].id : null);
-          
-          if (targetConfigId) {
-            setActiveConfigId(targetConfigId);
-          }
-        } catch (error) { console.error("Lỗi lấy Configs:", error); }
-      };
-
-      fetchConfigs();
-    }, [searchParams]);
-
-    useEffect(() => {
-      if (!activeConfigId) return;
-
-      const fetchPhasesAndMembers = async () => {
-        // 1.Get Members
-        try {
-          const data: any = await collaboratorService.getCollaborators(activeConfigId);
-          const memberList: Member[] = [];
-
-          // Check if current user is the owner
-          if (data.owner && currentUser && String(data.owner.id) === String(currentUser.id)) {
-            setIsOwner(true);
-          } else {
-            setIsOwner(false);
-          }
-          
-          if (data.owner) {
-            // Owner's user_id is their actual user ID (not the record id)
-            memberList.push({ 
-              id: data.owner.id, 
-              user_id: data.owner.user_id || data.owner.id, 
-              name: data.owner.name || 'Owner', 
-              avatar: data.owner.image_url 
-            });
-          }
-          if (data.collaborators) {
-            for (const c of data.collaborators) {
-              if (c.status === 'accepted' || !c.status) {
-                memberList.push({ 
-                  id: c.id, 
-                  user_id: c.user_id, 
-                  name: c.user?.name || 'User', 
-                  avatar: c.user?.image_url 
-                });
-              }
-            }
-          }
-          setMembers(memberList);
-        } catch (err) { console.error("Lỗi lấy Members:", err); }
-
-        // 2. Get phases for the selected config
-        try {
-          const phaseList: any = await todoService.getTimelinePhases(activeConfigId);
-          setPhases(phaseList);
-
-          if (phaseList.length > 0) {
-            setActivePhaseId(phaseList[0].id); // automatically select the first phase
-          } else {
-            setActivePhaseId(""); //if no phase, clear activePhaseId to prevent loading tasks with invalid phase
-          }
-        } catch (error) { console.error("Lỗi lấy Phase:", error); }
-      };
-
-      fetchPhasesAndMembers();
-    }, [activeConfigId, currentUser]); 
-
-    // ==========================================
-    // Normalize raw API task → Task shape
-    // ==========================================
-    const normalizeTask = (raw: any): Task => {
-      let assignedToUser: { id: string } | null = null;
-      if (raw.assigned_to_user && typeof raw.assigned_to_user === 'object' && raw.assigned_to_user.id) {
-        assignedToUser = { id: String(raw.assigned_to_user.id) };
-      } else if (typeof raw.assigned_to_user === 'string' && raw.assigned_to_user) {
-        assignedToUser = { id: raw.assigned_to_user };
-      } else if (typeof raw.assigned_to === 'string' && raw.assigned_to) {
-        assignedToUser = { id: raw.assigned_to };
-      } else if (raw.assigned_to && typeof raw.assigned_to === 'object' && raw.assigned_to.id) {
-        assignedToUser = { id: String(raw.assigned_to.id) };
+        if (targetConfigId) {
+          setActiveConfigId(targetConfigId);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy Configs:", error);
       }
-
-      return {
-        ...raw,
-        category_id: raw.category_id ?? raw.category?.id ?? undefined,
-        assigned_to_user: assignedToUser,
-      };
     };
 
-    // ==========================================
-    // auto-fetch tasks when activeConfigId or activePhaseId changes
-    // ==========================================
-    useEffect(() => {
-      const fetchTasks = async () => {
-        if (!activeConfigId || !activePhaseId) {
-          setTodoItems([]);
-          return;
+    fetchConfigs();
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!activeConfigId) return;
+
+    const fetchPhasesAndMembers = async () => {
+      // 1.Get Members
+      try {
+        const data: any =
+          await collaboratorService.getCollaborators(activeConfigId);
+        const memberList: Member[] = [];
+
+        // Check if current user is the owner
+        if (
+          data.owner &&
+          currentUser &&
+          String(data.owner.id) === String(currentUser.id)
+        ) {
+          setIsOwner(true);
+        } else {
+          setIsOwner(false);
         }
 
-        try {
-          setIsLoading(true);
-          const response: any = await todoService.getTodoItems(
-            activeConfigId,
-            activePhaseId,
-          );
-          const items: Task[] = (response || []).map(normalizeTask);
-          setTodoItems(items);
-        } catch (error) {
-          console.error("Lỗi lấy Tasks:", error);
-        } finally {
-          setIsLoading(false);
+        if (data.owner) {
+          // Owner's user_id is their actual user ID (not the record id)
+          memberList.push({
+            id: data.owner.id,
+            user_id: data.owner.user_id || data.owner.id,
+            name: data.owner.name || "Owner",
+            avatar: data.owner.image_url,
+          });
         }
-      };
+        if (data.collaborators) {
+          for (const c of data.collaborators) {
+            if (c.status === "accepted" || !c.status) {
+              memberList.push({
+                id: c.id,
+                user_id: c.user_id,
+                name: c.user?.name || "User",
+                avatar: c.user?.image_url,
+              });
+            }
+          }
+        }
+        setMembers(memberList);
+      } catch (err) {
+        console.error("Lỗi lấy Members:", err);
+      }
 
-      fetchTasks();
-    }, [activeConfigId, activePhaseId]); 
-    
+      // 2. Get phases for the selected config
+      try {
+        const phaseList: any =
+          await todoService.getTimelinePhases(activeConfigId);
+        setPhases(phaseList);
+
+        if (phaseList.length > 0) {
+          setActivePhaseId(phaseList[0].id); // automatically select the first phase
+        } else {
+          setActivePhaseId(""); //if no phase, clear activePhaseId to prevent loading tasks with invalid phase
+        }
+      } catch (error) {
+        console.error("Lỗi lấy Phase:", error);
+      }
+    };
+
+    fetchPhasesAndMembers();
+  }, [activeConfigId, currentUser]);
+
+  // ==========================================
+  // Normalize raw API task → Task shape
+  // ==========================================
+  const normalizeTask = (raw: any): Task => {
+    let assignedToUser: { id: string } | null = null;
+    if (
+      raw.assigned_to_user &&
+      typeof raw.assigned_to_user === "object" &&
+      raw.assigned_to_user.id
+    ) {
+      assignedToUser = { id: String(raw.assigned_to_user.id) };
+    } else if (
+      typeof raw.assigned_to_user === "string" &&
+      raw.assigned_to_user
+    ) {
+      assignedToUser = { id: raw.assigned_to_user };
+    } else if (typeof raw.assigned_to === "string" && raw.assigned_to) {
+      assignedToUser = { id: raw.assigned_to };
+    } else if (
+      raw.assigned_to &&
+      typeof raw.assigned_to === "object" &&
+      raw.assigned_to.id
+    ) {
+      assignedToUser = { id: String(raw.assigned_to.id) };
+    }
+
+    return {
+      ...raw,
+      category_id: raw.category_id ?? raw.category?.id ?? undefined,
+      assigned_to_user: assignedToUser,
+    };
+  };
+
+  // ==========================================
+  // auto-fetch tasks when activeConfigId or activePhaseId changes
+  // ==========================================
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!activeConfigId || !activePhaseId) {
+        setTodoItems([]);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response: any = await todoService.getTodoItems(
+          activeConfigId,
+          activePhaseId,
+        );
+        const items: Task[] = (response || []).map(normalizeTask);
+        setTodoItems(items);
+      } catch (error) {
+        console.error("Lỗi lấy Tasks:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, [activeConfigId, activePhaseId]);
+
   const handleCelebrate = (x: number, y: number) => {
     setCelebration(null);
 
@@ -223,8 +252,9 @@ const TaskManagement: React.FC = () => {
 
     // Category filter
     if (taskFilters.categories.length > 0) {
-      filtered = filtered.filter((task) =>
-        task.category_id && taskFilters.categories.includes(task.category_id),
+      filtered = filtered.filter(
+        (task) =>
+          task.category_id && taskFilters.categories.includes(task.category_id),
       );
     }
 
@@ -548,8 +578,6 @@ const TaskManagement: React.FC = () => {
               filters={taskFilters}
               onFiltersChange={setTaskFilters}
             />
-
-
 
             {/* Manage Timeline */}
             <div className="tet-filter-wrapper">

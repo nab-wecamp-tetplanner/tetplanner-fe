@@ -19,8 +19,12 @@ import {
 } from "lucide-react";
 import { transactionApi } from "../services/transactionService";
 import { financeApi } from "../services/financeApi";
+// import type { TransactionResponse } from "../services/transactionService";
+import { AddTransactionModal } from "../components/Transaction/AddTransactionModal"; // Import Modal thêm/sửa
+import { useAppStore } from "../stores/useAppStore";
+import type { Category } from "../types/dashboard.types";
+import type { Transaction as TransactionBase } from "../types/transaction.types";
 import type { TransactionResponse } from "../services/transactionService";
-import { AddTransactionModal } from "../components/transaction/AddTransactionModal"; // Import Modal thêm/sửa
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles: Sparkles,
@@ -32,6 +36,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
 // ==========================================
 // TYPES & CONSTANTS
 // ==========================================
+export interface TransactionFormData {
+  amount: number;
+  type: "income" | "expense";
+  note: string;
+  category_id?: string; // Dấu ? tương đương với string | undefined
+  transaction_date: string;
+}
 
 export interface TransactionType {
   id: string;
@@ -125,11 +136,10 @@ const QuickStats = ({ transactions }: { transactions: TransactionType[] }) => {
 // ==========================================
 
 export default function Transaction() {
-  const [tetConfigId, setTetConfigId] = useState<string>(
-    localStorage.getItem("tetConfigId") || "",
-  );
-  const [allConfigs, setAllConfigs] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const tetConfigId = useAppStore((state) => state.configId);
+  const setConfigId = useAppStore((state) => state.setConfigId);
+
+  const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -144,29 +154,39 @@ export default function Transaction() {
 
   // Hàm tải danh sách giao dịch (để gọi lại sau khi thêm/sửa/xóa)
   // Cập nhật hàm fetchTxns bên trong component Transaction
-  const fetchTxns = async (configId: string, silent = false) => {
+  const fetchTxns = async (configId: string | null, silent = false) => {
     if (!configId) return;
-
-    // Chỉ hiện loading nếu không phải là refresh ngầm
     if (!silent) setLoading(true);
 
     try {
       const data = await transactionApi.getAll(configId);
-      const mapped = (data || []).map((t: TransactionResponse) => ({
-        id: t.id,
-        name: t.note || t.category?.name || "Transaction",
-        categoryId: t.category?.id || (t as any).category_id,
-        categoryName: t.category?.name,
-        date: t.transaction_date?.slice(0, 10),
-        amount: Number(t.amount),
-        isIncome: t.type === "income",
-        iconText: t.category?.icon || "Package",
-      }));
+      const mapped = (data || []).map((val: TransactionResponse) => {
+        const t = val as unknown as TransactionBase;
+
+        // FIX LỖI [object Object]: Kiểm tra nếu t.category là object thì lấy .id
+        const rawCategory = t.category || (t as any).category_id;
+        let finalId = "";
+
+        if (typeof rawCategory === "object" && rawCategory !== null) {
+          finalId = (rawCategory as any).id;
+        } else {
+          finalId = String(rawCategory || "");
+        }
+
+        return {
+          id: t.id,
+          name: (t.note || "Transaction").replace("Completed: ", ""),
+          categoryId: finalId.trim(),
+          date: t.transaction_date?.slice(0, 10),
+          amount: Number(t.amount),
+          isIncome: t.type === "income",
+        };
+      });
+
       setTransactions(mapped);
     } catch (err) {
-      console.error("Lỗi fetch transactions:", err);
+      console.error("Lỗi fetch:", err);
     } finally {
-      // Luôn tắt loading ở cuối
       setLoading(false);
     }
   };
@@ -176,25 +196,19 @@ export default function Transaction() {
     const initData = async () => {
       try {
         const configsData = await financeApi.getTetConfigs();
-        setAllConfigs(configsData);
-
         if (configsData.length > 0) {
           const currentId = tetConfigId || configsData[0].id;
-          setTetConfigId(currentId);
-          localStorage.setItem("tetConfigId", currentId);
-
+          if (!tetConfigId) setConfigId(currentId);
           const catsData = await financeApi.getCategories(currentId);
-          setCategories(catsData);
-
-          // Tải giao dịch
+          setCategories(catsData as Category[]);
           fetchTxns(currentId);
         }
       } catch (err) {
-        console.error("Lỗi khởi tạo dữ liệu:", err);
+        console.error("Lỗi khởi tạo:", err);
       }
     };
     initData();
-  }, [tetConfigId]);
+  }, [tetConfigId, setConfigId]);
 
   // API HANDLERS
   const handleOpenAddModal = (type: "income" | "expense") => {
@@ -218,21 +232,28 @@ export default function Transaction() {
     }
   };
 
-  const handleSaveTransaction = async (formData: any) => {
+  const handleSaveTransaction = async (formData: TransactionFormData) => {
+    if (!tetConfigId) return;
+
     try {
+      // Dữ liệu sạch (chuyển rỗng thành undefined để Backend không than phiền)
+      const cleanData = {
+        ...formData,
+        category_id: formData.category_id || undefined,
+      };
+
       if (editingTransaction) {
-        await transactionApi.update(editingTransaction.id, formData);
+        // UPDATE (PATCH): Tuyệt đối KHÔNG gửi tet_config_id lên
+        await transactionApi.update(editingTransaction.id, cleanData);
       } else {
+        // CREATE (POST): Bắt buộc PHẢI có tet_config_id
         await transactionApi.create({
-          ...formData,
+          ...cleanData,
           tet_config_id: tetConfigId,
         });
       }
 
-      // GỌI REFRESH NGẦM Ở ĐÂY (silent = true)
-      // Người dùng vẫn thấy danh sách cũ, sau đó dữ liệu mới sẽ tự ghi đè lên mà không bị nháy Loading
       await fetchTxns(tetConfigId, true);
-
       setIsModalOpen(false);
       setEditingTransaction(null);
     } catch (err) {
@@ -241,15 +262,19 @@ export default function Transaction() {
   };
 
   const filtered = useMemo(() => {
-    return transactions.filter(
-      (t) =>
-        t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.categoryName?.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [searchTerm, transactions]);
-
+    return transactions.filter((t) => {
+      const cat = categories.find(
+        (c) => String(c.id).trim() === String(t.categoryId).trim(),
+      );
+      const searchStr = searchTerm.toLowerCase();
+      return (
+        t.name.toLowerCase().includes(searchStr) ||
+        (cat?.name && cat.name.toLowerCase().includes(searchStr))
+      );
+    });
+  }, [searchTerm, transactions, categories]);
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
@@ -257,22 +282,9 @@ export default function Transaction() {
             <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
               Transactions
             </p>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-serif text-foreground">
-                Transactions
-              </h1>
-              <select
-                value={tetConfigId}
-                onChange={(e) => setTetConfigId(e.target.value)}
-                className="ml-4 p-2 bg-card border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                {allConfigs.map((config) => (
-                  <option key={config.id} value={config.id}>
-                    {config.name} ({config.year})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <h1 className="text-4xl font-serif text-foreground">
+              Transactions
+            </h1>
           </div>
           <div className="flex items-center gap-1 bg-card p-1 rounded-xl border border-border text-sm font-medium text-muted-foreground shadow-sm">
             <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold">
@@ -345,26 +357,32 @@ export default function Transaction() {
               </div>
             ) : (
               filtered.map((txn) => {
-                const catData = categories.find((c) => c.id === txn.categoryId);
+                // TRA CỨU CATEGORY (Fix lỗi [object Object] bằng cách trim() ID)
+                const catData = categories.find(
+                  (c) => String(c.id).trim() === String(txn.categoryId).trim(),
+                );
+
                 const categoryColor = catData?.color || "#94a3b8";
+                const displayCategoryName = catData?.name || "Uncategorized";
+                const displayIconName = catData?.icon || "Package";
+
+                // FIX LỖI CRASH: Định nghĩa IconComponent NGAY TẠI ĐÂY!
                 const IconComponent =
-                  ICON_MAP[txn.iconText as string] || Package;
+                  ICON_MAP[displayIconName as string] || Package;
 
                 return (
                   <div
                     key={txn.id}
                     className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
                   >
-                    {/* Status Indicator */}
                     <div
-                      className={`shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${txn.isIncome ? "bg-planner-green border-planner-green shadow-sm" : "border-border"}`}
+                      className={`shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center ${txn.isIncome ? "bg-planner-green border-planner-green shadow-sm" : "border-border"}`}
                     >
                       {txn.isIncome && (
                         <CheckCircle2 className="w-3 h-3 text-white" />
                       )}
                     </div>
 
-                    {/* Category Icon */}
                     <div
                       className="shrink-0 h-9 w-9 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: `${categoryColor}20` }}
@@ -375,23 +393,18 @@ export default function Transaction() {
                       />
                     </div>
 
-                    {/* Info Section */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground text-sm">
-                          {txn.name.replace("Completed: ", "")}
+                        <span className="font-medium text-sm">{txn.name}</span>
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                          style={{
+                            backgroundColor: `${categoryColor}20`,
+                            color: categoryColor,
+                          }}
+                        >
+                          {displayCategoryName}
                         </span>
-                        {txn.categoryName && (
-                          <span
-                            className="text-[10px] px-1.5 py-0.5 rounded font-medium"
-                            style={{
-                              backgroundColor: `${categoryColor}20`,
-                              color: categoryColor,
-                            }}
-                          >
-                            {txn.categoryName}
-                          </span>
-                        )}
                       </div>
                     </div>
 
@@ -446,6 +459,7 @@ export default function Transaction() {
 
       {/* Modal Thêm/Sửa giao dịch */}
       <AddTransactionModal
+        key={editingTransaction?.id || (isModalOpen ? "new" : "closed")}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTransaction}

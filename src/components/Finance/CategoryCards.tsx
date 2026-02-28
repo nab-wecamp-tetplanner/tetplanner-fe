@@ -1,17 +1,15 @@
 import React from "react";
 import { Package, X, Pencil } from "lucide-react";
 import { formatCurrency } from "../../utils/formatters";
-import type {
-  CategorySummary,
-  CustomCategory,
-} from "../../types/shopping.types";
+import type { Category } from "../../types/dashboard.types"; // Thay CustomCategory bằng Category
+import type { CategorySummary } from "../../types/shopping.types";
 import { ICON_MAP } from "../../constants/finance";
 
 interface CategoryCardsProps {
   categorySummaries: CategorySummary[];
-  categories: CustomCategory[];
+  categories: Category[]; // Đổi Type ở đây
   onDeleteCategory?: (categoryId: string) => void;
-  onEditCategory?: (category: CustomCategory) => void;
+  onEditCategory?: (category: Category) => void; // Đổi Type ở đây
 }
 
 export const CategoryCards: React.FC<CategoryCardsProps> = ({

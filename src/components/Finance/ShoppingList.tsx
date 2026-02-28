@@ -13,19 +13,18 @@ import { formatCurrency, formatDate } from "../../utils/formatters";
 import type {
   ShoppingItem,
   ShoppingCategory,
-  CustomCategory,
 } from "../../types/shopping.types";
 import { ICON_MAP } from "../../constants/finance";
+import type { Category } from "../../types/dashboard.types"; // Thay CustomCategory bằng Category
 
 interface ShoppingListProps {
   items: ShoppingItem[];
-  categories: CustomCategory[];
+  categories: Category[]; // Sử dụng Category thay vì CustomCategory
   onAddItem: () => void;
   onEditItem: (item: ShoppingItem) => void;
   onToggleStatus: (itemId: string, currentStatus: string) => void;
   onDeleteItem: (itemId: string) => void;
 }
-
 export const ShoppingList: React.FC<ShoppingListProps> = ({
   items,
   categories,

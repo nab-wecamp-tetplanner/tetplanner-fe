@@ -1,3 +1,5 @@
+import type { CategoryResponse } from "./categories.type";
+
 export type Transaction = {
   id: string;
   name: string;
@@ -10,16 +12,17 @@ export type Transaction = {
   iconColor: string;
 };
 
-export type Category = {
-  id: string;
-  name: string;
+export interface Category extends CategoryResponse {
+  // UI logic fields
   percent: string;
   colorClass: string;
   bgClass: string;
-  icon: string;
-  is_system?: boolean;
   transactions: Transaction[];
-};
+
+  // Aliases for compatibility with Shopping components
+  allocated: number; // Maps from allocated_budget
+  isDefault: boolean; // Maps from is_system
+}
 
 export type WeeklyTaskData = {
   week: string;
