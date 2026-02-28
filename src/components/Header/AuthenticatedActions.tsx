@@ -223,9 +223,17 @@ const AuthenticatedActions = ({
             }}
             className="flex items-center gap-3 hover:opacity-85"
           >
-            <div className="w-8 h-8 rounded-full bg-primary text-bg-main flex items-center justify-center font-semibold  transition-opacity cursor-pointer">
-              {currentUser?.name?.charAt(0).toUpperCase()}
-            </div>
+            {currentUser?.image_url ? (
+              <img
+                src={currentUser.image_url}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-primary text-bg-main flex items-center justify-center font-semibold  transition-opacity cursor-pointer">
+                {currentUser?.name?.charAt(0).toUpperCase()}
+              </div>
+            )}
             <p className="text-sm font-semibold text-(--text)">
               {currentUser?.name}
             </p>
@@ -245,20 +253,12 @@ const AuthenticatedActions = ({
               {/* Menu Items */}
               <div>
                 <Link
-                  to="/settings"
+                  to="/profile"
                   onClick={() => setShowAccount(false)}
                   className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
                 >
                   <Profile size={16} />
                   Profile
-                </Link>
-                <Link
-                  to="/settings"
-                  onClick={() => setShowAccount(false)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 transition-colors flex items-center gap-3"
-                >
-                  <Settings size={16} />
-                  Settings
                 </Link>
                 <div className="w-full px-4 flex flex-col gap-3 border-y border-accent py-3">
                   <div className="text-left text-sm text-(--text) flex items-center gap-3">
