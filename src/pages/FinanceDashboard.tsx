@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, FolderPlus, ChevronDown, Check, LayoutGrid } from "lucide-react";
+import { Plus, FolderPlus } from "lucide-react";
 
 import { BudgetOverview } from "../components/Finance/BudgetOverview";
 import { CategoryCards } from "../components/Finance/CategoryCards";
@@ -20,74 +20,73 @@ import type { ShoppingItem, Budget } from "../types/shopping.types";
 import type { Timeline } from "../types/timeline.types";
 import type { Category } from "../types/dashboard.types";
 
-// --- Component PlanSelector ---
-const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const selectedPlan = configs.find((c: any) => c.id === selectedId);
+// const PlanSelector = ({ configs, selectedId, onSelect }: any) => {
+//   const [isOpen, setIsOpen] = useState(false);
+//   const dropdownRef = useRef<HTMLDivElement>(null);
+//   const selectedPlan = configs.find((c: any) => c.id === selectedId);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      )
-        setIsOpen(false);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+//   useEffect(() => {
+//     const handleClickOutside = (event: MouseEvent) => {
+//       if (
+//         dropdownRef.current &&
+//         !dropdownRef.current.contains(event.target as Node)
+//       )
+//         setIsOpen(false);
+//     };
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => document.removeEventListener("mousedown", handleClickOutside);
+//   }, []);
 
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 px-4 py-2 bg-card border border-border rounded-2xl shadow-sm hover:bg-muted/50 transition-all"
-      >
-        <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-          <LayoutGrid className="w-4 h-4" />
-        </div>
-        <div className="text-left hidden sm:block">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground leading-none mb-1">
-            Kế hoạch
-          </p>
-          <p className="text-sm font-bold text-foreground leading-none">
-            {selectedPlan
-              ? `${selectedPlan.name} (${selectedPlan.year})`
-              : "Chọn kế hoạch"}
-          </p>
-        </div>
-        <ChevronDown
-          className={`w-4 h-4 text-muted-foreground ml-2 transition-transform ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
+//   return (
+//     <div className="relative" ref={dropdownRef}>
+//       <button
+//         onClick={() => setIsOpen(!isOpen)}
+//         className="flex items-center gap-3 px-4 py-2 bg-card border border-border rounded-2xl shadow-sm hover:bg-muted/50 transition-all"
+//       >
+//         <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+//           <LayoutGrid className="w-4 h-4" />
+//         </div>
+//         <div className="text-left hidden sm:block">
+//           <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground leading-none mb-1">
+//             Kế hoạch
+//           </p>
+//           <p className="text-sm font-bold text-foreground leading-none">
+//             {selectedPlan
+//               ? `${selectedPlan.name} (${selectedPlan.year})`
+//               : "Chọn kế hoạch"}
+//           </p>
+//         </div>
+//         <ChevronDown
+//           className={`w-4 h-4 text-muted-foreground ml-2 transition-transform ${isOpen ? "rotate-180" : ""}`}
+//         />
+//       </button>
 
-      {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-2xl shadow-xl z-50 py-2 animate-in fade-in zoom-in duration-200">
-          {configs.map((config: any) => (
-            <button
-              key={config.id}
-              onClick={() => {
-                onSelect(config.id);
-                setIsOpen(false);
-              }}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted transition-colors text-left"
-            >
-              <span
-                className={`text-sm ${selectedId === config.id ? "font-bold text-primary" : "text-foreground"}`}
-              >
-                {config.name} ({config.year})
-              </span>
-              {selectedId === config.id && (
-                <Check className="w-4 h-4 text-primary" />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+//       {isOpen && (
+//         <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-2xl shadow-xl z-50 py-2 animate-in fade-in zoom-in duration-200">
+//           {configs.map((config: any) => (
+//             <button
+//               key={config.id}
+//               onClick={() => {
+//                 onSelect(config.id);
+//                 setIsOpen(false);
+//               }}
+//               className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted transition-colors text-left"
+//             >
+//               <span
+//                 className={`text-sm ${selectedId === config.id ? "font-bold text-primary" : "text-foreground"}`}
+//               >
+//                 {config.name} ({config.year})
+//               </span>
+//               {selectedId === config.id && (
+//                 <Check className="w-4 h-4 text-primary" />
+//               )}
+//             </button>
+//           ))}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
 export default function FinanceDashboard() {
   const queryClient = useQueryClient();
@@ -97,7 +96,7 @@ export default function FinanceDashboard() {
   const setConfigId = useAppStore((state) => state.setConfigId);
 
   // State
-  const [allConfigs, setAllConfigs] = useState<any[]>([]);
+  // const [allConfigs, setAllConfigs] = useState<any[]>([]);
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
 
@@ -137,21 +136,21 @@ export default function FinanceDashboard() {
     onConfirm: () => {},
   });
 
-  // 1. Lấy danh sách kế hoạch
-  useQuery({
-    queryKey: ["allTetConfigs"],
-    queryFn: async () => {
-      const data = await financeApi.getTetConfigs();
-      if (data && data.length > 0) {
-        setAllConfigs(data);
-        if (!tetConfigId) {
-          const firstId = data[0].id;
-          setConfigId(firstId);
-        }
-      }
-      return data;
-    },
-  });
+  // // 1. Lấy danh sách kế hoạch
+  // useQuery({
+  //   queryKey: ["allTetConfigs"],
+  //   queryFn: async () => {
+  //     const data = await financeApi.getTetConfigs();
+  //     if (data && data.length > 0) {
+  //       setAllConfigs(data);
+  //       if (!tetConfigId) {
+  //         const firstId = data[0].id;
+  //         setConfigId(firstId);
+  //       }
+  //     }
+  //     return data;
+  //   },
+  // });
 
   // 2. Tải dữ liệu chính
   useEffect(() => {
@@ -463,7 +462,7 @@ export default function FinanceDashboard() {
   const purchasedCount = items.filter((i) => i.status === "purchased").length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
           <div>
@@ -474,15 +473,10 @@ export default function FinanceDashboard() {
               Shopping Manager
             </h1>
             <p className="text-muted-foreground text-sm">
-              Quản lý chi tiêu Tết
+              Manage your shopping list, budget, and timeline all in one place.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <PlanSelector
-              configs={allConfigs}
-              selectedId={tetConfigId}
-              onSelect={handlePlanChange}
-            />
             <button
               onClick={() => setIsAddCategoryModalOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-xl hover:bg-muted text-sm font-medium"

@@ -261,22 +261,9 @@ export default function Transaction() {
             <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
               Transactions
             </p>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-serif text-foreground">
-                Transactions
-              </h1>
-              <select
-                value={tetConfigId || ""}
-                onChange={(e) => setConfigId(e.target.value)}
-                className="ml-4 p-2 bg-card border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                {allConfigs.map((config) => (
-                  <option key={config.id} value={config.id}>
-                    {config.name} ({config.year})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <h1 className="text-4xl font-serif text-foreground">
+              Transactions
+            </h1>
           </div>
           <div className="flex items-center gap-1 bg-card p-1 rounded-xl border border-border text-sm font-medium text-muted-foreground shadow-sm">
             <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold">

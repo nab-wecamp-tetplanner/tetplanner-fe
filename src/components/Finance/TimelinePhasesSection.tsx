@@ -23,7 +23,8 @@ export const TimelinePhasesSection: React.FC<TimelinePhasesSectionProps> = ({
             Timeline Phases
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Lịch trình chuẩn bị cho các giai đoạn Tết
+            Define key phases for your planning (e.g., Preparation, Shopping,
+            Celebration).
           </p>
         </div>
         <button
@@ -39,7 +40,8 @@ export const TimelinePhasesSection: React.FC<TimelinePhasesSectionProps> = ({
         <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed border-border">
           <Calendar className="w-12 h-12 mx-auto mb-3 opacity-20 text-foreground" />
           <p className="text-sm font-medium text-muted-foreground">
-            Chưa có giai đoạn nào được tạo.
+            No phases defined yet. Start by adding a new phase to organize your
+            timeline!
           </p>
         </div>
       ) : (

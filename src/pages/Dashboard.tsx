@@ -23,10 +23,8 @@ export default function Dashboard() {
     fetchConfigs();
   }, []);
 
-  // const tetConfigIds = configs.map((config) => config.id);
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 flex-col">
         {/* Top Section: Calendar and Quick Stats */}
         <div className="flex flex-col md:flex-row gap-4 mb-8 md:mb-0 justify-between">
