@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, type ReactNode } from 'react';
 
-export type TetTheme = 'spring-blossom' | 'jade-prosperity' | 'morning-lantern' | 'midnight-dragon';
+// Thêm 'minimal' vào danh sách theme
+export type TetTheme = 'spring-blossom' | 'jade-prosperity' | 'morning-lantern' | 'midnight-dragon' | 'minimal';
 
 export interface ThemeContextType {
   theme: TetTheme;

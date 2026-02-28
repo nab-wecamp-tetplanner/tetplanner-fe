@@ -6,7 +6,9 @@ import apiClient from "../../services/apiClient";
 import type { TetConfig } from "../../types/tetConfig.types";
 import { useAppStore } from "../../stores/useAppStore"; //
 import InvitationBell from "../InvitationBell/InvitationBell";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit2, Plus } from "lucide-react";
+import { ConfigModal } from "../ConfigModal";
+import { toast } from "react-toastify";
 
 type NavItem = {
   name: string;
@@ -55,10 +57,18 @@ const Header = () => {
   const [, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [editConfig, setEditConfig] = useState<ConfigInfo | null>(null);
 
   // Logic Synchronization with Store
   const configId = useAppStore((state) => state.configId); //
   const setConfigId = useAppStore((state) => state.setConfigId); //
+
+  useEffect(() => {
+    if (!configId || isAuthenticated || configId == null) return;
+    setEditConfig(configs.find((c) => c.id === configId) ?? null);
+  }, [configId, isAuthenticated]);
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -85,7 +95,7 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showNotifications, ] = useState(false);
+  const [showNotifications] = useState(false);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -101,6 +111,36 @@ const Header = () => {
   }, []);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  // HANDLE ACTIONS
+  const handleSubmit = async (data: {
+    year: number;
+    name: string;
+    total_budget: number;
+  }) => {
+    if (!isEdit) {
+      try {
+        if (configId || configId == null) return;
+        await apiClient.tetConfigs.updateConfig(configId, {
+          year: data.year,
+          name: data.name,
+          total_budget: data.total_budget,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+        await apiClient.tetConfigs.create({
+          year: data.year,
+          name: data.name,
+          total_budget: data.total_budget,
+        });
+      } catch (e) {
+        toast.error("Error in creating config");
+      }
+    }
+  };
 
   return (
     <header className="flex items-center justify-between px-8 py-4 bg-bg-main border-b border-accent transition-colors duration-300 relative">
@@ -157,18 +197,43 @@ const Header = () => {
               <div className="absolute left-0 mt-2 w-48 bg-(--bg) border border-accent rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="p-2">
                   {configs.map((config) => (
-                    <button
-                      key={config.id}
-                      onClick={() => setConfigId(config.id)}
-                      className={`w-full text-left px-4 py-2.5 text-sm rounded transition-colors ${
+                    <div
+                      className={`w-full flex flex-row justify-between text-left px-4 py-2.5 mb-2 text-sm rounded transition-colors ${
                         configId === config.id
                           ? "bg-accent text-text-main font-semibold"
                           : "text-text-main hover:bg-accent"
                       }`}
                     >
-                      {config.name}
-                    </button>
+                      <button
+                        key={config.id}
+                        onClick={() => setConfigId(config.id)}
+                        className={`w-full text-left  text-sm rounded transition-colors ${
+                          configId === config.id
+                            ? "bg-accent text-text-main font-semibold"
+                            : "text-text-main hover:bg-accent"
+                        }`}
+                      >
+                        {config.name}
+                      </button>
+                      <button
+                        className=""
+                        onClick={() => {
+                          setIsEdit(true);
+                          setIsOpenModal(true);
+                          setEditConfig(config);
+                        }}
+                      >
+                        <Edit2 className="w-4 h-4 text-slate-400 hover:text-slate-500" />
+                      </button>
+                    </div>
                   ))}
+                  <button
+                    className="w-full text-left px-4 py-2.5 text-sm rounded flex flex-row gap-3 items-center hover:bg-accent transition-colors hover:cursor-default"
+                    onClick={() => {}}
+                  >
+                    <Plus />
+                    <p>Add config</p>
+                  </button>
                 </div>
               </div>
 
@@ -324,6 +389,16 @@ const Header = () => {
           </div>
         )}
       </div>
+
+      {isOpenModal && (
+        <ConfigModal
+          isOpen={isOpenModal}
+          setIsOpen={setIsOpenModal}
+          isEdit={isEdit}
+          editConfig={editConfig}
+          onSubmit={handleSubmit}
+        />
+      )}
     </header>
   );
 };

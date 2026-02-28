@@ -20,7 +20,16 @@ import {
 import { transactionApi } from "../services/transactionService";
 import { financeApi } from "../services/financeApi";
 import type { TransactionResponse } from "../services/transactionService";
-import { AddTransactionModal } from "../components/transaction/AddTransactionModal"; // Import Modal thêm/sửa
+import { AddTransactionModal } from "../components/transaction/AddTransactionModal"; 
+
+// Decoratives
+import FallingPetals from "../components/FallingPetals/FallingPetals";
+import {
+  Lantern,
+  BlossomBranch,
+  CloudMotif,
+  TraditionalCake,
+} from "../components/Decoratives/Decoratives";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles: Sparkles,
@@ -49,7 +58,7 @@ const ACTION_CARDS = [
     title: "Add income",
     description: "Create an income manually",
     icon: Plus,
-    type: "income", // Thêm type để nhận diện
+    type: "income", 
     tokenBg: "bg-planner-green-light",
     iconBg: "bg-planner-green",
   },
@@ -57,7 +66,7 @@ const ACTION_CARDS = [
     title: "Add expense",
     description: "Create an expense manually",
     icon: Minus,
-    type: "expense", // Thêm type để nhận diện
+    type: "expense", 
     tokenBg: "bg-planner-pink-light",
     iconBg: "bg-planner-pink",
   },
@@ -65,7 +74,7 @@ const ACTION_CARDS = [
     title: "Transfer money",
     description: "Select the amount and make a transfer",
     icon: ArrowLeftRight,
-    type: "transfer", // Thêm type để nhận diện
+    type: "transfer", 
     tokenBg: "bg-planner-blue-light",
     iconBg: "bg-planner-blue",
   },
@@ -75,6 +84,8 @@ const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
     amount,
   );
+
+const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
 // ==========================================
 // SUB-COMPONENTS
@@ -134,20 +145,12 @@ export default function Transaction() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // States cho Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] =
-    useState<TransactionType | null>(null);
-  const [modalDefaultType, setModalDefaultType] = useState<
-    "income" | "expense"
-  >("expense");
+  const [editingTransaction, setEditingTransaction] = useState<TransactionType | null>(null);
+  const [modalDefaultType, setModalDefaultType] = useState<"income" | "expense">("expense");
 
-  // Hàm tải danh sách giao dịch (để gọi lại sau khi thêm/sửa/xóa)
-  // Cập nhật hàm fetchTxns bên trong component Transaction
   const fetchTxns = async (configId: string, silent = false) => {
     if (!configId) return;
-
-    // Chỉ hiện loading nếu không phải là refresh ngầm
     if (!silent) setLoading(true);
 
     try {
@@ -166,12 +169,10 @@ export default function Transaction() {
     } catch (err) {
       console.error("Lỗi fetch transactions:", err);
     } finally {
-      // Luôn tắt loading ở cuối
       setLoading(false);
     }
   };
 
-  // 1. Tải dữ liệu ban đầu
   useEffect(() => {
     const initData = async () => {
       try {
@@ -186,7 +187,6 @@ export default function Transaction() {
           const catsData = await financeApi.getCategories(currentId);
           setCategories(catsData);
 
-          // Tải giao dịch
           fetchTxns(currentId);
         }
       } catch (err) {
@@ -196,7 +196,6 @@ export default function Transaction() {
     initData();
   }, [tetConfigId]);
 
-  // API HANDLERS
   const handleOpenAddModal = (type: "income" | "expense") => {
     setEditingTransaction(null);
     setModalDefaultType(type);
@@ -228,11 +227,7 @@ export default function Transaction() {
           tet_config_id: tetConfigId,
         });
       }
-
-      // GỌI REFRESH NGẦM Ở ĐÂY (silent = true)
-      // Người dùng vẫn thấy danh sách cũ, sau đó dữ liệu mới sẽ tự ghi đè lên mà không bị nháy Loading
       await fetchTxns(tetConfigId, true);
-
       setIsModalOpen(false);
       setEditingTransaction(null);
     } catch (err) {
@@ -249,22 +244,43 @@ export default function Transaction() {
   }, [searchTerm, transactions]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div className="relative min-h-screen bg-(--bg) text-(--text) transition-colors duration-500 overflow-hidden font-sans">
+      
+      {/* 1. Background Pattern & Warm Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0 tet-deco-element transition-opacity duration-500"
+        style={{ backgroundImage: BACKGROUND_PATTERN, opacity: 'var(--pattern-opacity)' }}
+      ></div>
+      <div
+        className="absolute inset-0 pointer-events-none z-0 tet-deco-element transition-opacity duration-500"
+        style={{
+          background: `radial-gradient(ellipse at 20% 0%, var(--gradient-bg-1) 0%, transparent 50%), radial-gradient(ellipse at 80% 100%, var(--gradient-bg-2) 0%, transparent 50%)`,
+        }}
+      ></div>
+
+      {/* 2. Decorative Elements lơ lửng phía sau */}
+      <div className="tet-deco-element"><FallingPetals count={15} /></div>
+      <Lantern className="absolute top-8 right-[15%] animate-[swing_4s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element" size="md" />
+      <BlossomBranch className="absolute top-20 -left-8 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-90" variant="apricot" />
+      <CloudMotif className="absolute top-32 left-[20%] animate-[float_7s_ease-in-out_infinite] z-0 opacity-50 tet-deco-element" />
+      <TraditionalCake className="absolute bottom-20 right-8 z-0 opacity-30 animate-[float_4s_ease-in-out_infinite] tet-deco-element" variant="tet" />
+
+      {/* 3. MAIN CONTENT - Đặt relative và z-10 để giữ nguyên màu trắng nổi lên trên nền */}
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-8 gap-4">
           <div>
-            <p className="text-sm font-medium text-primary mb-1 tracking-wide uppercase">
+            <p className="text-sm font-bold text-(--primary) mb-1 tracking-wide uppercase">
               Transactions
             </p>
             <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-serif text-foreground">
+              <h1 className="text-4xl font-serif text-(--text-heading)">
                 Transactions
               </h1>
               <select
                 value={tetConfigId}
                 onChange={(e) => setTetConfigId(e.target.value)}
-                className="ml-4 p-2 bg-card border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="ml-4 p-2 bg-card border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
               >
                 {allConfigs.map((config) => (
                   <option key={config.id} value={config.id}>
@@ -284,7 +300,7 @@ export default function Transaction() {
           </div>
         </div>
 
-        {/* Action Cards */}
+        {/* Action Cards - Giữ nguyên bg-card (màu trắng) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
           {ACTION_CARDS.map((action) => (
             <div
@@ -315,7 +331,7 @@ export default function Transaction() {
 
         <QuickStats transactions={transactions} />
 
-        {/* TRANSACTION HISTORY LIST */}
+        {/* TRANSACTION HISTORY LIST - Giữ nguyên bg-card (màu trắng) */}
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -332,7 +348,7 @@ export default function Transaction() {
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 w-52"
+                className="pl-9 pr-3 py-2 border border-border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 w-52 text-foreground"
               />
               <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
             </div>
@@ -347,15 +363,13 @@ export default function Transaction() {
               filtered.map((txn) => {
                 const catData = categories.find((c) => c.id === txn.categoryId);
                 const categoryColor = catData?.color || "#94a3b8";
-                const IconComponent =
-                  ICON_MAP[txn.iconText as string] || Package;
+                const IconComponent = ICON_MAP[txn.iconText as string] || Package;
 
                 return (
                   <div
                     key={txn.id}
                     className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
                   >
-                    {/* Status Indicator */}
                     <div
                       className={`shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${txn.isIncome ? "bg-planner-green border-planner-green shadow-sm" : "border-border"}`}
                     >
@@ -364,7 +378,6 @@ export default function Transaction() {
                       )}
                     </div>
 
-                    {/* Category Icon */}
                     <div
                       className="shrink-0 h-9 w-9 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: `${categoryColor}20` }}
@@ -375,7 +388,6 @@ export default function Transaction() {
                       />
                     </div>
 
-                    {/* Info Section */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-foreground text-sm">
@@ -395,13 +407,11 @@ export default function Transaction() {
                       </div>
                     </div>
 
-                    {/* Date */}
                     <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0 font-medium">
                       <Calendar className="w-3.5 h-3.5" />
                       {txn.date}
                     </div>
 
-                    {/* Status Badge */}
                     <div className="hidden md:block shrink-0">
                       {txn.isIncome ? (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-100 px-2 py-1 rounded-lg uppercase shadow-sm">
@@ -414,14 +424,12 @@ export default function Transaction() {
                       )}
                     </div>
 
-                    {/* Amount */}
                     <span
                       className={`font-bold text-sm shrink-0 w-28 text-right ${txn.isIncome ? "text-planner-green" : "text-foreground"}`}
                     >
                       {txn.isIncome ? "+" : "-"} {formatCurrency(txn.amount)}
                     </span>
 
-                    {/* Actions */}
                     <div className="flex items-center gap-0.5 shrink-0">
                       <button
                         onClick={() => handleOpenEditModal(txn)}
@@ -444,7 +452,6 @@ export default function Transaction() {
         </div>
       </main>
 
-      {/* Modal Thêm/Sửa giao dịch */}
       <AddTransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

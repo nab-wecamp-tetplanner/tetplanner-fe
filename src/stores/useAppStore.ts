@@ -8,12 +8,12 @@ interface AppState {
   triggerRefresh: () => void;
 }
 
-export const useAppStore = create<AppState>()((set) => ({
+// Xóa bỏ middleware persist
+export const useAppStore = create<AppState>((set) => ({
   configId: null,
-
   setConfigId: (newId) => set({ configId: newId }),
-  clearConfig: () => set({ configId: null}),
-  
+  clearConfig: () => set({ configId: null }),
   refreshKey: 0,
   triggerRefresh: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
+  resetAll: () => set({ configId: null, refreshKey: 0 }),
 }));
