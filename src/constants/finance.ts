@@ -19,6 +19,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
     bgClass: "bg-planner-green/20",
     percent: "40%",
     is_system: true,
+    allocated: 0,
+    isDefault: false,
+    color: "planner-green",
+    allocated_budget: 0,
+    tet_config: { id: 0 },
     transactions: [
       {
         id: "tx-f1",
@@ -41,7 +46,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
         iconText: "TS",
         iconBg: "bg-green-100",
         iconColor: "text-green-600",
-      }
+      },
     ],
   },
   {
@@ -52,6 +57,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
     bgClass: "bg-planner-pink/20",
     percent: "30%",
     is_system: true,
+    allocated: 0,
+    isDefault: false,
+    color: "planner-pink",
+    allocated_budget: 0,
+    tet_config: { id: 0 },
     transactions: [
       {
         id: "tx-g1",
@@ -74,6 +84,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
     bgClass: "bg-planner-purple/20",
     percent: "15%",
     is_system: true,
+    allocated: 0,
+    isDefault: false,
+    color: "planner-purple",
+    allocated_budget: 0,
+    tet_config: { id: 0 },
     transactions: [
       {
         id: "tx-d1",
@@ -96,6 +111,11 @@ export const DEFAULT_CATEGORIES: Category[] = [
     bgClass: "bg-planner-blue/20",
     percent: "15%",
     is_system: true,
+    allocated: 0,
+    isDefault: false,
+    color: "planner-blue",
+    allocated_budget: 0,
+    tet_config: { id: 0 },
     transactions: [
       {
         id: "tx-o1",
@@ -118,7 +138,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
         iconText: "RK",
         iconBg: "bg-blue-100",
         iconColor: "text-blue-600",
-      }
+      },
     ],
   },
 ];

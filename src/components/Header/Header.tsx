@@ -38,7 +38,7 @@ const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthContext();
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const [isEdit, ] = useState<boolean>(false);
+  const [isEdit] = useState<boolean>(false);
   const [editConfig, setEditConfig] = useState<ConfigInfo | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 

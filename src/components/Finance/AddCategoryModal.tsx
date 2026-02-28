@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useState } from "react";
 import {
   X,
   ShoppingCart,
@@ -14,13 +15,21 @@ import {
   Palette,
   Layout,
 } from "lucide-react";
+import type { Category } from "../../types/dashboard.types";
 
-// Dùng any tạm thời cho linh hoạt, tránh dính chùm lỗi type cũ
+// Interface để dọn sạch lỗi 'any' khi gửi data ra ngoài
+interface CategoryFormData {
+  name: string;
+  icon: string;
+  color: string;
+  allocated: number;
+}
+
 interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (category: any) => void;
-  initialData?: any;
+  onAdd: (category: CategoryFormData) => void;
+  initialData?: Category | null;
 }
 
 export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
@@ -29,13 +38,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   onAdd,
   initialData,
 }) => {
-  const [name, setName] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState("Package");
-  const [selectedColor, setSelectedColor] = useState("planner-blue");
-  const [allocatedBudget, setAllocatedBudget] = useState("");
-
-  const isEditMode = !!initialData;
-
+  // --- GIỮ NGUYÊN CÁC HELPER CỦA BẠN ---
   const emojiToIconName: Record<string, string> = {
     "🛒": "ShoppingCart",
     "🎁": "Gift",
@@ -63,31 +66,30 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     return colorMap[hex] || "planner-blue";
   };
 
-  useEffect(() => {
-    if (isOpen && initialData) {
-      setName(initialData.name || "");
+  // --- TÍNH TOÁN GIÁ TRỊ KHỞI TẠO (Thay thế useEffect) ---
+  const getInitialColor = () => {
+    if (!initialData) return "planner-blue";
+    if (initialData.colorClass)
+      return initialData.colorClass.replace("text-", "");
+    if (initialData.color) return getColorNameFromHex(initialData.color);
+    return "planner-blue";
+  };
 
-      // Xử lý icon: tương thích cả emoji cũ và string name mới
-      const rawIcon = initialData.icon;
-      setSelectedIcon(emojiToIconName[rawIcon] || rawIcon || "Package");
+  // --- STATE KHỞI TẠO TRỰC TIẾP ---
+  const [name, setName] = useState(initialData?.name || "");
+  const [selectedIcon, setSelectedIcon] = useState(
+    initialData
+      ? emojiToIconName[initialData.icon] || initialData.icon || "Package"
+      : "Package",
+  );
+  const [selectedColor, setSelectedColor] = useState(getInitialColor());
+  const [allocatedBudget, setAllocatedBudget] = useState(
+    initialData?.allocated?.toString() ||
+      initialData?.allocated_budget?.toString() ||
+      "",
+  );
 
-      // Xử lý màu sắc: hỗ trợ cả hex color cũ và colorClass mới từ Category
-      let colorVal = "planner-blue";
-      if (initialData.colorClass) {
-        colorVal = initialData.colorClass.replace("text-", "");
-      } else if (initialData.color) {
-        colorVal = getColorNameFromHex(initialData.color);
-      }
-      setSelectedColor(colorVal);
-
-      setAllocatedBudget(initialData.allocated?.toString() || "");
-    } else if (isOpen && !initialData) {
-      setName("");
-      setSelectedIcon("Package");
-      setSelectedColor("planner-blue");
-      setAllocatedBudget("");
-    }
-  }, [isOpen, initialData]);
+  const isEditMode = !!initialData;
 
   const availableIcons = [
     { name: "ShoppingCart", icon: ShoppingCart },
@@ -106,11 +108,11 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     { name: "Purple", value: "planner-purple", hex: "#a855f7" },
     { name: "Green", value: "planner-green", hex: "#10b981" },
     { name: "Amber", value: "planner-amber", hex: "#f59e0b" },
-    { name: "Teal", value: "planner-teal", hex: "#14b8a6" },
-    { name: "Indigo", value: "planner-indigo", hex: "#6366f1" },
-    { name: "Rose", value: "planner-rose", hex: "#f43f5e" },
-    { name: "Orange", value: "planner-orange", hex: "#f97316" },
-    { name: "Slate", value: "planner-slate", hex: "#64748b" },
+    { name: "Teal", hex: "#14b8a6", value: "planner-teal" },
+    { name: "Indigo", hex: "#6366f1", value: "planner-indigo" },
+    { name: "Rose", hex: "#f43f5e", value: "planner-rose" },
+    { name: "Orange", hex: "#f97316", value: "planner-orange" },
+    { name: "Slate", hex: "#64748b", value: "planner-slate" },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -122,10 +124,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 
       onAdd({
         name: name.trim(),
-        icon: selectedIcon, // Trả thẳng tên icon để render Lucide
+        icon: selectedIcon,
         color: selectedColorHex,
-        allocated: allocatedBudget ? parseFloat(allocatedBudget) : undefined,
-        is_system: false, // <-- Điểm mấu chốt fix lỗi gạch đỏ
+        allocated: allocatedBudget ? parseFloat(allocatedBudget) : 0,
       });
       onClose();
     }
@@ -134,9 +135,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    // Đã fix lỗi warning z-[100] -> z-50
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      {/* Đã fix lỗi warning max-w-[400px] -> max-w-md */}
       <div className="bg-card rounded-[2.5rem] border border-border shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-300">
         <div className="flex items-center justify-between p-6 border-b border-border bg-muted/20">
           <div className="flex items-center gap-3">
@@ -156,7 +155,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Name Field */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Layout className="w-4 h-4 text-primary" /> Category name
@@ -171,7 +169,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             />
           </div>
 
-          {/* Budget Field */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
               <CircleDollarSign className="w-4 h-4 text-planner-green" />{" "}
@@ -189,7 +186,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             />
           </div>
 
-          {/* Icon Selection */}
           {!isEditMode && (
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-foreground">
@@ -218,10 +214,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             </div>
           )}
 
-          {/* Color Picker */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Palette className="w-4 h-4 text-planner-purple" /> Choose color
+              <Palette className="w-4 h-4 text-purple-500" /> Choose color
             </label>
             <div className="grid grid-cols-5 gap-2">
               {availableColors.map((colorItem) => {
@@ -248,7 +243,6 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   X,
   Banknote,
@@ -11,15 +11,17 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { TransactionType } from "../../pages/Transaction";
+import type { Category } from "../../types/dashboard.types";
+import type { TransactionFormData } from "../../pages/Transaction";
+
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
-  categories: any[];
+  onSave: (data: TransactionFormData) => void | Promise<void>;
+  categories: Category[];
   initialData?: TransactionType | null;
   defaultType?: "income" | "expense";
 }
-
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   isOpen,
   onClose,
@@ -28,29 +30,17 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   initialData,
   defaultType = "expense",
 }) => {
-  const [amount, setAmount] = useState("");
-  const [type, setType] = useState<"income" | "expense">(defaultType);
-  const [note, setNote] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-
-  useEffect(() => {
-    if (isOpen) {
-      if (initialData) {
-        setAmount(initialData.amount.toString());
-        setType(initialData.isIncome ? "income" : "expense");
-        setNote(initialData.name);
-        setCategoryId("");
-        setDate(initialData.date || new Date().toISOString().split("T")[0]);
-      } else {
-        setAmount("");
-        setType(defaultType);
-        setNote("");
-        setCategoryId(categories.length > 0 ? categories[0].id : "");
-        setDate(new Date().toISOString().split("T")[0]);
-      }
-    }
-  }, [isOpen, initialData, defaultType, categories]);
+  const [amount, setAmount] = useState(initialData?.amount.toString() || "");
+  const [type, setType] = useState<"income" | "expense">(
+    initialData ? (initialData.isIncome ? "income" : "expense") : defaultType,
+  );
+  const [note, setNote] = useState(initialData?.name || "");
+  const [categoryId, setCategoryId] = useState(
+    initialData?.categoryId || (categories.length > 0 ? categories[0].id : ""),
+  );
+  const [date, setDate] = useState(
+    initialData?.date || new Date().toISOString().split("T")[0],
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +50,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
       amount: parseFloat(amount),
       type,
       note,
-      category_id: categoryId || null,
+      // 2. THAY null BẰNG undefined ĐỂ KHỚP VỚI DẤU ? TRÊN PAGE
+      category_id: categoryId || undefined,
       transaction_date: new Date(date).toISOString(),
     });
     onClose();

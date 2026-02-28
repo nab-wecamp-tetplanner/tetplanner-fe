@@ -28,9 +28,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           <CheckCircle2 className="w-10 h-10 text-planner-green" />
         </div>
 
-        <h3 className="text-2xl font-serif text-foreground mb-2">
-          Thành công!
-        </h3>
+        <h3 className="text-2xl font-serif text-foreground mb-2">Success!</h3>
         <p className="text-muted-foreground text-sm mb-8 leading-relaxed">
           {message}
         </p>
@@ -39,7 +37,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           onClick={onClose}
           className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-sm shadow-lg hover:opacity-90 transition-all"
         >
-          Tuyệt vời
+          Excellent!
         </button>
       </div>
     </div>

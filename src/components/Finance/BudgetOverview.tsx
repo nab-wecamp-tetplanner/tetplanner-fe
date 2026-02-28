@@ -1,6 +1,6 @@
 import React from "react";
 import { TrendingUp, CheckCircle2, Pencil, AlertTriangle } from "lucide-react";
-import { ProgressRing } from "./ProgressRing";
+import { ProgressRing } from "../Finance/ProgressRing";
 import { formatCurrency } from "../../utils/formatters";
 import type { Budget } from "../../types/shopping.types";
 
@@ -29,7 +29,7 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({
         <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-4 flex items-center gap-3 animate-in slide-in-from-top-2">
           <AlertTriangle className="w-5 h-5 text-destructive" />
           <p className="text-destructive text-sm font-bold">
-            Cảnh báo: Bạn đã chi vượt ngân sách{" "}
+            Warning: You have exceeded your budget by{" "}
             {formatCurrency(Math.abs(remaining))}!
           </p>
         </div>

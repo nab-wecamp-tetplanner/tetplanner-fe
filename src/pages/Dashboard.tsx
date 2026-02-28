@@ -36,11 +36,13 @@ export default function Dashboard() {
 
   return (
     <div className="relative min-h-screen bg-(--bg) text-(--text) transition-colors duration-500 overflow-hidden font-sans">
-      
       {/* 1. Background Pattern & Warm Overlay */}
       <div
         className="absolute inset-0 pointer-events-none z-0 tet-deco-element transition-opacity duration-500"
-        style={{ backgroundImage: BACKGROUND_PATTERN, opacity: 'var(--pattern-opacity)' }}
+        style={{
+          backgroundImage: BACKGROUND_PATTERN,
+          opacity: "var(--pattern-opacity)",
+        }}
       ></div>
       <div
         className="absolute inset-0 pointer-events-none z-0 tet-deco-element transition-opacity duration-500"
@@ -50,13 +52,30 @@ export default function Dashboard() {
       ></div>
 
       {/* 2. Decorative Elements lơ lửng phía sau */}
-      <div className="tet-deco-element"><FallingPetals count={15} /></div>
-      <Lantern className="absolute top-10 right-20 animate-[swing_4s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element" size="md" />
-      <Lantern className="absolute top-24 left-16 animate-[swing_3s_ease-in-out_infinite_reverse] z-0 opacity-70 tet-deco-element" size="sm" />
-      <BlossomBranch className="absolute top-16 -left-10 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-90" variant="apricot" />
-      <BlossomBranch className="absolute top-32 -right-8 animate-[float_5s_ease-in-out_infinite_reverse] z-0 transform scale-x-[-1] scale-90 opacity-80 tet-deco-element" variant="peach" />
+      <div className="tet-deco-element">
+        <FallingPetals count={15} />
+      </div>
+      <Lantern
+        className="absolute top-10 right-20 animate-[swing_4s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element"
+        size="md"
+      />
+      <Lantern
+        className="absolute top-24 left-16 animate-[swing_3s_ease-in-out_infinite_reverse] z-0 opacity-70 tet-deco-element"
+        size="sm"
+      />
+      <BlossomBranch
+        className="absolute top-16 -left-10 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-90"
+        variant="apricot"
+      />
+      <BlossomBranch
+        className="absolute top-32 -right-8 animate-[float_5s_ease-in-out_infinite_reverse] z-0 transform scale-x-[-1] scale-90 opacity-80 tet-deco-element"
+        variant="peach"
+      />
       <CloudMotif className="absolute top-20 left-[30%] animate-[float_7s_ease-in-out_infinite] z-0 opacity-50 tet-deco-element" />
-      <TraditionalCake className="absolute bottom-12 right-12 z-0 opacity-40 animate-[float_4s_ease-in-out_infinite] tet-deco-element" variant="chung" />
+      <TraditionalCake
+        className="absolute bottom-12 right-12 z-0 opacity-40 animate-[float_4s_ease-in-out_infinite] tet-deco-element"
+        variant="chung"
+      />
 
       {/* 3. MAIN CONTENT - Đặt relative và z-10 để giữ nguyên màu trắng nổi lên trên nền */}
       <main className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 flex-col">
