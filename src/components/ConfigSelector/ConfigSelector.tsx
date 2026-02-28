@@ -30,6 +30,7 @@ const ConfigSelector: React.FC<ConfigSelectionProps> = ({ configs, isLoading }) 
     onSuccess: (newConfig) => {
       toast.success("Workspace created successfully!");
       
+      
       // Update Zustand state with the newly created config ID
       // Note: Make sure your API returns the created object with an 'id'
       if (newConfig && (newConfig as any).id) {

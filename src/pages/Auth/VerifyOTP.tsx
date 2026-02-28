@@ -3,6 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Loader2, ShieldCheck } from "lucide-react";
 import apiClient from "../../services/apiClient";
+import FallingPetals from "../../components/FallingPetals/FallingPetals";
+import FloatingSparkles from "../../components/FloatingSparkles/FloatingSparkles";
+import FlyingSwallows from "../../components/FlyingSwallows/FlyingSwallows";
+import "./VerifyOTP.css";
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState("");
@@ -40,25 +44,30 @@ const VerifyOTP = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full bg-card rounded-2xl border border-border p-8 shadow-sm text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-6">
-          <ShieldCheck className="w-8 h-8 text-blue-600" />
+    <div className="verify-page">
+      {/* Ambient background effects */}
+      <FloatingSparkles count={24} />
+      <FallingPetals count={14} />
+      <FlyingSwallows interval={12} flockSize={3} />
+
+      <div className="verify-card">
+        <div className="verify-icon-wrapper">
+          <ShieldCheck />
         </div>
         
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Account</h2>
-        <p className="text-sm text-muted-foreground mb-8">
+        <h2 className="verify-title">Verify Your Account</h2>
+        <p className="verify-subtitle">
           A verification code has been sent to <br /> 
-          <span className="font-semibold text-gray-900">{email}</span>
+          <span className="verify-email">{email}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex justify-center flex-col items-center gap-4">
+          <div className="verify-input-group">
             <input 
                 type="text"
                 value={currentEmail}
                 onChange={(e) => setCurrentEmail(e.target.value)}
-                className="w-full text-center text-xl font-bold py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                className="verify-email-input"
             />
             <input
               type="text"
@@ -66,14 +75,14 @@ const VerifyOTP = () => {
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
               placeholder="000000"
-              className="w-full text-center text-3xl tracking-[0.5em] font-bold py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+              className="verify-otp-input"
             />
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting || otp.length < 4}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70"
+            className="verify-btn"
           >
             {isSubmitting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -83,12 +92,12 @@ const VerifyOTP = () => {
           </button>
         </form>
 
-        <div className="mt-8">
-          <p className="text-sm text-muted-foreground">
+        <div className="verify-resend">
+          <p>
             Didn't receive the code?{" "}
             <button 
               onClick={() => toast.info("Resend feature is coming soon!")}
-              className="text-blue-600 hover:underline font-semibold"
+              className="verify-resend-btn"
             >
               Resend OTP
             </button>
