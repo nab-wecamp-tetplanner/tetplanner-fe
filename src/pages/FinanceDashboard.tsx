@@ -583,8 +583,7 @@ export default function FinanceDashboard() {
       />
 
       <AddItemModal
-        // --- THE KEY IS THE FIX ---
-        // This forces a state reset whenever you switch between items or open a new one.
+        // Dùng editingItem mới đúng logic của món đồ mua sắm
         key={editingItem?.id || (isAddItemModalOpen ? "new" : "closed")}
         isOpen={isAddItemModalOpen || !!editingItem}
         onClose={() => {
@@ -599,6 +598,8 @@ export default function FinanceDashboard() {
       />
 
       <AddCategoryModal
+        // PHẢI CÓ KEY NÀY: Nó dùng đúng biến editingCategory
+        key={editingCategory?.id || (isAddCategoryModalOpen ? "new" : "closed")}
         isOpen={isAddCategoryModalOpen || !!editingCategory}
         onClose={() => {
           setIsAddCategoryModalOpen(false);
