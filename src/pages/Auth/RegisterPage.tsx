@@ -10,6 +10,10 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
+import FallingPetals from "../../components/FallingPetals/FallingPetals";
+import FloatingSparkles from "../../components/FloatingSparkles/FloatingSparkles";
+import FlyingSwallows from "../../components/FlyingSwallows/FlyingSwallows";
+import "./RegisterPage.css";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -56,100 +60,91 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-background px-4 py-12">
-      <div className="max-w-md w-full">
+    <div className="register-page">
+      {/* Ambient background effects */}
+      <FloatingSparkles count={24} />
+      <FallingPetals count={14} />
+      <FlyingSwallows interval={12} flockSize={3} />
+
+      <div style={{ maxWidth: "28rem", width: "100%" }}>
         {/* Register Card */}
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-sm">
+        <div className="register-card">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Full Name
-              </label>
-              <div className="relative">
+              <label className="register-label">Full Name</label>
+              <div className="relative register-input-wrapper">
                 <input
                   name="name"
                   type="text"
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+                  className="register-input"
                   placeholder="Your name"
                 />
-                <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+                <User className="register-input-icon" />
               </div>
             </div>
 
             {/* Email Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email Address
-              </label>
-              <div className="relative">
+              <label className="register-label">Email Address</label>
+              <div className="relative register-input-wrapper">
                 <input
                   name="email"
                   type="email"
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+                  className="register-input"
                   placeholder="account@example.com"
                 />
-                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+                <Mail className="register-input-icon" />
               </div>
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
+              <label className="register-label">Password</label>
+              <div className="relative register-input-wrapper">
                 <input
                   name="password"
                   type="password"
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+                  className="register-input"
                   placeholder="••••••••"
                 />
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+                <Lock className="register-input-icon" />
               </div>
             </div>
 
             {/* Confirm Password Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Confirm Password
-              </label>
-              <div className="relative">
+              <label className="register-label">Confirm Password</label>
+              <div className="relative register-input-wrapper">
                 <input
                   name="confirmPassword"
                   type="password"
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+                  className="register-input"
                   placeholder="••••••••"
                 />
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+                <Lock className="register-input-icon" />
               </div>
             </div>
 
             {/* Terms */}
-            <div className="flex items-start gap-2 pt-2">
-              <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-              <p className="text-xs text-muted-foreground">
+            <div className="register-terms">
+              <CheckCircle2 className="w-4 h-4 register-terms__icon" />
+              <p className="register-terms__text">
                 By creating an account, you agree to our{" "}
-                <a href="/terms" className="text-blue-600 hover:underline">
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a href="/privacy" className="text-blue-600 hover:underline">
-                  Privacy Policy
-                </a>
-                .
+                <a href="/terms">Terms of Service</a>{" "}and{" "}
+                <a href="/privacy">Privacy Policy</a>.
               </p>
             </div>
 
@@ -157,7 +152,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-md shadow-blue-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+              className="register-btn"
             >
               {isSubmitting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -172,7 +167,7 @@ const Register = () => {
         </div>
 
         {/* Footer Link */}
-        <p className="text-center mt-6 text-sm text-muted-foreground">
+        <p className="register-footer">
           Already have an account?{" "}
           <Link
             to="/login"

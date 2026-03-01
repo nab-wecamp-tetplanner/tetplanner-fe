@@ -4,6 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuthContext } from "../../contexts/AuthTypes";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import FallingPetals from "../../components/FallingPetals/FallingPetals";
+import FloatingSparkles from "../../components/FloatingSparkles/FloatingSparkles";
+import FlyingSwallows from "../../components/FlyingSwallows/FlyingSwallows";
+import "./LoginPage.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -29,10 +33,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full">
+    <div className="login-page">
+      {/* Ambient background effects */}
+      <FloatingSparkles count={24} />
+      <FallingPetals count={14} />
+      <FlyingSwallows interval={12} flockSize={3} />
+
+      <div style={{ maxWidth: "28rem", width: "100%" }}>
         {/* Login Card */}
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-sm">
+        <div className="login-card">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div>
@@ -45,10 +54,10 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+                  className="login-input"
                   placeholder="name@example.com"
                 />
-                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+                <Mail className="login-input-icon" />
               </div>
             </div>
 
@@ -65,16 +74,16 @@ const Login = () => {
                   Forget password?
                 </Link>
               </div>
-              <div className="relative">
+              <div className="relative login-input-wrapper">
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm"
+                  className="login-input"
                   placeholder="••••••••"
                 />
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+                <Lock className="login-input-icon" />
               </div>
             </div>
 
@@ -82,7 +91,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-md shadow-blue-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="login-btn"
             >
               {isSubmitting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -95,32 +104,22 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Social Login (Optional) */}
-          <div className="mt-8">
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
+          {/* Social Login */}
+          <div>
+            <div className="login-divider">
+              <div className="login-divider__line" />
+              <span className="login-divider__text">Or continue with</span>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-border rounded-xl hover:bg-muted transition-colors text-sm font-medium">
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                className="w-5 h-5"
-                alt="Google"
-              />
+            <button className="login-social-btn">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
               Google
             </button>
           </div>
         </div>
 
         {/* Footer Link */}
-        <p className="text-center mt-6 text-sm text-muted-foreground">
+        <p className="login-footer">
           Don't have an account?{" "}
           <Link
             to="/register"

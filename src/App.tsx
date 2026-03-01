@@ -7,7 +7,7 @@ import "./App.css";
 import Header from "./components/Header/Header";
 import TaskManagement from "./pages/TaskManagement/TaskManagement";
 import Overview from "./pages/Overview";
-// Update the import path to match the actual file name, e.g., ProfilePage
+// import Profile from "./pages/Profile";
 import Profile from "./pages/Settings";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";

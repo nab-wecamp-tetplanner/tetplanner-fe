@@ -41,9 +41,10 @@ const Header = () => {
   const [isEdit] = useState<boolean>(false);
   const [editConfig, setEditConfig] = useState<ConfigInfo | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isRefresh, setIsRefresh] = useState<boolean>(true);
 
   const configId = useAppStore((state) => state.configId);
-  const setConfigId = useAppStore((state) => state.setConfigId);
+  // const setConfigId = useAppStore((state) => state.setConfigId);
   useEffect(() => {
     if (!configId || isAuthenticated || configId == null) return;
     setEditConfig(configs.find((c) => c.id === configId) ?? null);
@@ -54,12 +55,26 @@ const Header = () => {
       try {
         const data = await apiClient.tetConfigs.getMyConfigs();
         setConfigs(data as ConfigInfo[]);
+        setIsRefresh(false);
       } catch (error) {
         console.error("Failed to fetch configs", error);
       }
     };
     if (isAuthenticated) fetchConfigs();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isRefresh]);
+
+  useEffect(() => {
+    const handleClick = () => {
+      // if (
+      //   settingsRef.current &&
+      //   !settingsRef.current.contains(e.target as Node)
+      // ) 
+      //   setShowSettings(false);
+      // }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -87,8 +102,12 @@ const Header = () => {
       }
     } else {
       try {
-        await apiClient.tetConfigs.create(data);
-      } catch {
+        await apiClient.tetConfigs.create({
+          year: data.year,
+          name: data.name,
+          total_budget: data.total_budget,
+        });
+      } catch (error) {
         toast.error("Error in creating config");
       }
     }
@@ -96,9 +115,7 @@ const Header = () => {
 
   return (
     <header
-      className={`sticky top-0 z-50 flex items-center justify-between px-8 py-4 border-b border-accent transition-colors duration-300 ${
-        isAuthenticated ? "bg-(--bg)" : "bg-white"
-      }`}
+      className={`sticky top-0 z-50 flex items-center justify-between px-8 py-4 border-b border-accent transition-colors duration-300 ${isAuthenticated ? "bg-(--bg)" : "bg-white"}`}
     >
       {/* Logo - Giữ nguyên kích thước w-13 h-13 */}
       <Link to="/" className="flex items-center">
@@ -132,7 +149,7 @@ const Header = () => {
                   {item.name}
                   {/* Dấu gạch sát chân chữ (bottom-0), chỉ dài bằng chữ nội dung */}
                   <span
-                    className={`absolute bottom-0 left-0 w-full h-[2px] bg-(--primary) rounded-full transition-transform duration-300 origin-left ${
+                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-(--primary) rounded-full transition-transform duration-300 origin-left ${
                       isActive
                         ? "scale-x-100"
                         : "scale-x-0 group-hover:scale-x-100 opacity-50"
@@ -151,7 +168,8 @@ const Header = () => {
           <AuthenticatedActions
             configs={configs}
             configId={configId}
-            setConfigId={setConfigId}
+            // setConfigId={setConfigId}
+            setIsRefresh={setIsRefresh}
             notifications={notifications}
             setNotifications={setNotifications}
             currentUser={currentUser} // Quan trọng: Truyền currentUser từ Context

@@ -1,13 +1,20 @@
-import { Link } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom"; // Thêm useNavigate
+import {
+  useState,
+  useEffect,
+  useRef,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   Bell,
   ChevronDown,
   ChevronUp,
   User as Profile,
-  Settings,
   LogOut,
   Palette,
+  CheckCheck,
+  Settings,
 } from "lucide-react";
 
 import {
@@ -19,11 +26,16 @@ import type { User } from "../../types/auth.types";
 import type { ConfigInfo } from "./Header";
 
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
+// TODO: Sửa lại đường dẫn import ConfigModal cho đúng với vị trí file của bạn
+import { ConfigModal } from "../ConfigModal";
+import { useLoading } from "../../contexts/LoadingContext";
+import apiClient from "../../services/apiClient";
+import { useAppStore } from "../../stores/useAppStore";
 
 interface AuthenticatedActionsProps {
   configs: ConfigInfo[];
   configId: string | null;
-  setConfigId: (id: string) => void;
+  setIsRefresh: Dispatch<SetStateAction<boolean>>;
   notifications: Notification[];
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   currentUser: User | null;
@@ -45,7 +57,7 @@ const formatTimeAgo = (timestamp: string): string => {
 const AuthenticatedActions = ({
   configs,
   configId,
-  setConfigId,
+  setIsRefresh,
   notifications,
   setNotifications,
   currentUser,
@@ -54,6 +66,10 @@ const AuthenticatedActions = ({
   const [showConfig, setShowConfig] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
+  const setConfigId = useAppStore((state) => state.setConfigId);
+
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const configRef = useRef<HTMLDivElement>(null);
@@ -81,6 +97,27 @@ const AuthenticatedActions = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleCreateConfig = async (data: {
+    name: string;
+    year: number;
+    total_budget: number;
+  }) => {
+    try {
+      showLoading();
+      const newConfig: any = await apiClient.tetConfigs.create(data);
+      const createdId = newConfig.id;
+      if (createdId) {
+        setConfigId(createdId);
+      }
+      setIsRefresh(true);
+      setIsConfigModalOpen(false);
+    } catch (error) {
+      console.error("Lỗi khi tạo config:", error);
+    } finally {
+      hideLoading();
+    }
+  };
 
   return (
     <>
@@ -123,7 +160,13 @@ const AuthenticatedActions = ({
                   {config.name}
                 </button>
               ))}
-              <button className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2">
+              <button
+                onClick={() => {
+                  setShowConfig(false); // Đóng dropdown menu
+                  setIsConfigModalOpen(true); // Mở Modal tạo mới
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2"
+              >
                 + Add new plan
               </button>
             </div>
@@ -148,8 +191,8 @@ const AuthenticatedActions = ({
         </button>
 
         {showNotifications && (
-          <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="p-3 border-b border-accent flex justify-between items-center">
+          <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-xl shadow-lg z-50">
+            <div className="px-4 py-3 border-b border-accent flex justify-between items-center">
               <span className="font-semibold text-(--text)">Notifications</span>
               {unreadCount > 0 && (
                 <button
@@ -158,7 +201,7 @@ const AuthenticatedActions = ({
                   }
                   className="text-xs text-(--text) hover:opacity-80 transition-opacity"
                 >
-                  Mark all read
+                  <CheckCheck size={16} className="inline-block mr-1" />
                 </button>
               )}
             </div>
@@ -174,10 +217,10 @@ const AuthenticatedActions = ({
                         setNotifications,
                       );
                   }}
-                  className={`p-3 cursor-pointer transition-colors text-sm rounded-md mb-1 ${
+                  className={`px-4 py-2.5 cursor-pointer transition-colors text-sm rounded-md ${
                     n.isRead
-                      ? "bg-transparent text-(--text) opacity-60 hover:bg-(--primary)/5"
-                      : "bg-accent/50 font-semibold text-(--text) hover:bg-(--primary)/10"
+                      ? "bg-transparent text-(--text) opacity-60 hover:bg-(--primary)/10"
+                      : "bg-(--primary)/10 font-semibold text-(--text) hover:bg-(--primary)/20"
                   }`}
                 >
                   <div className="flex justify-between items-start">
@@ -190,6 +233,16 @@ const AuthenticatedActions = ({
                   </div>
                 </div>
               ))}
+              {notifications.length > 15 && (
+                <button className="w-full px-4 py-2.5 text-xs text-(--primary) hover:bg-(--primary)/10 rounded-md transition-colors">
+                  Load More
+                </button>
+              )}
+              {notifications.length === 0 && (
+                <div className="p-6 text-center text-(--text) opacity-70">
+                  <p className="text-sm">No notifications yet</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -252,7 +305,7 @@ const AuthenticatedActions = ({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-(--primary) to-orange-400 text-white flex items-center justify-center font-bold">
+                    <div className="w-full h-full bg-linear-to-br from-(--primary) to-orange-400 text-white flex items-center justify-center font-bold">
                       {currentUser?.name?.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -319,6 +372,12 @@ const AuthenticatedActions = ({
           </div>
         )}
       </div>
+
+      <ConfigModal
+        isOpen={isConfigModalOpen}
+        setIsOpen={setIsConfigModalOpen}
+        onSubmit={handleCreateConfig}
+      />
     </>
   );
 };
