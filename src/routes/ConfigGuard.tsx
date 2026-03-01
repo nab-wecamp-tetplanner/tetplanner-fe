@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAppStore } from "../stores/useAppStore";
 import ConfigSelector from "../components/ConfigSelector/ConfigSelector";
 import { Loader2 } from "lucide-react";
@@ -45,11 +45,12 @@ const ConfigGuard = () => {
   }
 
   // Nếu đã chọn config và config đó vẫn hợp lệ trong danh sách mới fetch
-  const isValid = configs.some((c) => c.id === configId);
+  // const isValid = configs.some((c) => c.id === configId);
 
-  if (configId && isValid) {
-    return <Outlet />;
+  if (!configId) {
+    return <Navigate to="/config-selector" replace />;
   }
+  return <Outlet />; // Render tiếp component con nếu đã có configId hợp lệ
 
   // Nếu chưa chọn hoặc account mới chưa có config hợp lệ -> Hiện màn hình chọn
   return <ConfigSelector configs={configs} isLoading={isLoading} />;

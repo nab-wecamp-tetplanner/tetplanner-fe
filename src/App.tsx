@@ -20,59 +20,80 @@ import { LoadingProvider } from "./contexts/LoadingContext";
 import ConfigGuard from "./routes/ConfigGuard";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
 import PlanningOverview from "./pages/TimelineView/PlanningOverview";
+import ConfigSelector from "./components/ConfigSelector/ConfigSelector";
+import { useAuthContext } from "./contexts/AuthTypes";
+import { useAppStore } from "./stores/useAppStore";
 
 const queryClient = new QueryClient();
 
+/* App.tsx */
+
+// 1. Tạo một component "ruột" ở đây
+const AppContent = () => {
+  const { configId } = useAppStore();
+  const { isAuthenticated } = useAuthContext(); // Bây giờ dùng ở đây là CHUẨN!
+
+  return (
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
+      <Header />
+
+      {/* Logic Modal của Nhi: Hiện đè lên mọi trang nếu chưa có configId */}
+      {isAuthenticated && !configId && <ConfigSelector />}
+
+      <Routes>
+        {/* Public Route */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route
+          path="/forgot-password"
+          element={<div>Forgot Password Page</div>}
+        />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/" element={<Overview />} />
+
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/config-selector" element={<ConfigSelector />} />
+          <Route element={<ConfigGuard />}>
+            <Route path="/task" element={<TaskManagement />} />
+            <Route path="/calendar" element={<PlanningOverview />} />
+            <Route path="/finance" element={<FinanceDashboard />} />
+            <Route path="/transaction" element={<Transaction />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/settings" element={<Profile />} />
+          </Route>
+        </Route>
+      </Routes>
+      <ChatWidget />
+    </>
+  );
+};
+
+// 2. Component App chính chỉ đóng vai trò "bao bọc" các Provider
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ToastProvider>
           <LoadingProvider>
-            <AuthProvider>
-              <BrowserRouter>
-                <ToastContainer
-                  position="top-right"
-                  autoClose={5000}
-                  hideProgressBar={false}
-                  newestOnTop={false}
-                  closeOnClick={false}
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                  theme="light"
-                  transition={Bounce}
-                />
-                <Header />
-                <Routes>
-                  {/* Public Route  */}
-                  <Route>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route
-                      path="/forgot-password"
-                      element={<div>Forgot Password Page</div>}
-                    />
-                    <Route path="/verify-otp" element={<VerifyOTP />} />
-                    <Route path="/" element={<Overview />} />
-                  </Route>
-
-                  {/* Protected Routes  */}
-                  <Route element={<ProtectedRoute />}>
-                    <Route element={<ConfigGuard />}>
-                      <Route path="/task" element={<TaskManagement />} />
-                      <Route path="/calendar" element={<PlanningOverview />} />
-                      <Route path="/finance" element={<FinanceDashboard />} />
-                      <Route path="/transaction" element={<Transaction />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/settings" element={<Profile />} />
-                    </Route>
-                  </Route>
-                </Routes>
-                <ChatWidget />
-              </BrowserRouter>
-            </AuthProvider>
+            <BrowserRouter>
+              <AuthProvider>
+                <AppContent /> {/* Gọi cái ruột ở đây */}
+              </AuthProvider>
+            </BrowserRouter>
           </LoadingProvider>
         </ToastProvider>
       </ThemeProvider>

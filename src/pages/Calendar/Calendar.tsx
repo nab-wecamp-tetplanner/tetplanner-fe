@@ -213,11 +213,11 @@ export default function CalendarPage({
           <div className="lg:col-span-4 sticky top-6">
             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-[580px]">
               <div className="p-7 border-b border-slate-50 bg-slate-50/30">
-                <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                <h2 className="text-xl font-bold text-(--text) tracking-tight">
                   Tasks schedule
                 </h2>
-                <p className="text-xs text-slate-400 mt-1.5 flex items-center gap-2 font-medium">
-                  <CalendarIcon className="w-3.5 h-3.5 text-blue-500" />
+                <p className="text-xs text-(--text) mt-1.5 flex items-center gap-2 font-medium">
+                  <CalendarIcon className="w-3.5 h-3.5 text-(--primary)" />
                   {format(selectedDate, "eeee, dd MMM yyyy")}
                 </p>
               </div>
@@ -240,9 +240,9 @@ export default function CalendarPage({
                 ) : filteredTasks.length === 0 ? (
                   <div className="text-center py-24 px-6">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Clock className="w-8 h-8 text-slate-200" />
+                      <Clock className="w-8 h-8 text-(--text)/30" />
                     </div>
-                    <p className="text-slate-400 text-sm font-medium">
+                    <p className="text-(--text) text-sm font-medium">
                       No tasks for this day
                     </p>
                   </div>
@@ -270,14 +270,14 @@ export default function CalendarPage({
                         >
                           <button
                             onClick={() => toggleStatus(task)}
-                            className={`shrink-0 h-10 w-10 rounded-2xl flex items-center justify-center shadow-sm transition-all ${
+                            className={`shrink-0 h-10 w-10 rounded-xl flex items-center justify-center shadow-sm transition-all ${
                               isDone
-                                ? "bg-emerald-50 text-emerald-500"
-                                : "bg-white text-slate-300 border border-slate-100 hover:border-blue-200 hover:text-blue-500"
+                                ? "bg-(--success)/10 text-(--success)"
+                                : "bg-(--bg-card) text-(--text) opacity-30 border border-accent hover:border-(--primary) hover:text-(--primary) hover:opacity-100"
                             }`}
                           >
                             <CheckCircle2
-                              className={`w-5 h-5 ${isDone ? "fill-emerald-50" : ""}`}
+                              className={`w-5 h-5 ${isDone ? "fill-(--success)/10" : ""}`}
                             />
                           </button>
 
@@ -286,7 +286,7 @@ export default function CalendarPage({
                             onClick={() => openEditModal(task)}
                           >
                             <span
-                              className={`font-bold text-sm block truncate transition-all ${isDone ? "text-slate-300 line-through" : "text-slate-700"}`}
+                              className={`font-bold text-sm block truncate transition-all ${isDone ? "line-through text-(--text)/50" : "text-(--text)"}`}
                             >
                               {task.title}
                             </span>
@@ -296,7 +296,7 @@ export default function CalendarPage({
                                 className={`w-2 h-2 rounded-full shadow-sm ${dotColorClass}`}
                               />
 
-                              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tighter">
+                              <span className="text-[10px] font-extrabold text-(--text)/60 uppercase tracking-tighter">
                                 {task.phaseName}
                               </span>
                             </div>
@@ -305,13 +305,13 @@ export default function CalendarPage({
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => openEditModal(task)}
-                              className="p-2 hover:bg-white rounded-xl text-slate-400 hover:text-blue-500 hover:shadow-sm transition-all"
+                              className="p-2 hover:bg-(--bg-card) border border-transparent hover:border-accent rounded-lg text-(--text) opacity-40 hover:text-(--primary) transition-all"
                             >
                               <Edit3 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => onDeleteTask(task.id)}
-                              className="p-2 hover:bg-white rounded-xl text-slate-400 hover:text-rose-500 hover:shadow-sm transition-all"
+                              className="p-2 hover:bg-(--bg-card) border border-transparent hover:border-accent rounded-lg text-(--text) opacity-40 hover:text-(--danger) transition-all"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -325,13 +325,14 @@ export default function CalendarPage({
 
               {/* Quick Add Button at bottom of sidebar */}
               {overviewConfig && (
-                <div className="p-4 bg-slate-50/50 mt-auto">
+                <div className="p-4 bg-accent/5 mt-auto border-t border-accent">
+                  {" "}
                   <button
                     onClick={() => {
                       setIsNew(true);
                       setIsModalOpen(true);
                     }}
-                    className="w-full py-3 bg-white border border-slate-200 border-dashed rounded-2xl text-slate-500 text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:border-blue-300 hover:text-blue-500 transition-all shadow-sm"
+                    className="w-full py-3 bg-(--bg-card) border border-accent border-dashed rounded-xl text-(--text) opacity-60 text-sm font-bold flex items-center justify-center gap-2 hover:border-(--primary) hover:text-(--primary) hover:bg-(--primary)/5 transition-all"
                   >
                     <Plus className="w-4 h-4" /> Quick Add Task
                   </button>

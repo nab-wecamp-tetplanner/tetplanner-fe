@@ -15,6 +15,7 @@ import {
   Palette,
   CheckCheck,
   Settings,
+  Plus,
 } from "lucide-react";
 
 import {
@@ -75,6 +76,8 @@ const AuthenticatedActions = ({
   const configRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
+
+  const clearConfig = useAppStore((state) => state.clearConfig);
 
   // Ref để xử lý delay khi hover giống Nav.jsx
   const accountTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -142,33 +145,57 @@ const AuthenticatedActions = ({
         </button>
 
         {showConfig && (
-          <div className="absolute right-0 mt-2 w-56 bg-(--bg) border border-accent rounded-lg shadow-lg z-50 animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-2.5 py-3">
-              {configs.map((config) => (
+          <div className="absolute right-0 mt-2 w-64 bg-(--bg) border border-accent rounded-[1.5rem] shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="p-2">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 py-2">
+                Your Workspaces
+              </p>
+
+              {/* Danh sách các Config hiện có */}
+              <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                {configs.map((config) => (
+                  <button
+                    key={config.id}
+                    onClick={() => {
+                      setConfigId(config.id);
+                      setShowConfig(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-sm rounded-xl transition-all ${
+                      configId === config.id
+                        ? "bg-(--primary)/10 text-(--text) font-bold"
+                        : "text-(--text) opacity-70 hover:opacity-100 hover:bg-accent/30"
+                    }`}
+                  >
+                    {config.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Nút chốt hạ của Nhi nằm ở đây */}
+              <div className="mt-2 pt-2 border-t border-accent/50">
                 <button
-                  key={config.id}
                   onClick={() => {
-                    setConfigId(config.id);
+                    setShowConfig(false);
+                    setIsConfigModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-(--text) hover:bg-(--primary)/10 rounded-xl transition-all"
+                >
+                  <Plus size={14} />
+                  Add new plan
+                </button>
+
+                <Link
+                  to="/config-selector"
+                  onClick={() => {
+                    clearConfig(); // Xoá ID để ép quay về trang chọn
                     setShowConfig(false);
                   }}
-                  className={`w-full text-left px-4 py-2.5 text-sm rounded-md transition-colors ${
-                    configId === config.id
-                      ? "bg-(--primary)/10 text-(--text) font-semibold"
-                      : "text-(--text) hover:bg-(--primary)/10 hover:text-(--text)/80"
-                  }`}
+                  className="flex items-center justify-center gap-2 w-full mt-1 py-2.5 text-[10px] font-black text-blue-500 uppercase hover:bg-blue-50 rounded-xl transition-all"
                 >
-                  {config.name}
-                </button>
-              ))}
-              <button
-                onClick={() => {
-                  setShowConfig(false); // Đóng dropdown menu
-                  setIsConfigModalOpen(true); // Mở Modal tạo mới
-                }}
-                className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2"
-              >
-                + Add new plan
-              </button>
+                  <Settings size={12} className="animate-spin-slow" />
+                  Manage Workspaces
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -358,6 +385,7 @@ const AuthenticatedActions = ({
 
               <button
                 onClick={() => {
+                  clearConfig();
                   logout();
                   setShowAccount(false);
                 }}

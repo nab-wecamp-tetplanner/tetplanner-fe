@@ -288,83 +288,99 @@ export default function PlanningOverview() {
       {/* MAIN CONTENT WRAPPER (Z-index cao để đè lên trang trí) */}
       <div className="relative z-10 mx-auto p-4 ">
         {/* Header điều hướng riêng của Planner */}
-        <header className=" flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 lg:px-6 mb-6 mt-4">
-          <div className="w-full md:w-8/12">
-            {/* Quick Stats - Cập nhật glassmorphism & màu theo theme */}
+        {/* Header điều hướng riêng của Planner */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-5 px-2 lg:px-6 mb-10 mt-6">
+          {/* Chỉnh md:w-9/12 (75%) xuống md:w-[71%] để tổng thể ngắn lại 1 tí (~5px mỗi card) */}
+          <div className="w-full md:w-[64%]">
+            {/* QUICK STATS: Giảm gap từ 4 xuống 3 để các thẻ xích lại gần nhau hơn */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Stat: Done */}
-              <div className="bg-white backdrop-blur-md rounded-2xl border border-((--border) p-5 flex items-center gap-4 shadow-sm group hover:shadow-[0_4px_20px_var(--shadow-accent) hover:border-((--border-hover) transition-all duration-300">
-                <div className="h-11 w-11 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <CheckCircle2 className="w-5 h-5 text-((--success)" />
+              <div className="flex items-center justify-between p-4 bg-(--bg-card) border border-accent/60 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] group hover:border-(--success)/50 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-(--success)/10 flex items-center justify-center border border-(--success)/20">
+                    <CheckCircle2 className="w-5 h-5 text-(--success)" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-(--text-muted) tracking-wider mb-0.5">
+                      Completed
+                    </p>
+                    <h3 className="text-xl font-black text-(--text-heading) leading-none">
+                      {stats.completed}
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-((--text-muted) font-bold uppercase tracking-wider">
-                    Done
-                  </p>
-                  <p className="text-2xl font-black text-((--success) drop-shadow-sm">
-                    {stats.completed}
-                  </p>
+                {/* Tag nhỏ lại còn 9px theo ý Nhi */}
+                <div className="text-[9px] font-bold text-(--success) bg-(--success)/10 px-1.5 py-0.5 rounded-md">
+                  Success
                 </div>
               </div>
 
               {/* Stat: Overdue */}
-              <div className="bg-white  backdrop-blur-md rounded-2xl border border-((--border) p-5 flex items-center gap-4 shadow-sm group hover:shadow-[0_4px_20px_var(--shadow-accent) hover:border-((--border-hover) transition-all duration-300">
-                <div className="h-11 w-11 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-transform">
-                  <AlertCircle className="w-5 h-5 text-((--danger)" />
+              <div className="flex items-center justify-between p-4 bg-(--bg-card) border border-accent/60 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] group hover:border-(--danger)/50 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-(--danger)/10 flex items-center justify-center border border-(--danger)/20">
+                    <AlertCircle className="w-5 h-5 text-(--danger)" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-(--text-muted) tracking-wider mb-0.5">
+                      Overdue
+                    </p>
+                    <h3 className="text-xl font-black text-(--danger) leading-none">
+                      {stats.overdue}
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-((--text-muted) font-bold uppercase tracking-wider">
-                    Overdue
-                  </p>
-                  <p className="text-2xl font-black text-((--danger) drop-shadow-sm">
-                    {stats.overdue}
-                  </p>
+                <div className="text-[9px] font-bold text-(--danger) bg-(--danger)/10 px-1.5 py-0.5 rounded-md animate-pulse">
+                  Action Required
                 </div>
               </div>
 
-              {/* Stat: Total Tasks */}
-              <div className="bg-white  backdrop-blur-md rounded-2xl border border-((--border) p-5 flex items-center gap-4 shadow-sm group hover:shadow-[0_4px_20px_var(--shadow-accent) hover:border-((--border-hover) transition-all duration-300">
-                <div className="h-11 w-11 rounded-xl bg-((--primary)/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ListTodo className="w-5 h-5 text-((--primary)" />
+              {/* Stat: Total */}
+              <div className="flex items-center justify-between p-4 bg-(--bg-card) border border-accent/60 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] group hover:border-(--primary)/50 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-(--primary)/10 flex items-center justify-center border border-(--primary)/20">
+                    <ListTodo className="w-5 h-5 text-(--primary)" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-(--text-muted) tracking-wider mb-0.5">
+                      Total Pool
+                    </p>
+                    <h3 className="text-xl font-black text-(--text-heading) leading-none">
+                      {stats.total}
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-((--text-muted) font-bold uppercase tracking-wider">
-                    Total Tasks
-                  </p>
-                  <p className="text-2xl font-black text-((--primary) drop-shadow-sm">
-                    {stats.total}
-                  </p>
+                <div className="text-[9px] font-bold text-(--primary) bg-(--primary)/10 px-1.5 py-0.5 rounded-md">
+                  Active
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Nút Toggle View (Calendar / Timeline) */}
-          <div className="flex bg-((--bg-glass) backdrop-blur-md p-1.5 rounded-2xl border border-((--border) shadow-sm">
+          {/* Nút Toggle View - Giữ nguyên 100% */}
+          <div className="flex bg-accent/10 p-1.5 rounded-xl border border-accent/40 h-fit shrink-0">
             <button
               onClick={() => setActiveView("calendar")}
-              className={`flex-1 md:flex-none flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
                 activeView === "calendar"
-                  ? "bg-((--bg-card) text-((--primary) shadow-[0_2px_10px_var(--shadow)"
-                  : "text-((--text-muted) hover:text-((--text-heading) hover:bg-((--bg)/50"
+                  ? "bg-(--bg-card) text-(--primary) shadow-sm border border-accent/20"
+                  : "text-(--text-muted) hover:text-(--text-heading)"
               }`}
             >
-              <Calendar className="w-4 h-4" /> Calendar
+              <Calendar className="w-3.5 h-3.5" /> Calendar
             </button>
             <button
               onClick={() => setActiveView("timeline")}
-              className={`flex-1 md:flex-none flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all duration-300 ${
                 activeView === "timeline"
-                  ? "bg-(--bg-card) text-(--primary) shadow-[0_2px_10px_var(--shadow)"
-                  : "text-(--text-muted) hover:text-((--text-heading) hover:bg-((--bg)/50"
+                  ? "bg-(--bg-card) text-(--primary) shadow-sm border border-accent/20"
+                  : "text-(--text-muted) hover:text-(--text-heading)"
               }`}
             >
-              <Clock className="w-4 h-4" /> Timeline
+              <Clock className="w-3.5 h-3.5" /> Timeline
             </button>
           </div>
         </header>
-
-        {/* Nội dung thay đổi dựa trên View - Đặt trong khung kính nhẹ */}
         {/* Nội dung thay đổi dựa trên View - Sửa lại logic render */}
         <div className="transition-all duration-500 ease-in-out px-2 lg:px-6">
           <div className=" backdrop-blur-sm rounded-4xl border border-(--border) shadow-sm p-4 md:p-6 overflow-hidden min-h-150">

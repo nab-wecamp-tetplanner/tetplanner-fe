@@ -122,20 +122,3 @@
   height: 100%;
   object-fit: cover;
 }
-
-/* Header.css */
-
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-/* Đảm bảo font Playfair Display được load nếu bạn muốn dùng logo-text xịn */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800&display=swap");

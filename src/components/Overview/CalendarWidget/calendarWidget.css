@@ -1,5 +1,6 @@
 /* Custom lại thanh hiển thị Event */
-.fc-v-event, .fc-h-event {
+.fc-v-event,
+.fc-h-event {
   background-color: var(--event-bg, #3b82f6) !important;
   border: none !important;
   border-left: 3px solid var(--event-border, #2563eb) !important; /* Tạo vạch nhấn bên trái */
@@ -19,7 +20,6 @@
   text-overflow: ellipsis;
 }
 
-
 .fc .fc-daygrid-day-number {
   margin: 2px 4px !important;
   font-size: 11px !important;
@@ -29,4 +29,3 @@
 .fc-daygrid-day.fc-day-selected {
   background-color: rgba(249, 115, 22, 0.1) !important;
 }
-

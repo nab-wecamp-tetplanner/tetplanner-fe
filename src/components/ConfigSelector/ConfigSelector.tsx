@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // 1. Thêm import này
+/* ConfigSelector.tsx */
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   Plus,
@@ -10,34 +11,36 @@ import {
 } from "lucide-react";
 import { useAppStore } from "../../stores/useAppStore";
 import { toast } from "react-toastify";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../../services/apiClient";
-import type { TetConfig } from "../../types/tetConfig.types"; 
+import confetti from "canvas-confetti";
 
-interface ConfigSelectionProps {
-  configs: TetConfig[];
-  isLoading: boolean;
-}
-
-const ConfigSelector: React.FC<ConfigSelectionProps> = ({
-  configs,
-  isLoading,
-}) => {
-  const configId = useAppStore((state) => state.configId); 
-  const setConfigId = useAppStore((state) => state.setConfigId);
+const ConfigSelector: React.FC = () => {
+  const { configId, setConfigId } = useAppStore();
   const queryClient = useQueryClient();
-  const navigate = useNavigate(); // 2. Khởi tạo navigate
-
+  const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
-  useEffect(() => {
-    if (configId) {
-      navigate("/dashboard"); 
-    }
-  }, [configId, navigate]);
 
   const [name, setName] = useState("");
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [totalBudget, setTotalBudget] = useState<number>(0);
+
+  const { data: configs = [], isLoading } = useQuery({
+    queryKey: ["userConfigs"],
+    queryFn: () => apiClient.tetConfigs.getMyConfigs(),
+  });
+
+  useEffect(() => {
+    if (!isLoading && configs.length === 0) {
+      setIsCreating(true);
+    }
+  }, [configs, isLoading]);
+
+  useEffect(() => {
+    if (configId && !isCreating) {
+      navigate("/");
+    }
+  }, [configId, navigate, isCreating]);
 
   const createMutation = useMutation({
     mutationFn: (newConfigData: {
@@ -48,192 +51,211 @@ const ConfigSelector: React.FC<ConfigSelectionProps> = ({
       return apiClient.tetConfigs.create(newConfigData);
     },
     onSuccess: (newConfig) => {
-      toast.success("Workspace created successfully!");
-      
+      // 1. BẮN PHÁO HOA
+      const duration = 3 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = {
+        startVelocity: 30,
+        spread: 360,
+        ticks: 60,
+        zIndex: 10000,
+      };
+      const randomInRange = (min: number, max: number) =>
+        Math.random() * (max - min) + min;
 
-      // Update Zustand state with the newly created config ID
+      const interval: any = setInterval(function () {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+
+        const particleCount = 50 * (timeLeft / duration);
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          colors: ["#ff0000", "#ffd700"],
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          colors: ["#ff0000", "#ffd700"],
+        });
+      }, 250);
+
+      toast.success("Workspace created! Happy Planning! 🧧");
       if (newConfig && (newConfig as any).id) {
-        setConfigId((newConfig as any).id);
-        navigate("/"); // 3. Chuyển hướng về trang chủ sau khi tạo xong
+        setTimeout(() => {
+          setConfigId((newConfig as any).id);
+          setIsCreating(false);
+        }, 1500);
       }
-
-      // Invalidate the query to refresh the list in the background
       queryClient.invalidateQueries({ queryKey: ["userConfigs"] });
     },
     onError: (error: any) => {
-      toast.error(
-        error?.message || "Failed to create workspace. Please try again.",
-      );
+      toast.error(error?.message || "Failed to create workspace.");
     },
   });
 
   const handleSelect = (id: string) => {
     setConfigId(id);
-    toast.success("Workspace selected successfully!");
-    navigate("/"); // 4. Chuyển hướng về trang chủ sau khi chọn
+    toast.success("Workspace selected!");
   };
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Trigger the mutation
-    createMutation.mutate({
-      name: name,
-      year: Number(year),
-      total_budget: totalBudget === null ? 0 : Number(totalBudget),
-    });
+    if (!name.trim()) return toast.warn("Please enter a workspace name");
+    createMutation.mutate({ name, year, total_budget: totalBudget });
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center bg-background px-4">
-      <div className="max-w-md w-full bg-card rounded-2xl border border-border p-8 shadow-sm">
-        <h2 className="text-xl font-bold text-center mb-6">
-          Welcome! Please set up your config
-        </h2>
+    // LỚP NỀN: Dùng đen rất nhạt + Blur cực mạnh để làm nổi bật theme bên dưới mà không bị "gớm"
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/10 backdrop-blur-xl animate-in fade-in duration-500 p-4">
+      {/* KHUNG MODAL: Dùng màu nền theme, bo góc siêu lớn, có viền accent */}
+      <div className="max-w-md w-full bg-(--bg) border border-(--primary)/30 rounded-[2.5rem] p-8 md:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] animate-in zoom-in-95 duration-300 relative overflow-hidden">
+        {/* Điểm nhấn màu sắc ở góc */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-(--primary)/10 blur-3xl rounded-full"></div>
 
-        {isLoading ? (
-          <div className="flex justify-center p-4">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          </div>
-        ) : configs.length > 0 && !isCreating ? (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600 mb-2">
-              Select an existing config:
+        <div className="relative z-10">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-black text-(--text) tracking-tight uppercase">
+              {isCreating ? "New Workspace" : "Select Workspace"}
+            </h2>
+            <p className="text-sm text-(--text) opacity-50 mt-1 font-medium italic">
+              {isCreating
+                ? "Set up your planning environment"
+                : "Choose a workspace to continue"}
             </p>
-            {configs.map((conf) => (
+          </div>
+
+          {isLoading ? (
+            <div className="flex flex-col items-center py-10 gap-3">
+              <Loader2 className="w-10 h-10 animate-spin text-(--primary)" />
+              <span className="text-[10px] font-black text-(--text) opacity-40 uppercase tracking-widest">
+                Fetching Data...
+              </span>
+            </div>
+          ) : configs.length > 0 && !isCreating ? (
+            <div className="space-y-3">
+              <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-3">
+                {configs.map((conf: any) => (
+                  <button
+                    key={conf.id}
+                    onClick={() => handleSelect(conf.id)}
+                    className="w-full group flex items-center justify-between p-5 border border-(--primary)/20 rounded-[1.5rem] hover:border-(--primary) hover:bg-(--primary)/5 transition-all text-left"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-(--bg) transition-colors">
+                        <Calendar className="w-5 h-5 text-(--text) opacity-40 group-hover:text-(--primary) group-hover:opacity-100" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-(--text) block">
+                          {conf.name}
+                        </span>
+                        <span className="text-[10px] font-black text-(--text) opacity-40 uppercase">
+                          Year: {conf.year}
+                        </span>
+                      </div>
+                    </div>
+                    <Check className="w-5 h-5 text-(--primary) opacity-0 group-hover:opacity-100 transition-all" />
+                  </button>
+                ))}
+              </div>
+
               <button
-                key={(conf as any).id}
-                onClick={() => handleSelect((conf as any).id)}
-                className="w-full flex items-center justify-between p-4 border border-border rounded-xl hover:border-blue-500 hover:bg-blue-50/50 transition-all text-left group"
+                onClick={() => setIsCreating(true)}
+                className="w-full py-4 border-2 border-dashed border-(--primary)/30 rounded-[1.5rem] text-(--text) opacity-40 font-bold mt-4 flex items-center justify-center gap-2 hover:border-(--primary) hover:text-(--primary) hover:opacity-100 transition-all"
               >
-                <div>
-                  <span className="font-medium block">{conf.name}</span>
-                  {conf.year && (
-                    <span className="text-xs text-gray-500">
-                      Year: {conf.year}
-                    </span>
-                  )}
+                <Plus size={18} /> Create New Workspace
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleCreate} className="space-y-5">
+              {/* Input Name */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black text-(--text) opacity-40 uppercase ml-2 tracking-wider">
+                  Workspace Name
+                </label>
+                <div className="relative group">
+                  <Folder className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text) opacity-30 group-focus-within:text-(--primary) group-focus-within:opacity-100 transition-all" />
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-accent/10 border-none rounded-2xl focus:ring-2 focus:ring-(--primary)/20 outline-none text-sm font-bold text-(--text) placeholder:text-(--text)/20 transition-all"
+                    placeholder="e.g., Financial Year 2026"
+                  />
                 </div>
-                <Check className="w-5 h-5 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-            ))}
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border"></div>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or</span>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-(--text) opacity-40 uppercase ml-2 tracking-wider">
+                    Year
+                  </label>
+                  <div className="relative group">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text) opacity-30 group-focus-within:text-(--primary) transition-all" />
+                    <input
+                      type="number"
+                      required
+                      value={year}
+                      onChange={(e) => setYear(Number(e.target.value))}
+                      className="w-full pl-11 pr-4 py-4 bg-accent/10 border-none rounded-2xl focus:ring-2 focus:ring-(--primary)/20 outline-none text-sm font-bold text-(--text) transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-(--text) opacity-40 uppercase ml-2 tracking-wider">
+                    Budget
+                  </label>
+                  <div className="relative group">
+                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text) opacity-30 group-focus-within:text-(--primary) transition-all" />
+                    <input
+                      type="text"
+                      required
+                      value={
+                        totalBudget
+                          ? new Intl.NumberFormat("vi-VN").format(totalBudget)
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "");
+                        setTotalBudget(raw ? Number(raw) : 0);
+                      }}
+                      className="w-full pl-11 pr-4 py-4 bg-accent/10 border-none rounded-2xl focus:ring-2 focus:ring-(--primary)/20 outline-none text-sm font-bold text-(--text) transition-all"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <button
-              onClick={() => setIsCreating(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-dashed border-gray-400 rounded-xl hover:bg-muted transition-colors text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" /> Create new config
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleCreate} className="space-y-4">
-            <p className="text-sm text-gray-600 mb-4">
-              {configs.length === 0
-                ? "You don't have any workspaces yet. Let's create one:"
-                : "Create a new workspace:"}
-            </p>
-
-            {/* Name Field */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Config Name
-              </label>
-              <div className="relative">
-                <Folder className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+              <div className="pt-4 space-y-3">
+                <button
+                  type="submit"
                   disabled={createMutation.isPending}
-                  className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm disabled:opacity-50"
-                  placeholder="e.g., Financial Year 2026"
-                />
+                  className="w-full bg-(--primary) hover:opacity-90 text-white font-black py-4 rounded-[1.5rem] transition-all shadow-lg shadow-(--primary)/20 flex justify-center items-center gap-2 disabled:opacity-50"
+                >
+                  {createMutation.isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    "Create & Start Planning"
+                  )}
+                </button>
+
+                {configs.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCreating(false)}
+                    className="w-full text-xs font-black text-(--text) opacity-30 hover:opacity-100 uppercase tracking-widest transition-all"
+                  >
+                    ← Back to list
+                  </button>
+                )}
               </div>
-            </div>
-
-            {/* Year Field */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Year
-              </label>
-              <div className="relative">
-                <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  type="number"
-                  required
-                  value={year}
-                  onChange={(e) => setYear(Number(e.target.value))}
-                  disabled={createMutation.isPending}
-                  className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm disabled:opacity-50"
-                  placeholder="e.g., 2026"
-                />
-              </div>
-            </div>
-
-            {/* Total Budget Field */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Total Budget
-              </label>
-              <div className="relative">
-                <DollarSign className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  required
-                  value={
-                    totalBudget
-                      ? new Intl.NumberFormat("vi-VN").format(totalBudget)
-                      : ""
-                  }
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    const rawValue = inputValue.replace(/\D/g, "");
-                    setTotalBudget(rawValue ? Number(rawValue) : 0);
-                  }}
-                  disabled={createMutation.isPending}
-                  className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm disabled:opacity-50"
-                  placeholder="e.g., 500.000"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition-all mt-6 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {createMutation.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create & Start"
-              )}
-            </button>
-
-            {configs.length > 0 && !createMutation.isPending && (
-              <button
-                type="button"
-                onClick={() => setIsCreating(false)}
-                className="w-full text-sm text-gray-500 hover:underline mt-2"
-              >
-                Back to list
-              </button>
-            )}
-          </form>
-        )}
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { useAppStore } from "../stores/useAppStore";
 
 import { AuthContext } from "./AuthTypes";
 import type { RegisterData, RegisterResponse } from "./AuthTypes";
+import { useNavigate } from "react-router-dom";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -71,20 +72,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const navigate = useNavigate(); // Khởi tạo ở đây
+
   const logout = async () => {
     setIsLoading(true);
     try {
-      // Dọn dẹp storage
+      // 1. Dọn dẹp storage thủ công cho chắc ăn
       localStorage.removeItem("token");
       localStorage.removeItem("currentUser");
+
+      // 2. Xóa config trong store
       useAppStore.getState().clearConfig();
 
-      // Reset state
+      // 3. Reset state
       setCurrentUser(null);
       setIsAuthenticated(false);
 
-      // ĐIỀU HƯỚNG VỀ HOME
-      window.location.href = "/";
+      // 4. Dùng navigate thay vì window.location.href
+      navigate("/login");
     } finally {
       setIsLoading(false);
     }

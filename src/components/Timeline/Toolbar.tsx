@@ -1,3 +1,4 @@
+/* TaskToolbar.tsx */
 import { Plus, Download, Upload } from "lucide-react";
 
 export type ViewType = "day" | "week" | "month";
@@ -14,65 +15,54 @@ export default function TaskToolbar({
   onAddClick,
 }: TaskToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-      {/* View Toggles */}
-      <div className="flex gap-2 bg-muted/40 p-1 rounded-lg border border-border">
-        <button
-          onClick={() => onViewChange("day")}
-          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-            activeView === "day"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Day
-        </button>
-        <button
-          onClick={() => onViewChange("week")}
-          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-            activeView === "week"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Week
-        </button>
-        <button
-          onClick={() => onViewChange("month")}
-          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-            activeView === "month"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Month
-        </button>
+    <div className="flex flex-wrap items-center justify-between mb-8 gap-4 px-1">
+      {/* 1. VIEW TOGGLES: Nhỏ nhắn, gọn gàng */}
+      <div className="grid grid-cols-3 p-1 bg-(--bg-card)/40 border border-(--border)/60 rounded-lg w-full sm:w-56 h-8.5">
+        {(["day", "week", "month"] as ViewType[]).map((view) => (
+          <button
+            key={view}
+            onClick={() => onViewChange(view)}
+            className={`flex items-center justify-center text-[11px] font-bold capitalize rounded-lg transition-all duration-300 ${
+              activeView === view
+                ? "bg-(--bg-card) text-(--primary) shadow-sm border border-(--border)/60"
+                : "text-(--text) opacity-40 hover:opacity-100"
+            }`}
+          >
+            {view}
+          </button>
+        ))}
       </div>
 
-      {/* Search & Add Action */}
-      <div className="flex items-center gap-3">
+      {/* 2. ACTION GROUP: Compact & Equal Dimensions */}
+      <div className="flex items-center gap-2">
+        {/* Nút Import */}
         <button
-          onClick={() => alert("Chức năng Import Excel/CSV")}
-          className="flex items-center gap-2 px-3 py-2 bg-card border border-border hover:bg-muted text-sm font-medium rounded-xl shadow-sm transition-colors text-foreground"
-          title="Import Tasks"
+          onClick={() => alert("Import")}
+          className="flex items-center justify-center gap-2 h-8.5 w-24 bg-(--bg-card) border border-(--border)/80 rounded-lg hover:border-(--primary) hover:bg-(--primary)/5 transition-all duration-300 group"
         >
-          <Download className="w-4 h-4 text-muted-foreground" />
-          <span className="hidden sm:inline">Import</span>
+          <Download className="w-3.5 h-3.5 text-(--text) opacity-30 group-hover:text-(--primary) group-hover:opacity-100 transition-all" />
+          <span className="text-[11px] font-bold text-(--text) opacity-60 group-hover:text-(--primary) group-hover:opacity-100">
+            Import
+          </span>
         </button>
 
+        {/* Nút Export */}
         <button
-          onClick={() => alert("Chức năng Export Excel/CSV")}
-          className="flex items-center gap-2 px-3 py-2 bg-card border border-border hover:bg-muted text-sm font-medium rounded-xl shadow-sm transition-colors text-foreground"
-          title="Export Tasks"
+          onClick={() => alert("Export")}
+          className="flex items-center justify-center gap-2 h-8.5 w-24 bg-(--bg-card) border border-(--border)/80 rounded-lg hover:border-(--primary) hover:bg-(--primary)/5 transition-all duration-300 group"
         >
-          <Upload className="w-4 h-4 text-muted-foreground" />
-          <span className="hidden sm:inline">Export</span>
+          <Upload className="w-3.5 h-3.5 text-(--text) opacity-30 group-hover:text-(--primary) group-hover:opacity-100 transition-all" />
+          <span className="text-[11px] font-bold text-(--text) opacity-60 group-hover:text-(--primary) group-hover:opacity-100">
+            Export
+          </span>
         </button>
+
+        {/* Nút Add Task: Kích thước bằng hệt 2 nút trên, không còn "lố" */}
         <button
           onClick={onAddClick}
-          className="bg-planner-blue hover:bg-planner-blue/90 text-white p-2.5 rounded-xl shadow-sm transition-colors flex items-center justify-center"
+          className="flex items-center justify-center gap-2 h-8.5 w-8.5 bg-(--primary) text-white rounded-lg shadow-sm hover:brightness-105 transition-all duration-300 active:scale-95"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-3.5 h-3.5 stroke-[3px]" />
         </button>
       </div>
     </div>
