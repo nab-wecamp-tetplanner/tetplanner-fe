@@ -5,7 +5,6 @@ import {
   ChevronDown,
   ChevronUp,
   User as Profile,
-  Settings,
   LogOut,
   Palette,
 } from "lucide-react";

@@ -204,7 +204,7 @@ const ChatWidget: React.FC = () => {
         onClick={() => setIsOpen((v) => !v)}
       >
         <img
-          src="https://api.dicebear.com/9.x/toon-head/svg?seed=Christopher"
+          src="https://api.dicebear.com/9.x/toon-head/svg?randomizeIds=true&beard[]&clothes=shirt,tShirt,turtleNeck,openJacket&eyebrows=happy,neutral,raised&eyes=happy,wide&mouth=laugh,smile&skinColor=b98e6a,c68e7a,f1c3a5&seed=Liam"
           alt="FAB"
         />
         <X size={24} className="cw-fab__icon cw-fab__icon--close" />
