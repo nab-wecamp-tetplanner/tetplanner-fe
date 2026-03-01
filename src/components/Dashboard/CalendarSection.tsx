@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  ShoppingCart,
-  Clock,
-  AlertCircle,
-  Calendar,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Calendar } from "lucide-react";
 import apiClient from "../../services/apiClient";
 import { useAppStore } from "../../stores/useAppStore";
 import type { TodoItem } from "../../types/todo.types";
@@ -22,16 +14,25 @@ interface CalendarEvent {
   dayName: string;
   monthLabel: string;
   events: {
-    type: "all-day" | "timed" | "task" | "shopping";
+    type: "task" | "shopping";
     title: string;
-    time?: string;
-    location?: string;
+    categoryId?: string;
+    categoryName?: string;
     color: string;
     priority?: EventPriority;
     completed?: boolean;
     cost?: number;
+    todoId?: string;
   }[];
 }
+
+type TodoItemWithCategoryVariants = TodoItem & {
+  category_id?: string;
+  category?: {
+    id?: string;
+    name?: string;
+  } | null;
+};
 
 const CalendarSection = () => {
   const configId = useAppStore((state) => state.configId);
@@ -53,6 +54,54 @@ const CalendarSection = () => {
     return "high";
   };
 
+  const resolveCategoryFromTodo = (
+    item: TodoItem,
+    categoriesById: Map<string, string>,
+  ) => {
+    const todoItem = item as TodoItemWithCategoryVariants;
+    const categoryId = todoItem.category?.id ?? todoItem.category_id;
+    const embeddedCategoryName = todoItem.category?.name;
+    const categoryNameFromMap = categoryId
+      ? categoriesById.get(String(categoryId))
+      : undefined;
+
+    return {
+      categoryId: categoryId ? String(categoryId) : undefined,
+      categoryName:
+        embeddedCategoryName?.trim() ||
+        categoryNameFromMap?.trim() ||
+        undefined,
+    };
+  };
+
+  const handleToggleCompletion = async (
+    todoId: string,
+    currentCompleted: boolean,
+    eventIndex: number,
+    dayIndex: number,
+  ) => {
+    try {
+      const newStatus = currentCompleted ? "pending" : "completed";
+      await apiClient.todos.update(todoId, { status: newStatus });
+
+      // Update local state
+      setEvents((prevEvents) => {
+        const updated = [...prevEvents];
+        updated[dayIndex] = {
+          ...updated[dayIndex],
+          events: [...updated[dayIndex].events],
+        };
+        updated[dayIndex].events[eventIndex] = {
+          ...updated[dayIndex].events[eventIndex],
+          completed: newStatus === "completed",
+        };
+        return updated;
+      });
+    } catch (err) {
+      console.error("Failed to update task completion:", err);
+    }
+  };
+
   useEffect(() => {
     const fetchCalendarData = async () => {
       if (!configId) {
@@ -65,10 +114,18 @@ const CalendarSection = () => {
       setError(null);
 
       try {
-        const [todoItems, transactions] = await Promise.all([
+        const [todoItems, transactions, categoriesData] = await Promise.all([
           apiClient.todos.getAll({ tetConfigId: configId }),
           apiClient.transactions.getByConfig(configId),
+          apiClient.categories.getByTetConfig(configId),
         ]);
+
+        const categoriesById = new Map(
+          categoriesData.map((category) => [
+            String(category.id),
+            category.name,
+          ]),
+        );
 
         const month = currentDate.getMonth();
         const year = currentDate.getFullYear();
@@ -110,21 +167,23 @@ const CalendarSection = () => {
           .forEach((item) => {
             const itemDate = new Date(item.deadline);
             const day = getOrCreateDay(itemDate);
+            const { categoryId, categoryName } = resolveCategoryFromTodo(
+              item,
+              categoriesById,
+            );
 
             day.events.push({
               type: item.is_shopping ? "shopping" : "task",
               title: item.title,
-              time: itemDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }),
+              categoryId,
+              categoryName,
               color: item.is_shopping ? "#1ea7ff" : "#5051f9",
               priority: normalizePriority(item.priority),
               completed: item.status === "completed",
               cost: item.is_shopping
                 ? (item.estimated_price || 0) * (item.quantity || 1)
                 : undefined,
+              todoId: item.id,
             });
           });
 
@@ -144,11 +203,6 @@ const CalendarSection = () => {
             day.events.push({
               type: "shopping",
               title: transaction.note || "Expense",
-              time: transactionDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }),
               color: "#8b5cf6",
               cost: Number(transaction.amount) || 0,
             });
@@ -173,21 +227,6 @@ const CalendarSection = () => {
 
     fetchCalendarData();
   }, [configId, currentDate]);
-
-  const getEventIcon = (type: string, priority?: string) => {
-    switch (type) {
-      case "shopping":
-        return <ShoppingCart size={15} />;
-      case "task":
-        return priority === "high" ? (
-          <AlertCircle size={15} />
-        ) : (
-          <CheckCircle2 size={15} />
-        );
-      default:
-        return <Clock size={15} />;
-    }
-  };
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
@@ -333,57 +372,101 @@ const CalendarSection = () => {
 
               {/* Events */}
               <div className="space-y-2">
-                {dayEvents.events.map((event, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${getPriorityColor(event.priority)}`}
-                  >
-                    {/* Icon */}
+                {dayEvents.events.map((event, idx) => {
+                  return (
                     <div
-                      className="shrink-0 mt-0.5 text-foreground"
-                      style={{ color: event.color }}
+                      key={idx}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                        event.completed
+                          ? "bg-gray-100 border-gray-300 opacity-60"
+                          : getPriorityColor(event.priority)
+                      }`}
                     >
-                      {getEventIcon(event.type, event.priority)}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {event.title}
-                          </p>
-                          {event.time && (
-                            <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                              <Clock size={12} />
-                              {event.time}
-                            </p>
+                      {/* Checkbox or Icon */}
+                      <div className="shrink-0 mt-0.5">
+                        <button
+                          type="button"
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${
+                            event.completed
+                              ? "bg-blue-500 border-blue-500"
+                              : "border-gray-400 hover:border-blue-500"
+                          }`}
+                          onClick={() => {
+                            const dayIndex = events.indexOf(dayEvents);
+                            handleToggleCompletion(
+                              event.todoId!,
+                              event.completed!,
+                              idx,
+                              dayIndex,
+                            );
+                          }}
+                          aria-label={
+                            event.completed
+                              ? "Mark as pending"
+                              : "Mark as completed"
+                          }
+                        >
+                          {event.completed && (
+                            <Check size={14} className="text-white" />
                           )}
-                        </div>
-                        {event.type === "shopping" && event.cost && (
-                          <div className="shrink-0 text-right">
-                            <p className="text-xs font-bold text-foreground">
-                              ₫{(event.cost / 1000000).toFixed(1)}M
-                            </p>
-                          </div>
-                        )}
+                        </button>
                       </div>
 
-                      {/* Priority Badge */}
-                      {event.priority && (
-                        <div className="mt-1">
-                          <span
-                            className={`inline-block px-2 py-1 text-xs font-medium rounded ${getPriorityBadge(event.priority)}`}
-                          >
-                            {event.priority.charAt(0).toUpperCase() +
-                              event.priority.slice(1)}{" "}
-                            Priority
-                          </span>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm font-semibold ${
+                                event.completed
+                                  ? "text-gray-500 line-through"
+                                  : "text-foreground"
+                              }`}
+                            >
+                              {event.title}
+                            </p>
+                            {/* Info line: estimated price or task details */}
+                            {event.type === "shopping" && event.cost && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                ₫{(event.cost / 1000000).toFixed(1)}M
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Badges on the right */}
+                          <div className="shrink-0 flex flex-col gap-1">
+                            {/* Priority Badge */}
+                            {event.priority && (
+                              <span
+                                className={`inline-block px-2 py-1 text-xs font-medium rounded text-center ${
+                                  event.completed
+                                    ? "bg-gray-300 text-gray-600"
+                                    : getPriorityBadge(event.priority)
+                                }`}
+                              >
+                                {event.priority.charAt(0).toUpperCase() +
+                                  event.priority.slice(1)}
+                              </span>
+                            )}
+
+                            {/* Category Badge */}
+                            {event.categoryName && (
+                              <span
+                                className={`inline-block px-2 py-1 text-xs font-medium rounded text-center ${
+                                  event.completed
+                                    ? "bg-gray-300 text-gray-600"
+                                    : getPriorityBadge(event.priority)
+                                }`}
+                              >
+                                {event.categoryName}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );

@@ -8,6 +8,7 @@ import {
   Folder,
   Calendar,
   DollarSign,
+  X,
 } from "lucide-react";
 import { useAppStore } from "../../stores/useAppStore";
 import { toast } from "react-toastify";
@@ -19,6 +20,8 @@ const ConfigSelector: React.FC = () => {
   const { configId, setConfigId } = useAppStore();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  // 1. Giữ nguyên state isCreating để người dùng chủ động bấm nút "Create New"
   const [isCreating, setIsCreating] = useState(false);
 
   const [name, setName] = useState("");
@@ -30,17 +33,17 @@ const ConfigSelector: React.FC = () => {
     queryFn: () => apiClient.tetConfigs.getMyConfigs(),
   });
 
-  useEffect(() => {
-    if (!isLoading && configs.length === 0) {
-      setIsCreating(true);
-    }
-  }, [configs, isLoading]);
+  // 2. TÍNH TOÁN DỰA TRÊN DỮ LIỆU (Derived State)
+  // Nếu list trống và load xong rồi thì TỰ ĐỘNG coi như đang ở mode Creating
+  const effectivelyCreating =
+    isCreating || (!isLoading && configs.length === 0);
 
+  // 3. EFFECT ĐIỀU HƯỚNG: Chỉ chạy khi đã có config và KHÔNG trong mode tạo mới
   useEffect(() => {
-    if (configId && !isCreating) {
+    if (configId && !effectivelyCreating) {
       navigate("/");
     }
-  }, [configId, navigate, isCreating]);
+  }, [configId, navigate, effectivelyCreating]);
 
   const createMutation = useMutation({
     mutationFn: (newConfigData: {
@@ -111,10 +114,26 @@ const ConfigSelector: React.FC = () => {
     // LỚP NỀN: Dùng đen rất nhạt + Blur cực mạnh để làm nổi bật theme bên dưới mà không bị "gớm"
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/10 backdrop-blur-xl animate-in fade-in duration-500 p-4">
       {/* KHUNG MODAL: Dùng màu nền theme, bo góc siêu lớn, có viền accent */}
-      <div className="max-w-md w-full bg-(--bg) border border-(--primary)/30 rounded-[2.5rem] p-8 md:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] animate-in zoom-in-95 duration-300 relative overflow-hidden">
+      <div className="max-w-md w-full bg-(--bg) border border-(--primary)/20 rounded-[2.5rem] p-8 md:p-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] animate-in zoom-in-95 duration-300 relative overflow-hidden">
         {/* Điểm nhấn màu sắc ở góc */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-(--primary)/10 blur-3xl rounded-full"></div>
-
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-(--primary)/5 blur-3xl rounded-full"></div>
+        <button
+          onClick={() => {
+            if (isCreating && configs.length > 0) {
+              // Nếu đang lỡ bấm vào "Create New" mà muốn quay lại list
+              setIsCreating(false);
+            } else if (configId || configs.length > 0) {
+              // Nếu đã có plan hoặc danh sách không trống thì cho về Home
+              navigate("/");
+            } else {
+              // Chỉ hiện toast khi thực sự không có plan nào để chạy App
+              toast.warn("Please select a workspace to start planning!");
+            }
+          }}
+          className="absolute top-6 right-6 p-2 rounded-full text-(--text) opacity-30 hover:opacity-100 hover:bg-accent/20 transition-all z-20"
+        >
+          <X size={20} strokeWidth={3} />
+        </button>
         <div className="relative z-10">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-black text-(--text) tracking-tight uppercase">

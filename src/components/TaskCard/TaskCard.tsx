@@ -186,13 +186,21 @@ const TaskCard: React.FC<TaskCardProps> = ({
             <span
               className={`tet-card__chip ${task.is_overdue ? "tet-card__chip--overdue" : ""}`}
             >
-              <Clock size={11} /> {task.deadline}
+              <Clock size={11} />
+              <span>
+                {new Date(task.deadline).toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
+              </span>
             </span>
           )}
           {task.estimated_price != null && task.estimated_price > 0 && (
             <span className="tet-card__chip tet-card__chip--price">
               <BadgeDollarSign size={11} />
-              {task.estimated_price.toLocaleString("vi-VN")}đ
+              {new Intl.NumberFormat("vi-VN").format(task.estimated_price)}{" "}
+              ₫{" "}
             </span>
           )}
           {task.is_shopping && task.quantity > 0 && (

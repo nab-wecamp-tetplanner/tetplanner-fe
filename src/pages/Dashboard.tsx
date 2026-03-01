@@ -76,7 +76,7 @@ export default function Dashboard() {
       />
 
       {/* 3. MAIN CONTENT - Đặt relative và z-10 để giữ nguyên màu trắng nổi lên trên nền */}
-      <main className="relative z-10 mx-auto sm:px-4 lg:px-30 py-4 flex gap-3 flex-col">
+      <main className="relative z-10 mx-auto max-w-6xl py-4 flex gap-3 flex-col">
         {/* Top Section: Calendar and Quick Stats */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex flex-col gap-1">

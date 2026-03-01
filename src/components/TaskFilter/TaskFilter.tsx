@@ -6,6 +6,7 @@ import type {
   TaskPriority,
 } from "../../types/task.types";
 import "./TaskFilter.css";
+import type { Timeline } from "../../types/timeline.types";
 
 /* ── Filter option configs ── */
 const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
@@ -23,14 +24,16 @@ const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
 ];
 
 export interface TaskFilters {
-  categories: string[]; // category IDs
+  categories: string[]; 
   statuses: TaskStatus[];
   priorities: TaskPriority[];
+  timelines: string[];
 }
 
 interface TaskFilterProps {
   categories: Category[];
   filters: TaskFilters;
+  phases: Timeline[];
   onFiltersChange: (filters: TaskFilters) => void;
 }
 
@@ -38,20 +41,24 @@ const EMPTY_FILTERS: TaskFilters = {
   categories: [],
   statuses: [],
   priorities: [],
+  timelines: [],
 };
 
 const TaskFilter: React.FC<TaskFilterProps> = ({
   categories,
   filters,
+  phases,
   onFiltersChange,
 }) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // FIX 1: Included timelines length in active count
   const activeCount =
     filters.categories.length +
     filters.statuses.length +
-    filters.priorities.length;
+    filters.priorities.length +
+    filters.timelines.length;
 
   /* Close panel on outside click */
   useEffect(() => {
@@ -65,6 +72,13 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
   }, [open]);
 
   /* Toggle helpers */
+  const toggleTimeline = (id: string) => {
+    const next = filters.timelines.includes(id)
+      ? filters.timelines.filter((t) => t !== id)
+      : [...filters.timelines, id];
+    onFiltersChange({ ...filters, timelines: next });
+  };
+
   const toggleCategory = (id: string) => {
     const next = filters.categories.includes(id)
       ? filters.categories.filter((c) => c !== id)
@@ -91,12 +105,20 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
   };
 
   const getActiveFilterLabels = () => {
-    const labels = [];
+    const labels: string[] = [];
+
+    // FIX 2: Add timeline names to inline summary
+    const timelineNames = filters.timelines
+      .map((id) => phases.find((p) => p.id === id)?.name)
+      .filter(Boolean) as string[];
+    if (timelineNames.length > 0) {
+      labels.push(...timelineNames);
+    }
 
     // Add category names
     const catNames = filters.categories
       .map((id) => categories.find((c) => c.id === id)?.name)
-      .filter(Boolean);
+      .filter(Boolean) as string[];
     if (catNames.length > 0) {
       labels.push(...catNames);
     }
@@ -117,7 +139,7 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
   };
 
   return (
-    <div className="tf-wrap" ref={panelRef}>
+    <div className="tf-wrap h-20 items-start" ref={panelRef}>
       {/* Trigger button with inline preview */}
       <div className="tf-container">
         <button
@@ -157,6 +179,26 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
                 <X size={12} /> Clear all
               </button>
             )}
+          </div>
+
+          {/* ── Timeline section ── */}
+          <div className="tf-section">
+            <span className="tf-section__label">Timeline</span>
+            <div className="tf-chips">
+              {phases.map((phase) => (
+                <button
+                  key={phase.id}
+                  className={`tf-chip ${filters.timelines.includes(phase.id) ? "tf-chip--active" : ""}`}
+                  onClick={() => toggleTimeline(phase.id)}
+                >
+                  {phase.name}
+                </button>
+              ))}
+              {/* FIX 3: Changed from categories.length to phases.length */}
+              {phases.length === 0 && (
+                <span className="tf-section__empty">No Timeline</span>
+              )}
+            </div>
           </div>
 
           {/* ── Category section ── */}
