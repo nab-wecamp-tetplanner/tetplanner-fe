@@ -161,6 +161,7 @@ export default function PlanningOverview() {
         return { ...prevData, phases: updatedPhases };
       });
     } catch (error) {
+      console.error("Error deleting task:", error);
     } finally {
       hideLoading();
     }
@@ -169,7 +170,8 @@ export default function PlanningOverview() {
   const fetchCategories = async () => {
     if (!configId) return;
     try {
-      const categoriesData = await apiClient.categories.getByTetConfig(configId);
+      const categoriesData =
+        await apiClient.categories.getByTetConfig(configId);
       setCategories(categoriesData);
     } catch (error) {
       console.log(error);
@@ -246,11 +248,13 @@ export default function PlanningOverview() {
 
   return (
     <div className="relative min-h-screen bg-((--bg) text-((--text) transition-colors duration-500 overflow-hidden font-sans pb-10">
-      
       {/* Background Pattern & Warm Overlay */}
       <div
         className="absolute inset-0 pointer-events-none z-0 tet-deco-element"
-        style={{ backgroundImage: BACKGROUND_PATTERN, opacity: 'var(--pattern-opacity)' }}
+        style={{
+          backgroundImage: BACKGROUND_PATTERN,
+          opacity: "var(--pattern-opacity)",
+        }}
       ></div>
       <div
         className="absolute inset-0 pointer-events-none z-0 tet-deco-element"
@@ -260,12 +264,26 @@ export default function PlanningOverview() {
       ></div>
 
       {/* Decorative Elements - Định vị ở các góc, ẩn đi trong theme Minimal */}
-      <div className="tet-deco-element"><FallingPetals count={15} /></div>
-      <Lantern className="absolute top-6 right-20 animate-[swing_4s_ease-in-out_infinite] z-0 opacity-70 tet-deco-element" size="sm" />
-      <BlossomBranch className="absolute top-24 -left-10 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-75" variant="apricot" />
-      <BlossomBranch className="absolute top-40 -right-8 animate-[float_5s_ease-in-out_infinite_reverse] z-0 transform scale-x-[-1] scale-75 opacity-80 tet-deco-element" variant="peach" />
+      <div className="tet-deco-element">
+        <FallingPetals count={15} />
+      </div>
+      <Lantern
+        className="absolute top-6 right-20 animate-[swing_4s_ease-in-out_infinite] z-0 opacity-70 tet-deco-element"
+        size="sm"
+      />
+      <BlossomBranch
+        className="absolute top-24 -left-10 animate-[float_6s_ease-in-out_infinite] z-0 opacity-80 tet-deco-element transform scale-75"
+        variant="apricot"
+      />
+      <BlossomBranch
+        className="absolute top-40 -right-8 animate-[float_5s_ease-in-out_infinite_reverse] z-0 transform scale-x-[-1] scale-75 opacity-80 tet-deco-element"
+        variant="peach"
+      />
       <CloudMotif className="absolute top-10 left-[25%] animate-[float_7s_ease-in-out_infinite] z-0 opacity-40 tet-deco-element" />
-      <TraditionalCake className="absolute bottom-5 left-8 z-0 opacity-30 animate-[float_4s_ease-in-out_infinite] tet-deco-element" variant="tet" />
+      <TraditionalCake
+        className="absolute bottom-5 left-8 z-0 opacity-30 animate-[float_4s_ease-in-out_infinite] tet-deco-element"
+        variant="tet"
+      />
 
       {/* MAIN CONTENT WRAPPER (Z-index cao để đè lên trang trí) */}
       <div className="relative z-10 mx-auto p-4 ">
@@ -347,11 +365,13 @@ export default function PlanningOverview() {
         </header>
 
         {/* Nội dung thay đổi dựa trên View - Đặt trong khung kính nhẹ */}
+        {/* Nội dung thay đổi dựa trên View - Sửa lại logic render */}
         <div className="transition-all duration-500 ease-in-out px-2 lg:px-6">
-          <div className="bg-((--bg-card) backdrop-blur-sm rounded-4xl  border border-(--border) shadow-sm p-4 md:p-6 overflow-hidden min-h-150">
-            {activeView === "calendar" && !!tasksByPhase ? (
+          <div className=" backdrop-blur-sm rounded-4xl border border-(--border) shadow-sm p-4 md:p-6 overflow-hidden min-h-150">
+            {/* CHỈ dùng activeView để chọn Component, không dùng tasksByPhase để check ở đây */}
+            {activeView === "calendar" ? (
               <CalendarPage
-                overviewConfig={tasksByPhase}
+                overviewConfig={tasksByPhase} // Truyền data xuống, nếu undefined nó tự hiện CalendarSkeleton
                 categories={catergories}
                 setTasks={setTasksByPhase}
                 onUpdateTask={handleUpdateTask}
@@ -360,7 +380,7 @@ export default function PlanningOverview() {
               />
             ) : (
               <TimelineModule
-                overviewConfig={tasksByPhase}
+                overviewConfig={tasksByPhase} // Truyền data xuống, nếu undefined nó tự hiện TimelineSkeleton
                 categories={catergories}
                 onCreateTask={createTask}
                 onDeleteTask={handleDeleteTask}

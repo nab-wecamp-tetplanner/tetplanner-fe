@@ -75,8 +75,14 @@ const TaskDetailModal = ({
     console.log(
       `Toggling subtask "${subtaskTitle}" to ${newValue}. New status: ${newStatus}`,
     );
+    const isNowPurchased = newStatus === "completed" && task.is_shopping;
     onUpdateTask(
-      { ...task, subtasks: updatedSubtasks, status: newStatus },
+      {
+        ...task,
+        subtasks: updatedSubtasks,
+        status: newStatus,
+        purchased: isNowPurchased,
+      },
       true,
     );
 

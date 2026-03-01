@@ -11,4 +11,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-ui": ["lucide-react", "framer-motion"],
+          "vendor-charts": ["recharts"],
+          "vendor-gantt": ["gantt-task-react"],
+          "vendor-utils": ["date-fns", "axios", "zustand"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 });

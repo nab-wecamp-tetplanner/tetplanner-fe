@@ -55,12 +55,12 @@ export default function App() {
                       element={<div>Forgot Password Page</div>}
                     />
                     <Route path="/verify-otp" element={<VerifyOTP />} />
+                    <Route path="/" element={<Overview />} />
                   </Route>
 
                   {/* Protected Routes  */}
                   <Route element={<ProtectedRoute />}>
                     <Route element={<ConfigGuard />}>
-                      <Route path="/" element={<Overview />} />
                       <Route path="/task" element={<TaskManagement />} />
                       <Route path="/calendar" element={<PlanningOverview />} />
                       <Route path="/finance" element={<FinanceDashboard />} />
