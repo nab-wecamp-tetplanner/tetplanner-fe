@@ -232,6 +232,9 @@ export class ApiClient {
     getByConfigId: (id: string): ApiResponse<Timeline[]> => {
       return this.get("/timeline-phases/tet-config/" + id);
     },
+    create: (data: any) : ApiResponse<any> => {
+      return this.post("/timeline-phases", data)
+    }
   };
 
   // Notification endpoints

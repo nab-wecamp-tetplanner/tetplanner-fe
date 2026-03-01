@@ -10,6 +10,7 @@ import {
   Calendar,
   CheckSquare,
   User,
+  ShoppingCart, 
 } from "lucide-react";
 import { todoService } from "../../services/todoService";
 import type { Member } from "../../types/task.types";
@@ -38,6 +39,7 @@ interface TaskDetailModalProps {
   members?: Member[];
   categories?: Category[];
 }
+
 const TaskDetailModal = ({
   task,
   isOpen,
@@ -73,8 +75,14 @@ const TaskDetailModal = ({
     console.log(
       `Toggling subtask "${subtaskTitle}" to ${newValue}. New status: ${newStatus}`,
     );
+    const isNowPurchased = newStatus === "completed" && task.is_shopping;
     onUpdateTask(
-      { ...task, subtasks: updatedSubtasks, status: newStatus },
+      {
+        ...task,
+        subtasks: updatedSubtasks,
+        status: newStatus,
+        purchased: isNowPurchased,
+      },
       true,
     );
 
@@ -162,7 +170,7 @@ const TaskDetailModal = ({
       await todoService.deleteSubtask(task.id, subtaskKey);
     } catch (error) {
       console.error("Error deleting subtask:", error);
-      toast.error("Xóa việc nhỏ thất bại. Vui lòng thử lại!");
+      toast.error("Failed to delete subtask. Please try again!");
     }
   };
 
@@ -170,11 +178,27 @@ const TaskDetailModal = ({
   const priority =
     PRIORITY_CONFIG[task.priority ?? "medium"] ?? PRIORITY_CONFIG.medium;
   console.log(
-    "Dữ liệu Subtasks nhận được:",
+    "Received Subtasks data:",
     task.title,
     typeof task.subtasks,
     task.subtasks,
   );
+
+  // ==========================================
+  // FORMATTER: HANDLE DATE AND CURRENCY HERE
+  // ==========================================
+  const formattedDate = task.deadline
+    ? new Date(task.deadline).toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    : null;
+
+  const formattedPrice = task.estimated_price
+    ? new Intl.NumberFormat("vi-VN").format(task.estimated_price)
+    : null;
+
   return (
     <div className="tdm-overlay" onClick={onClose}>
       <div className="tdm-modal" onClick={(e) => e.stopPropagation()}>
@@ -201,16 +225,25 @@ const TaskDetailModal = ({
 
         {/* ── Meta chips ── */}
         <div className="tdm-meta">
-          {task.deadline && (
+          {/* Render formatted date */}
+          {formattedDate && (
             <span className="tdm-chip">
-              <Calendar size={14} /> {task.deadline}
+              <Calendar size={14} /> {formattedDate}
             </span>
           )}
+
           {task.category_id && (
             <span className="tdm-chip">
               <Layers size={14} />{" "}
               {categories?.find((c) => c.id === task.category_id)?.name ||
                 "No Category"}
+            </span>
+          )}
+
+          {/* Render formatted price if it is a shopping item */}
+          {task.is_shopping && formattedPrice && (
+            <span className="tdm-chip text-green-600 font-semibold">
+              <ShoppingCart size={14} /> {formattedPrice} ₫
             </span>
           )}
         </div>
@@ -302,7 +335,6 @@ const TaskDetailModal = ({
             <button
               type="submit"
               className="tdm-add-btn"
-              onClick={handleAddSubtask}
             >
               <Plus size={16} /> Add
             </button>

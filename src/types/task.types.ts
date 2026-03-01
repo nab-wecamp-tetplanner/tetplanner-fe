@@ -1,3 +1,5 @@
+import type { TimelineCreateRequest } from "./timeline.types";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -59,7 +61,7 @@ export interface ManagePhasesModalProps {
     onClose: () => void;
     phases: any[];
     configId: string;
-    onPhaseCreated: (newPhase: any) => void;
+    onPhaseCreated: (newPhase: TimelineCreateRequest) => void;
     activePhaseId: string;
     onSelectPhase: (phaseId: string) => void;
 }
