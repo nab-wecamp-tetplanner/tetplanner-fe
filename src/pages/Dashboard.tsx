@@ -8,8 +8,6 @@ import { TaskQuickStats } from "../components/Dashboard/TaskQuickStats";
 import { TaskDoneChart } from "../components/Dashboard/TaskDoneChart";
 import { ExpensePieChart } from "../components/Dashboard/ExpensePieChart";
 import { IncomeExpenseLineChart } from "../components/Dashboard/IncomeExpenseLineChart";
-import { BudgetCardsSection } from "../components/Dashboard/BudgetCardsSection";
-import TaskListWidget from "../components/Overview/TaskWidget";
 
 // Decoratives
 import FallingPetals from "../components/FallingPetals/FallingPetals";
