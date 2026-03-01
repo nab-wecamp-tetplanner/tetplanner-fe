@@ -20,9 +20,9 @@ export const TaskDoneChart = () => {
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg text-foreground font-bold">
+        {/* <h3 className="text-lg text-foreground font-bold">
           Weekly Task Activity
-        </h3>
+        </h3> */}
         <div className="flex gap-4">
           {CHART_LEGEND_ITEMS.map((item) => (
             <div key={item.label} className="flex items-center gap-2">

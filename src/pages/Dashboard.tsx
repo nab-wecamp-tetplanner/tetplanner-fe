@@ -78,24 +78,37 @@ export default function Dashboard() {
       />
 
       {/* 3. MAIN CONTENT - Đặt relative và z-10 để giữ nguyên màu trắng nổi lên trên nền */}
-      <main className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8 flex-col">
+      <main className="relative z-10 mx-auto sm:px-4 lg:px-30 py-4 flex gap-3 flex-col">
         {/* Top Section: Calendar and Quick Stats */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8 md:mb-0 justify-between">
-          <CalendarSection />
-          <div className="flex flex-col gap-4 w-full md:max-w-[50%]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-bold text-(--primary) uppercase tracking-wide">
+              Dashboard
+            </p>
+            <h1 className="text-4xl font-serif text-(--text-heading)">
+              Dashboard overview
+            </h1>
+            <p className="text-(--text-muted) text-sm">
+              A quick glance at your schedule, finances, and tasks.
+            </p>
+          </div>
+          <div className="flex items-end">
             <TaskQuickStats />
-            <div className="flex gap-4">
-              <TaskListWidget />
-              <BudgetCardsSection />
-            </div>
           </div>
         </div>
 
-        {/* Bottom Section: Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <ExpensePieChart />
-          <IncomeExpenseLineChart />
-          <TaskDoneChart />
+        <div className="flex flex-col md:flex-row gap-3 mb-8 md:mb-0 justify-between">
+          <CalendarSection />
+          <div className="flex flex-col gap-3 w-full">
+            {/* <BudgetCardsSection /> */}
+            <div className="h-fit">
+              <ExpensePieChart />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
+              <IncomeExpenseLineChart />
+              <TaskDoneChart />
+            </div>
+          </div>
         </div>
       </main>
     </div>

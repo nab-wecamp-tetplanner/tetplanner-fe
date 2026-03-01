@@ -7,6 +7,7 @@ import type { CategoryResponse } from "../types/categories.type";
 import type { User } from "../types/auth.types";
 import type { Transaction } from "../types/transaction.types";
 import type { Timeline } from "../types/timeline.types";
+import type { Notification } from "../types/notification.type";
 
 interface BackendResponse<T> {
   data: T;
@@ -230,26 +231,25 @@ export class ApiClient {
   timelinePhases = {
     getByConfigId: (id: string): ApiResponse<Timeline[]> => {
       return this.get("/timeline-phases/tet-config/" + id);
-    }
+    },
   };
 
   // Notification endpoints
   notifications = {
-    getAll: (): ApiResponse<any> => {
+    getAll: (): ApiResponse<Notification[]> => {
       return this.get("/notifications");
     },
 
-    markAsRead: (id: string): ApiResponse<any> => {
+    markAsRead: (id: string): ApiResponse<Notification> => {
       return this.patch("/notifications/" + id + "/read", {});
     },
 
-    markAllRead: (): ApiResponse<any> => {
+    markAllRead: (): ApiResponse<Notification[]> => {
       return this.patch("/notifications/read-all", {});
     },
   };
 
   // Recent tasks endpoints
-  
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     // AxiosResponse.data bây giờ là BackendResponse<T>

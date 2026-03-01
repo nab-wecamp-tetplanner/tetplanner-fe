@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   User as Profile,
+  CheckCheck,
   LogOut,
   Palette,
 } from "lucide-react";
@@ -153,8 +154,8 @@ const AuthenticatedActions = ({
         </button>
 
         {showNotifications && (
-          <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-lg shadow-lg z-50">
-            <div className="p-3 border-b border-accent flex justify-between items-center">
+          <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-xl shadow-lg z-50">
+            <div className="px-4 py-3 border-b border-accent flex justify-between items-center">
               <span className="font-semibold text-(--text)">Notifications</span>
               {unreadCount > 0 && (
                 <button
@@ -163,7 +164,7 @@ const AuthenticatedActions = ({
                   }
                   className="text-xs text-(--text) hover:opacity-80 transition-opacity"
                 >
-                  Mark all read
+                  <CheckCheck size={16} className="inline-block mr-1" />
                 </button>
               )}
             </div>
@@ -180,11 +181,11 @@ const AuthenticatedActions = ({
                       );
                     }
                   }}
-                  className={`p-3 cursor-pointer transition-colors text-sm ${
+                  className={`px-4 py-2.5 cursor-pointer transition-colors text-sm rounded-md ${
                     n.isRead
                       ? "bg-transparent text-(--text) opacity-60 hover:bg-(--primary)/10"
-                      : "bg-accent font-semibold text-(--text) hover:bg-(--primary)/10/80"
-                  } mb-2 rounded`}
+                      : "bg-(--primary)/10 font-semibold text-(--text) hover:bg-(--primary)/20"
+                  }`}
                 >
                   <div className="flex justify-between items-start">
                     <span>{n.title}</span>
@@ -197,12 +198,12 @@ const AuthenticatedActions = ({
                 </div>
               ))}
               {notifications.length > 15 && (
-                <button className="w-full p-2 text-xs text-primary hover:bg-(--primary)/10 rounded">
+                <button className="w-full px-4 py-2.5 text-xs text-(--primary) hover:bg-(--primary)/10 rounded-md transition-colors">
                   Load More
                 </button>
               )}
               {notifications.length === 0 && (
-                <div className="p-8 text-center text-(--text) opacity-70">
+                <div className="p-6 text-center text-(--text) opacity-70">
                   <p className="text-sm">No notifications yet</p>
                 </div>
               )}
