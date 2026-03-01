@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import apiClient from "../../services/apiClient";
 import type { TetConfig } from "../../types/tetConfig.types";
 import type { Notification } from "../../types/notification.type";
-import { useAuthContext } from "../../contexts/AuthContext";
 import { useAppStore } from "../../stores/useAppStore";
-
+import { useAuthContext } from "../../contexts/AuthTypes";
 import AuthenticatedActions from "./AuthenticatedActions";
 import UnauthenticatedActions from "./UnauthenticatedActions";
 import { ConfigModal } from "../ConfigModal";
@@ -35,6 +34,7 @@ const navItems: NavItem[] = [
 ];
 
 const Header = () => {
+  // --- GIỮ NGUYÊN LOGIC GỐC ---
   const { isAuthenticated, currentUser, logout } = useAuthContext();
   const [configs, setConfigs] = useState<ConfigInfo[]>([]);
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
@@ -43,14 +43,12 @@ const Header = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isRefresh, setIsRefresh] = useState<boolean>(true);
 
-  // Logic Synchronization with Store
   const configId = useAppStore((state) => state.configId);
-  const setConfigId = useAppStore((state) => state.setConfigId);
-
+  // const setConfigId = useAppStore((state) => state.setConfigId);
   useEffect(() => {
     if (!configId || isAuthenticated || configId == null) return;
     setEditConfig(configs.find((c) => c.id === configId) ?? null);
-  }, [configId, isAuthenticated]);
+  }, [configId, isAuthenticated, configs]);
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -87,13 +85,9 @@ const Header = () => {
         console.error("Failed to fetch notifications:", error);
       }
     };
-
     fetchNotifications();
-  }, []);
+  }, [isAuthenticated]);
 
-  // const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  // HANDLE ACTIONS
   const handleSubmit = async (data: {
     year: number;
     name: string;
@@ -101,12 +95,8 @@ const Header = () => {
   }) => {
     if (!isEdit) {
       try {
-        if (configId || configId == null) return;
-        await apiClient.tetConfigs.updateConfig(configId, {
-          year: data.year,
-          name: data.name,
-          total_budget: data.total_budget,
-        });
+        if (!configId) return;
+        await apiClient.tetConfigs.updateConfig(configId, data);
       } catch (error) {
         console.log(error);
       }
@@ -127,19 +117,19 @@ const Header = () => {
     <header
       className={`sticky top-0 z-50 flex items-center justify-between px-8 py-4 border-b border-accent transition-colors duration-300 ${isAuthenticated ? "bg-(--bg)" : "bg-white"}`}
     >
-      {/* Logo */}
+      {/* Logo - Giữ nguyên kích thước w-13 h-13 */}
       <Link to="/" className="flex items-center">
         <img
           src="/logo.svg"
-          alt="Tết Planner Logo"
+          alt="Tet Planner Logo"
           className="w-13 h-13 transition-transform duration-300 hover:scale-110"
         />
         <span className="font-bold text-text-main text-lg transition-colors duration-300">
-          Tết Planner
+          Tet Planner
         </span>
       </Link>
 
-      {/* Navigation isAuthenticated*/}
+      {/* Navigation - Đã đổi từ ô vuông sang gạch chân sát chữ */}
       {isAuthenticated && (
         <nav className="flex items-center gap-6 text-sm font-medium">
           {navItems.map((item, idx) => (
@@ -147,28 +137,42 @@ const Header = () => {
               key={idx}
               to={item.href}
               className={({ isActive }) =>
-                isActive
-                  ? "bg-(--primary)/10 text-(--text-heading) px-4 py-2.5 rounded-lg transition-all duration-300 font-semibold"
-                  : "text-(--text-heading) opacity-70 px-4 py-2.5 rounded-lg hover:opacity-100 hover:text-(--primary)/50 transition-all duration-300"
+                `relative px-1 py-2 transition-all duration-300 group ${
+                  isActive
+                    ? "text-(--text-heading) font-semibold"
+                    : "text-(--text-heading) opacity-70 hover:opacity-100"
+                }`
               }
             >
-              {item.name}
+              {({ isActive }) => (
+                <>
+                  {item.name}
+                  {/* Dấu gạch sát chân chữ (bottom-0), chỉ dài bằng chữ nội dung */}
+                  <span
+                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-(--primary) rounded-full transition-transform duration-300 origin-left ${
+                      isActive
+                        ? "scale-x-100"
+                        : "scale-x-0 group-hover:scale-x-100 opacity-50"
+                    }`}
+                  />
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
       )}
 
       {/* Auth Actions & Profile */}
-      <div className="flex items-center gap-4 text-sm">
+      <div className="flex items-center gap-4">
         {isAuthenticated ? (
           <AuthenticatedActions
             configs={configs}
             configId={configId}
-            setConfigId={setConfigId}
+            // setConfigId={setConfigId}
             setIsRefresh={setIsRefresh}
             notifications={notifications}
             setNotifications={setNotifications}
-            currentUser={currentUser}
+            currentUser={currentUser} // Quan trọng: Truyền currentUser từ Context
             logout={logout}
           />
         ) : (
@@ -188,4 +192,5 @@ const Header = () => {
     </header>
   );
 };
+
 export default Header;

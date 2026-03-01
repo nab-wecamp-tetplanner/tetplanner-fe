@@ -1,18 +1,24 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthContext } from '../contexts/AuthContext';
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuthContext } from "../contexts/AuthTypes";
 
 const ProtectedRoute = () => {
   const { isAuthenticated, isLoading } = useAuthContext();
+  const location = useLocation();
+
   if (isLoading) {
-    return <div>Đang kiểm tra đăng nhập...</div>; 
+    // Thay vì div trống, hãy dùng một Spinner để user biết app đang chạy
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-stone-800"></div>
+      </div>
+    );
   }
 
-  // Isn't authenticated, navigate to login page
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // Lưu lại vị trí cũ để sau khi login xong quay lại đúng trang đó
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // OK, allow access to the protected route
   return <Outlet />;
 };
 
