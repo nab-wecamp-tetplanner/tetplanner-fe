@@ -41,6 +41,7 @@ const Header = () => {
   const [isEdit] = useState<boolean>(false);
   const [editConfig, setEditConfig] = useState<ConfigInfo | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isRefresh, setIsRefresh] = useState<boolean>(true);
 
   // Logic Synchronization with Store
   const configId = useAppStore((state) => state.configId);
@@ -56,19 +57,20 @@ const Header = () => {
       try {
         const data = await apiClient.tetConfigs.getMyConfigs();
         setConfigs(data as ConfigInfo[]);
+        setIsRefresh(false);
       } catch (error) {
         console.error("Failed to fetch configs", error);
       }
     };
     if (isAuthenticated) fetchConfigs();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isRefresh]);
 
   useEffect(() => {
     const handleClick = () => {
       // if (
       //   settingsRef.current &&
       //   !settingsRef.current.contains(e.target as Node)
-      // ) {
+      // ) 
       //   setShowSettings(false);
       // }
     };
@@ -163,6 +165,7 @@ const Header = () => {
             configs={configs}
             configId={configId}
             setConfigId={setConfigId}
+            setIsRefresh={setIsRefresh}
             notifications={notifications}
             setNotifications={setNotifications}
             currentUser={currentUser}

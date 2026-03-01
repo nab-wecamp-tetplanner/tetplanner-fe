@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // 1. Thêm import này
 import {
   Loader2,
   Plus,
@@ -12,6 +13,7 @@ import { toast } from "react-toastify";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../../services/apiClient";
 import type { TetConfig } from "../../types/tetConfig.types"; 
+
 interface ConfigSelectionProps {
   configs: TetConfig[];
   isLoading: boolean;
@@ -21,17 +23,22 @@ const ConfigSelector: React.FC<ConfigSelectionProps> = ({
   configs,
   isLoading,
 }) => {
+  const configId = useAppStore((state) => state.configId); 
   const setConfigId = useAppStore((state) => state.setConfigId);
   const queryClient = useQueryClient();
+  const navigate = useNavigate(); // 2. Khởi tạo navigate
 
   const [isCreating, setIsCreating] = useState(false);
+  useEffect(() => {
+    if (configId) {
+      navigate("/dashboard"); 
+    }
+  }, [configId, navigate]);
 
-  // State for the new workspace form
   const [name, setName] = useState("");
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [totalBudget, setTotalBudget] = useState<number>(0);
 
-  // UseMutation for creating the config
   const createMutation = useMutation({
     mutationFn: (newConfigData: {
       name: string;
@@ -44,9 +51,9 @@ const ConfigSelector: React.FC<ConfigSelectionProps> = ({
       toast.success("Workspace created successfully!");
 
       // Update Zustand state with the newly created config ID
-      // Note: Make sure your API returns the created object with an 'id'
       if (newConfig && (newConfig as any).id) {
         setConfigId((newConfig as any).id);
+        navigate("/"); // 3. Chuyển hướng về trang chủ sau khi tạo xong
       }
 
       // Invalidate the query to refresh the list in the background
@@ -62,6 +69,7 @@ const ConfigSelector: React.FC<ConfigSelectionProps> = ({
   const handleSelect = (id: string) => {
     setConfigId(id);
     toast.success("Workspace selected successfully!");
+    navigate("/"); // 4. Chuyển hướng về trang chủ sau khi chọn
   };
 
   const handleCreate = (e: React.FormEvent) => {
@@ -180,23 +188,16 @@ const ConfigSelector: React.FC<ConfigSelectionProps> = ({
                 <DollarSign className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                 <input
                   type="text"
-                  inputMode="numeric" // Hiển thị bàn phím số trên điện thoại
+                  inputMode="numeric"
                   required
-                  // CHỈ HIỂN THỊ SỐ VÀ DẤU CHẤM (1.000.000)
                   value={
                     totalBudget
                       ? new Intl.NumberFormat("vi-VN").format(totalBudget)
                       : ""
                   }
                   onChange={(e) => {
-                    // 1. Lấy giá trị thô từ input (ví dụ: "1.000.0")
                     const inputValue = e.target.value;
-
-                    // 2. Xóa sạch mọi ký tự KHÔNG PHẢI SỐ (xóa cả dấu chấm, dấu phẩy, chữ đ)
                     const rawValue = inputValue.replace(/\D/g, "");
-
-                    // 3. Chuyển thành số và lưu vào State
-                    // Nếu xóa hết thì để là 0 hoặc null tùy logic của bạn
                     setTotalBudget(rawValue ? Number(rawValue) : 0);
                   }}
                   disabled={createMutation.isPending}

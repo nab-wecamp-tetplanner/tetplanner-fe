@@ -1,13 +1,19 @@
-import { Link } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom"; // Thêm useNavigate
+import {
+  useState,
+  useEffect,
+  useRef,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   Bell,
   ChevronDown,
   ChevronUp,
   User as Profile,
-  CheckCheck,
   LogOut,
   Palette,
+  CheckCheck,
 } from "lucide-react";
 
 import {
@@ -19,11 +25,16 @@ import type { User } from "../../types/auth.types";
 import type { ConfigInfo } from "./Header";
 
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
+// TODO: Sửa lại đường dẫn import ConfigModal cho đúng với vị trí file của bạn
+import { ConfigModal } from "../ConfigModal";
+import { useLoading } from "../../contexts/LoadingContext";
+import apiClient from "../../services/apiClient";
+import { useAppStore } from "../../stores/useAppStore";
 
 interface AuthenticatedActionsProps {
   configs: ConfigInfo[];
   configId: string | null;
-  setConfigId: (id: string) => void;
+  setIsRefresh: Dispatch<SetStateAction<boolean>>;
   notifications: Notification[];
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   currentUser: User | null;
@@ -47,7 +58,7 @@ const formatTimeAgo = (timestamp: string): string => {
 const AuthenticatedActions = ({
   configs,
   configId,
-  setConfigId,
+  setIsRefresh,
   notifications,
   setNotifications,
   currentUser,
@@ -56,6 +67,10 @@ const AuthenticatedActions = ({
   const [showConfig, setShowConfig] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
+  const setConfigId = useAppStore((state) => state.setConfigId);
+
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const configRef = useRef<HTMLDivElement>(null);
@@ -87,6 +102,27 @@ const AuthenticatedActions = ({
       };
     }
   }, [showConfig, showNotifications, showAccount]);
+
+  const handleCreateConfig = async (data: {
+    name: string;
+    year: number;
+    total_budget: number;
+  }) => {
+    try {
+      showLoading();
+      const newConfig: any = await apiClient.tetConfigs.create(data);
+      const createdId = newConfig.id;
+      if (createdId) {
+        setConfigId(createdId);
+      }
+      setIsRefresh(true);
+      setIsConfigModalOpen(false);
+    } catch (error) {
+      console.error("Lỗi khi tạo config:", error);
+    } finally {
+      hideLoading();
+    }
+  };
 
   return (
     <>
@@ -129,7 +165,13 @@ const AuthenticatedActions = ({
                   {config.name}
                 </button>
               ))}
-              <button className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2">
+              <button
+                onClick={() => {
+                  setShowConfig(false); // Đóng dropdown menu
+                  setIsConfigModalOpen(true); // Mở Modal tạo mới
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2"
+              >
                 + Add new plan
               </button>
             </div>
@@ -282,6 +324,12 @@ const AuthenticatedActions = ({
           )}
         </div>
       </div>
+
+      <ConfigModal
+        isOpen={isConfigModalOpen}
+        setIsOpen={setIsConfigModalOpen}
+        onSubmit={handleCreateConfig}
+      />
     </>
   );
 };
