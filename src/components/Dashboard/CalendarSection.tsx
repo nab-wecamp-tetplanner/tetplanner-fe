@@ -7,6 +7,7 @@ import {
   Clock,
   AlertCircle,
   Calendar,
+  Check,
 } from "lucide-react";
 import apiClient from "../../services/apiClient";
 import { useAppStore } from "../../stores/useAppStore";
@@ -22,14 +23,15 @@ interface CalendarEvent {
   dayName: string;
   monthLabel: string;
   events: {
-    type: "all-day" | "timed" | "task" | "shopping";
+    type: "task" | "shopping";
     title: string;
     time?: string;
-    location?: string;
+    category?: string;
     color: string;
     priority?: EventPriority;
     completed?: boolean;
     cost?: number;
+    todoId?: string;
   }[];
 }
 
@@ -51,6 +53,34 @@ const CalendarSection = () => {
       return priority;
     }
     return "high";
+  };
+
+  const handleToggleCompletion = async (
+    todoId: string,
+    currentCompleted: boolean,
+    eventIndex: number,
+    dayIndex: number,
+  ) => {
+    try {
+      const newStatus = currentCompleted ? "pending" : "completed";
+      await apiClient.todos.update(todoId, { status: newStatus });
+
+      // Update local state
+      setEvents((prevEvents) => {
+        const updated = [...prevEvents];
+        updated[dayIndex] = {
+          ...updated[dayIndex],
+          events: [...updated[dayIndex].events],
+        };
+        updated[dayIndex].events[eventIndex] = {
+          ...updated[dayIndex].events[eventIndex],
+          completed: newStatus === "completed",
+        };
+        return updated;
+      });
+    } catch (err) {
+      console.error("Failed to update task completion:", err);
+    }
   };
 
   useEffect(() => {
@@ -114,17 +144,14 @@ const CalendarSection = () => {
             day.events.push({
               type: item.is_shopping ? "shopping" : "task",
               title: item.title,
-              time: itemDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }),
+              category: item.category,
               color: item.is_shopping ? "#1ea7ff" : "#5051f9",
               priority: normalizePriority(item.priority),
               completed: item.status === "completed",
               cost: item.is_shopping
                 ? (item.estimated_price || 0) * (item.quantity || 1)
                 : undefined,
+              todoId: item.id,
             });
           });
 
@@ -266,17 +293,25 @@ const CalendarSection = () => {
       {/* Events List */}
       <div className="space-y-3 max-h-100 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {loading && (
-          <p className="text-sm text-muted-foreground">
-            Loading timeline data...
-          </p>
+          <div className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
+              Loading timeline data...
+            </p>
+          </div>
         )}
 
-        {!loading && error && <p className="text-sm text-red-500">{error}</p>}
+        {!loading && error && (
+          <div className="flex justify-center">
+            <p className="text-sm text-red-500">{error}</p>
+          </div>
+        )}
 
         {!loading && !error && events.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No events for this month.
-          </p>
+          <div className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
+              No events for this month.
+            </p>
+          </div>
         )}
 
         {events.map((dayEvents) => {
@@ -336,33 +371,92 @@ const CalendarSection = () => {
                 {dayEvents.events.map((event, idx) => (
                   <div
                     key={idx}
-                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${getPriorityColor(event.priority)}`}
+                    className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                      event.completed
+                        ? "bg-gray-100 border-gray-300"
+                        : getPriorityColor(event.priority)
+                    } ${event.todoId && typeof event.completed === "boolean" ? "cursor-pointer hover:shadow-md" : ""}`}
                   >
-                    {/* Icon */}
+                    {/* Checkbox or Event Icon */}
                     <div
-                      className="shrink-0 mt-0.5 text-foreground"
-                      style={{ color: event.color }}
+                      className={`shrink-0 mt-0.5 ${
+                        event.todoId && typeof event.completed === "boolean"
+                          ? "cursor-pointer"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        if (
+                          event.todoId &&
+                          typeof event.completed === "boolean"
+                        ) {
+                          const dayIndex = events.indexOf(dayEvents);
+                          handleToggleCompletion(
+                            event.todoId,
+                            event.completed,
+                            idx,
+                            dayIndex,
+                          );
+                        }
+                      }}
                     >
-                      {getEventIcon(event.type, event.priority)}
+                      {event.todoId && typeof event.completed === "boolean" && (
+                        <div
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                            event.completed
+                              ? "bg-blue-500 border-blue-500"
+                              : "border-gray-400 hover:border-blue-500"
+                          }`}
+                        >
+                          {event.completed && (
+                            <Check size={16} className="text-white" />
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
+                      <div className="flex flex-rows items-start justify-between gap-2">
+                        <div
+                          onClick={() => {
+                            if (
+                              event.todoId &&
+                              typeof event.completed === "boolean"
+                            ) {
+                              const dayIndex = events.indexOf(dayEvents);
+                              handleToggleCompletion(
+                                event.todoId,
+                                event.completed,
+                                idx,
+                                dayIndex,
+                              );
+                            }
+                          }}
+                          className={
+                            event.todoId && typeof event.completed === "boolean"
+                              ? "cursor-pointer flex-1"
+                              : "flex-1"
+                          }
+                        >
+                          <p
+                            className={`text-sm font-semibold ${
+                              event.completed
+                                ? "text-gray-500 line-through"
+                                : "text-foreground"
+                            }`}
+                          >
                             {event.title}
                           </p>
-                          {event.time && (
-                            <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                              <Clock size={12} />
-                              {event.time}
-                            </p>
-                          )}
                         </div>
                         {event.type === "shopping" && event.cost && (
                           <div className="shrink-0 text-right">
-                            <p className="text-xs font-bold text-foreground">
+                            <p
+                              className={`text-xs font-bold ${
+                                event.completed
+                                  ? "text-gray-400"
+                                  : "text-foreground"
+                              }`}
+                            >
                               ₫{(event.cost / 1000000).toFixed(1)}M
                             </p>
                           </div>
@@ -373,7 +467,11 @@ const CalendarSection = () => {
                       {event.priority && (
                         <div className="mt-1">
                           <span
-                            className={`inline-block px-2 py-1 text-xs font-medium rounded ${getPriorityBadge(event.priority)}`}
+                            className={`inline-block px-2 py-1 text-xs font-medium rounded ${
+                              event.completed
+                                ? "bg-gray-300 text-gray-600"
+                                : getPriorityBadge(event.priority)
+                            }`}
                           >
                             {event.priority.charAt(0).toUpperCase() +
                               event.priority.slice(1)}{" "}
