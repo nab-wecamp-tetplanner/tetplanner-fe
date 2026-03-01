@@ -67,18 +67,22 @@ interface BackendBudgetSummary {
 // FIELD MAPPING HELPERS
 // ==========================================
 
+// Trong services/financeApi.ts
+
 const mapBackendItemToFrontend = (item: BackendTodoItem): ShoppingItem => ({
-  id: item.id, // Already string UUID
+  id: item.id,
   name: item.title || "",
-  // Handle both category_id (PATCH) and category.id (GET/POST)
   category: item.category_id || (item as any).category?.id || "",
   price: item.estimated_price || 0,
   quantity: item.quantity || 1,
-  status: item.purchased ? "purchased" : "pending",
+
+  // FIX TẠI ĐÂY: Nếu đã mua (purchased) HOẶC trạng thái là 'completed'
+  // thì ĐỀU coi là đã mua (purchased) cho đồng bộ với bên Task
+  status:
+    item.purchased || item.status === "completed" ? "purchased" : "pending",
+
   dueDate: item.deadline || new Date().toISOString(),
-  // Handle both timeline_phase_id (PATCH) and timeline_phase.id (GET/POST)
-  timelinePhaseId:
-    item.category_id || (item as any).timeline_phase?.id || undefined,
+  timelinePhaseId: (item as any).timeline_phase?.id || undefined,
 });
 
 const mapFrontendItemToBackend = (
@@ -260,49 +264,29 @@ export const financeApi = {
   // Toggle purchased (2 API calls: PATCH + GET budget)
   toggleItemStatus: async (
     itemId: string,
-    purchased: boolean,
+    purchased: boolean, // Biến này mang giá trị true/false từ nút bấm UI
     tetConfigId: string,
-    currentItem: ShoppingItem, // Changed type to ShoppingItem
+    currentItem: ShoppingItem,
   ) => {
     try {
-      // Convert empty string to null for category_id
-      const categoryId =
-        currentItem.category && currentItem.category !== ""
-          ? currentItem.category
-          : null;
-
       const payload: any = {
+        // Gửi cả hai để "bảo đảm" dù Backend dùng cái nào cũng trúng
         status: purchased ? "completed" : "pending",
-        category_id: categoryId,
-        estimated_price:
-          typeof currentItem.price === "string"
-            ? parseFloat(currentItem.price)
-            : currentItem.price,
+        purchased: purchased,
+
+        category_id: currentItem.category || null,
+        estimated_price: currentItem.price,
         quantity: currentItem.quantity || 1,
       };
-
-      console.log("Toggle payload:", payload);
-      console.log("Toggle - current item before:", currentItem);
 
       const response = await apiClient.patch<{
         todo_item: BackendTodoItem;
         budget: any;
       }>(`/todo-items/${itemId}`, payload);
 
-      console.log("Toggle PATCH response:", response);
-      console.log("Toggle todo_item:", response.todo_item);
-
-      // Extract todo_item from wrapped response
-      const updated = response.todo_item;
-      console.log("Extracted todo_item category:", (updated as any).category);
-      console.log("Extracted todo_item category_id:", updated.category_id);
-
-      const mapped = mapBackendItemToFrontend(updated);
-      console.log("Toggle mapped item:", mapped);
-
       const budget = await financeApi.getBudget(tetConfigId);
       return {
-        item: mapped,
+        item: mapBackendItemToFrontend(response.todo_item),
         budget,
       };
     } catch (error: any) {

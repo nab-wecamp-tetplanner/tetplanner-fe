@@ -327,9 +327,14 @@ const TaskManagement: React.FC = () => {
     const backupTasks = [...todoItems];
     const targetTask = todoItems.find((t) => t.id === taskId);
 
-    // When moving to "completed", auto-tick all subtasks as done
+    // FIX TẠI ĐÂY: Nếu không tìm thấy task thì dừng luôn, không chạy tiếp bên dưới
+    if (!targetTask) return;
+
+    const isNowPurchased = newStatus === "completed" && targetTask.is_shopping;
+
+    // Tự động tick subtasks khi xong task
     const completedSubtasks =
-      newStatus === "completed" && targetTask?.subtasks
+      newStatus === "completed" && targetTask.subtasks
         ? Object.fromEntries(
             Object.keys(targetTask.subtasks).map((key) => [key, true]),
           )
@@ -341,16 +346,17 @@ const TaskManagement: React.FC = () => {
           ? {
               ...task,
               status: newStatus,
-              ...(completedSubtasks ? { subtasks: completedSubtasks } : {}),
+              purchased: isNowPurchased ? true : task.purchased, // PHẢI CÓ DẤU PHẨY Ở ĐÂY
+              ...(completedSubtasks ? { subtasks: completedSubtasks } : {}), // Spread subtasks
             }
           : task,
       ),
     );
 
     try {
+      // Gửi API đồng bộ cả 2 trạng thái
       await todoService.updateTodoItem(taskId, { status: newStatus });
 
-      // Update each subtask to done via API
       if (completedSubtasks) {
         await Promise.all(
           Object.keys(completedSubtasks).map((name) =>

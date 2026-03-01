@@ -1,84 +1,142 @@
-/* ==========================================
-   THEME ADAPTATION (REMOVE THE "PALE WHITE")
+/* calendar.css */
+@reference "tailwindcss";
 
-/* This is the heart of the fix: Force every internal table layer to be transparent.
-   It will reveal the 'bg-card' color from your React wrapper. */
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  &::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-slate-200/50 rounded-full;
+  }
+}
+
+/* ==========================================
+   1. FIX LỖI 2 DOT (ẨN DOT MẶC ĐỊNH)
+   ========================================== */
+.fc-daygrid-event-dot,
+.fc-list-event-dot {
+  display: none !important; /* Triệt tiêu chấm xanh mặc định */
+}
+
+/* ==========================================
+   2. FIX TOOLBAR (NGANG HÀNG & KHÔNG CHẠM)
+   ========================================== */
+.fc-header-toolbar {
+  @apply !mb-8 !flex !items-center !justify-between !w-full;
+}
+
+/* Ép các cụm nút (Today, Prev, Next) luôn nằm trên 1 hàng ngang */
+.fc-toolbar-chunk {
+  @apply !flex !items-center !gap-2;
+}
+
+/* Phá bỏ cấu trúc dính lẹo của button-group */
+.fc-button-group {
+  @apply !flex !items-center !gap-1.5 !shadow-none;
+}
+
+.fc-button-group > .fc-button {
+  @apply !flex-none;
+  margin-left: 0 !important; /* Xoá margin âm làm nút dính nhau */
+}
+
+/* Style nút bấm tinh tế */
+.fc .fc-button-primary {
+  @apply !h-9 !inline-flex !items-center !justify-center !bg-white !border !border-slate-200 
+         !text-slate-500 !rounded-xl !text-[11px] !font-black !uppercase !px-4 !transition-all 
+         !shadow-sm hover:!bg-slate-50 hover:!text-slate-900 active:!scale-95 !opacity-100;
+}
+
+.fc-prev-button,
+.fc-next-button {
+  @apply !w-9 !p-0;
+}
+.fc-today-button {
+  @apply !bg-slate-50/50 !px-5;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  @apply !bg-slate-900 !text-white !border-slate-900;
+}
+
+/* ==========================================
+   3. THEME ADAPTATION (TRONG SUỐT)
+   ========================================== */
+.fc {
+  @apply !font-sans !border-none;
+  --fc-border-color: var(--border) !important;
+}
+
 .fc-theme-standard .fc-scrollgrid,
 .fc-theme-standard td,
-.fc-theme-standard th,
-.fc-scrollgrid-section-common td,
-.fc-list-day-cushion,
-.fc-list-event:hover td {
+.fc-theme-standard th {
   background-color: transparent !important;
   border-color: var(--border) !important;
 }
 
-/* Remove the hidden white background from the calendar cells */
-.fc .fc-daygrid-day,
-.fc .fc-col-header-cell {
-  background-color: transparent !important;
-}
-
-/* Day numbers: Must follow theme foreground to be readable on dark backgrounds */
+/* Số ngày */
 .fc .fc-daygrid-day-number {
+  @apply !text-[11px] !font-bold !p-3 !no-underline;
   color: var(--foreground) !important;
-  font-weight: 500;
-  text-decoration: none !important;
 }
 
-/* ==========================================
-   FIXED COLORS (STAY THE SAME IN DARK/LIGHT)
-   ========================================== */
-
-/* Calendar Title - Fixed Slate-900 */
-.fc .fc-toolbar-title {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: #0f172a !important;
-  text-align: center;
-}
-
-/* Buttons - Fixed White/Slate style */
-
-.fc .fc-button-primary {
-  background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #64748b !important;
-  font-weight: 600 !important;
-  border-radius: 0.5rem !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-}
-
-.fc .fc-button-primary:hover {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-/* Active State - Fixed Dark Slate */
-.fc .fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-  border-color: #0f172a !important;
-}
-
-/* Today's Blue Circle - Fixed */
+/* Today Highlight */
 .fc-day-today {
   background-color: transparent !important;
 }
 .fc-day-today .fc-daygrid-day-number {
-  background-color: #3b82f6 !important;
-  color: white !important;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 4px auto !important;
+  @apply !bg-blue-600 !text-white !rounded-full !inline-flex !items-center !justify-center 
+         !m-2 !p-0 !w-7 !h-7 !shadow-md;
 }
 
-/* Selected Day Outline - Fixed Blue */
-.fc-daygrid-day.selected-day-active {
-  background-color: rgba(59, 130, 246, 0.08) !important;
-  box-shadow: inset 0 0 0 2px #3b82f6 !important;
+/* ==========================================
+   4. STYLE TASK (CHẤM TRÒN XỊN)
+   ========================================== */
+.fc-event {
+  @apply !bg-white !border !border-slate-200 !border-l-4 !rounded-lg !px-2 !py-1 !my-1 !mx-1.5 
+         !shadow-sm !transition-all !cursor-pointer !flex !items-center !gap-2;
+}
+
+.fc-event::before {
+  content: "" !important;
+  @apply !block !w-1.5 !h-1.5 !rounded-full !shrink-0;
+}
+
+.fc-event-title {
+  @apply !text-[11px] !font-bold !text-slate-700 !truncate !p-0;
+}
+.fc-event-time {
+  @apply !hidden;
+}
+
+/* Màu sắc đồng bộ Task */
+.task-rose {
+  @apply !bg-rose-50/40 !border-l-rose-500;
+}
+.task-rose::before {
+  @apply !bg-rose-500;
+}
+
+.task-green {
+  @apply !bg-emerald-50/40 !border-l-emerald-500;
+}
+.task-green::before {
+  @apply !bg-emerald-500;
+}
+
+.task-blue {
+  @apply !bg-blue-50/40 !border-l-blue-500;
+}
+.task-blue::before {
+  @apply !bg-blue-500;
+}
+
+.task-slate {
+  @apply !bg-slate-100/60 !border-l-slate-400;
+}
+.task-slate::before {
+  @apply !bg-slate-400;
 }
