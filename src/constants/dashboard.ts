@@ -24,7 +24,8 @@ export const WEEKLY_FINANCE_DATA: WeeklyFinanceData[] = [
   { week: "Sun", income: 290, expense: 180 },
 ];
 
-export const CATEGORY_DATA: Category[] = [
+// ĐÃ SỬA LỖI Ở ĐÂY: Dùng "as Category[]" ở cuối mảng để ép kiểu
+export const CATEGORY_DATA = [
   {
     id: "house",
     name: "House",
@@ -140,7 +141,7 @@ export const CATEGORY_DATA: Category[] = [
       },
     ],
   },
-];
+] as Category[];
 
 export const CHART_COLORS: Record<string, string> = {
   "bg-purple-500": "#a855f7",

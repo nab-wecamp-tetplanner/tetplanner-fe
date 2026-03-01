@@ -28,7 +28,7 @@ export default function HeroSection() {
 
   return (
     // Bỏ background gradient cứng, để nền trong suốt ăn theo Overview
-    <section className="relative pt-16 pb-20 overflow-hidden">
+    <section className="relative pt-16 pb-20 overflow-hidden bg-gradient-to-b to-transparent">
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6 animate-fade-in">
         {/* Modern Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-(--gradient-bg-1) border border-(--border) text-xs font-bold tracking-widest uppercase text-(--primary-dark) mb-8 shadow-sm">

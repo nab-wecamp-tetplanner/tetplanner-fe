@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { Settings, Bell, User, LogOut, ChevronDown } from "lucide-react";
-import { useAuthContext } from "../../contexts/AuthContext";
+import { useAuthContext } from "../../contexts/AuthTypes";
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
 
 type NavItem = {

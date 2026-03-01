@@ -1,0 +1,94 @@
+/* ===== Flying Swallows — Tet ambient birds ===== */
+
+.flying-swallows {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* ===== Individual Bird ===== */
+.flying-swallows__bird {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  animation: swallowFly linear forwards;
+  will-change: transform, opacity;
+}
+
+/* SVG wing-flap animation */
+.flying-swallows__svg {
+  animation: wingFlap 0.35s ease-in-out infinite alternate;
+  filter: drop-shadow(0 2px 4px var(--shadow));
+}
+
+/* ===== Flight Path ===== */
+@keyframes swallowFly {
+  0% {
+    left: var(--fly-from-x);
+    top: var(--fly-from-y);
+    opacity: 0;
+    transform: scale(0.7) rotate(0deg);
+  }
+  5% {
+    opacity: 0.7;
+  }
+  20% {
+    opacity: 0.85;
+    transform: scale(0.9) rotate(-2deg);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1) rotate(2deg);
+  }
+  80% {
+    opacity: 0.75;
+    transform: scale(0.95) rotate(-1deg);
+  }
+  95% {
+    opacity: 0.3;
+  }
+  100% {
+    left: var(--fly-to-x);
+    top: var(--fly-to-y);
+    opacity: 0;
+    transform: scale(0.7) rotate(0deg);
+  }
+}
+
+/* Wing-flap: subtle vertical squish */
+@keyframes wingFlap {
+  0% {
+    transform: scaleY(1) scaleX(1);
+  }
+  100% {
+    transform: scaleY(0.75) scaleX(1.08);
+  }
+}
+
+/* ===== Route-specific subtle path curves ===== */
+/* These add a slight vertical bob mid-flight */
+.flying-swallows__route-0 {
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.flying-swallows__route-1 {
+  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.flying-swallows__route-2 {
+  animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+}
+
+.flying-swallows__route-3 {
+  animation-timing-function: cubic-bezier(0.33, 0.5, 0.67, 1);
+}
+
+/* Reduce flock on mobile */
+@media (max-width: 768px) {
+  .flying-swallows__bird:nth-child(n+3) {
+    display: none;
+  }
+}

@@ -107,7 +107,9 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           const category = categories.find(
             (c) => String(c.id) === String(item.category),
           );
-          const Icon = category ? ICON_MAP[category.icon] || Package : Package;
+          
+          // SỬA LỖI TẠI DÒNG NÀY: Ép kiểu as keyof typeof ICON_MAP
+          const Icon = category ? ICON_MAP[category.icon as keyof typeof ICON_MAP] || Package : Package;
           const categoryColor = category?.color || "#94a3b8";
           const isPurchased = item.status === "purchased";
           const total = item.price * item.quantity;

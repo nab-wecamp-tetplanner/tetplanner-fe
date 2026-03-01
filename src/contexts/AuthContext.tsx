@@ -3,7 +3,6 @@ import apiClient from "../services/apiClient";
 import type { User, UserPermissions } from "../types/auth.types";
 import { useAppStore } from "../stores/useAppStore";
 
-// PHẢI IMPORT CẢ BA THỨ NÀY
 import { AuthContext } from "./AuthTypes";
 import type { RegisterData, RegisterResponse } from "./AuthTypes";
 
