@@ -328,11 +328,12 @@
 }
 
 /* ===== Header Row ===== */
+/* ===== Header Row ===== */
 .tet-header-row {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  align-items: center;
+  align-items: flex-start; /* FIX: Changed from center to flex-start */
 }
 
 /* ===== Collaborators ===== */
@@ -586,10 +587,43 @@
     flex-direction: row;
     gap: 10px;
   }
+/* Container must be relative to anchor the absolute summary */
+.tf-container {
+  position: relative !important;
+  display: flex;
+}
 
-  .tet-header-right {
-    flex-wrap: wrap;
-  }
+/* Float the summary below the button */
+.tf-inline-summary {
+  position: absolute !important;
+  top: calc(100% + 6px) !important; /* 6px spacing below the button */
+  left: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  width: max-content !important;
+  max-width: 250px !important;
+  z-index: 20 !important;
+}
+
+/* Container must be relative to anchor the absolute summary */
+.tf-container {
+  position: relative !important;
+  display: flex;
+}
+
+/* Float the summary below the button */
+.tf-inline-summary {
+  position: absolute !important;
+  top: calc(100% + 6px) !important; /* 6px spacing below the button */
+  left: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  width: max-content !important;
+  max-width: 250px !important;
+  z-index: 20 !important;
+}
 
   .tet-kanban-board {
     grid-template-columns: 1fr;

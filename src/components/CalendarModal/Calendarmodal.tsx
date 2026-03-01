@@ -102,7 +102,7 @@ export default function CalendarModal({
         deadline: new Date(formData.get("deadline") as string).toISOString(),
         timeline_phase_id: formData.get("timeline_phase_id") as string,
         category_id: categoryId.toString(),
-        quantity: Number(formData.get("quantity")) || 1, // Để mặc định là 1 hợp lý hơn 0
+        quantity: Number(formData.get("quantity")) || 1, 
         is_shopping: isShopping,
       };
 

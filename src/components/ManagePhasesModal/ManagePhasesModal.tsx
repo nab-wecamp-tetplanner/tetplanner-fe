@@ -3,14 +3,14 @@ import React, { useState } from "react";
 import { X, Plus, Check, Calendar } from "lucide-react";
 import "./ManagePhasesModal.css";
 import { type ManagePhasesModalProps } from "../../types/task.types";
-import { todoService } from "../../services/todoService";
 import { useToast } from "../../hooks/useToast";
+import type { TimelineCreateRequest } from "../../types/timeline.types";
+import { useAppStore } from "../../stores/useAppStore";
 
 const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   isOpen,
   onClose,
-  phases,
-  configId,
+  phases = [],
   onPhaseCreated,
   activePhaseId,
   onSelectPhase,
@@ -20,7 +20,7 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   const [endDate, setEndDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
-
+  const configId = useAppStore((state) => state.configId);
   if (!isOpen) return null;
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -29,21 +29,22 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
       toast.warning("Please fill in all fields (name and dates)!");
       return;
     }
-
-    setIsLoading(true);
+    if (!configId) return;
+ 
     try {
-      const payload = {
+         setIsLoading(true);
+      const payload : TimelineCreateRequest = {
         name: name.trim(),
         start_date: new Date(startDate).toISOString(),
         end_date: new Date(endDate).toISOString(),
-        display_order: phases.length + 1,
+        // 2. SAFE CHECK FOR LENGTH
+        display_order: (phases?.length || 0) + 1,
         tet_config_id: configId,
       };
 
-      const res = await todoService.createTimelinePhase(payload);
-      const newPhase = (res as { data: any }).data;
-      onPhaseCreated(newPhase);
-      onSelectPhase(newPhase.id);
+      // const res = await todoService.createTimelinePhase(payload);
+      // const newPhase = (res as { data: any }).data;
+      onPhaseCreated(payload);
 
       setName("");
       setStartDate("");
@@ -69,6 +70,9 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
     }
   };
 
+  // 3. ENSURE PHASES IS AN ARRAY BEFORE RENDERING
+  const safePhases = Array.isArray(phases) ? phases : [];
+
   return (
     <div className="mpm-overlay" onClick={onClose}>
       <div className="mpm-modal" onClick={(e) => e.stopPropagation()}>
@@ -79,7 +83,7 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
         <div className="mpm-header">
           <div className="mpm-header__left">
             <Calendar size={18} />
-            <h3 className="mpm-header__title">Manage Tet Schedule</h3>
+            <h3 className="mpm-header__title">Add new phases</h3>
           </div>
           <button className="mpm-close" onClick={onClose} aria-label="Close">
             <X size={18} />
@@ -90,10 +94,11 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
         <div className="mpm-section">
           <h4 className="mpm-section__label">Timeline Phases</h4>
           <div className="mpm-phase-list">
-            {phases.length === 0 ? (
+            {/* 4. SAFE RENDERING LOGIC */}
+            {safePhases.length === 0 ? (
               <p className="mpm-empty">No phases yet. Create one below!</p>
             ) : (
-              phases.map((p) => {
+              safePhases.map((p) => {
                 const isActive = p.id === activePhaseId;
                 return (
                   <div

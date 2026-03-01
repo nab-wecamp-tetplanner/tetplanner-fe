@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"; // Thêm useNavigate
+import { Link } from "react-router-dom";
 import {
   useState,
   useEffect,
@@ -15,7 +15,10 @@ import {
   Palette,
   CheckCheck,
   Settings,
+  Trash,
+  Edit3,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 import {
   markAllNotificationsAsRead,
@@ -26,7 +29,6 @@ import type { User } from "../../types/auth.types";
 import type { ConfigInfo } from "./Header";
 
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
-// TODO: Sửa lại đường dẫn import ConfigModal cho đúng với vị trí file của bạn
 import { ConfigModal } from "../ConfigModal";
 import { useLoading } from "../../contexts/LoadingContext";
 import apiClient from "../../services/apiClient";
@@ -69,14 +71,21 @@ const AuthenticatedActions = ({
   const { showLoading, hideLoading } = useLoading();
   const setConfigId = useAppStore((state) => state.setConfigId);
 
+  // --- STATES FOR CONFIG MODAL ---
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editConfigData, setEditConfigData] = useState<ConfigInfo | null>(null);
+  
+  // --- STATE FOR DELETE MODAL ---
+  const [deleteConfigId, setDeleteConfigId] = useState<string | null>(null);
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const configRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
-  // Ref để xử lý delay khi hover giống Nav.jsx
+  // Ref to handle delay on hover
   const accountTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -98,30 +107,62 @@ const AuthenticatedActions = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleCreateConfig = async (data: {
+  // HANDLER: SAVE (CREATE OR UPDATE)
+  const handleSubmitConfig = async (data: {
     name: string;
     year: number;
     total_budget: number;
   }) => {
     try {
       showLoading();
-      const newConfig: any = await apiClient.tetConfigs.create(data);
-      const createdId = newConfig.id;
-      if (createdId) {
-        setConfigId(createdId);
+      if (isEditMode && editConfigData?.id) {
+        // CALL UPDATE API
+        await apiClient.tetConfigs.updateConfig(editConfigData.id, data);
+        // toast.success("Plan updated successfully!");
+      } else {
+        // CALL CREATE API
+        const newConfig: any = await apiClient.tetConfigs.create(data);
+        const createdId = newConfig?.id || newConfig?.data?.id;
+        if (createdId) {
+          setConfigId(createdId);
+        }
+        toast.success("New plan created successfully!");
       }
       setIsRefresh(true);
       setIsConfigModalOpen(false);
     } catch (error) {
-      console.error("Lỗi khi tạo config:", error);
+      console.error("Error saving config:", error);
+      toast.error("An error occurred. Please try again!");
     } finally {
+      hideLoading();
+    }
+  };
+
+  // HANDLER: DELETE
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfigId) return;
+    try {
+      showLoading();
+      await apiClient.tetConfigs.deleteConfig(deleteConfigId);
+      // toast.success("Plan deleted successfully!");
+      
+      // If the currently selected plan is deleted, reset the selection
+      if (configId === deleteConfigId) {
+        setConfigId("");
+      }
+      setIsRefresh(true);
+    } catch (error) {
+      console.error("Error deleting:", error);
+      toast.error("Cannot delete this plan!");
+    } finally {
+      setDeleteConfigId(null);
       hideLoading();
     }
   };
 
   return (
     <>
-      {/* Config dropdown - Giữ nguyên click */}
+      {/* Config dropdown */}
       <div className="relative" ref={configRef}>
         <button
           onClick={() => {
@@ -145,25 +186,55 @@ const AuthenticatedActions = ({
           <div className="absolute right-0 mt-2 w-56 bg-(--bg) border border-accent rounded-lg shadow-lg z-50 animate-in fade-in zoom-in-95 duration-200">
             <div className="px-2.5 py-3">
               {configs.map((config) => (
-                <button
+                <div
                   key={config.id}
-                  onClick={() => {
-                    setConfigId(config.id);
-                    setShowConfig(false);
-                  }}
-                  className={`w-full text-left px-4 py-2.5 text-sm rounded-md transition-colors ${
+                  className={`w-full flex flex-row justify-between items-center mb-1.5 text-left px-3 py-2 text-sm rounded-md transition-colors ${
                     configId === config.id
                       ? "bg-(--primary)/10 text-(--text) font-semibold"
                       : "text-(--text) hover:bg-(--primary)/10 hover:text-(--text)/80"
                   }`}
                 >
-                  {config.name}
-                </button>
+                  <button
+                    className="flex-1 text-left truncate pr-2"
+                    onClick={() => {
+                      setConfigId(config.id);
+                      setShowConfig(false);
+                    }}
+                  >
+                    {config.name}
+                  </button>
+                  <div className="flex flex-row gap-2 opacity-50 hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditMode(true);
+                        setEditConfigData(config);
+                        setIsConfigModalOpen(true);
+                        setShowConfig(false);
+                      }}
+                      className="p-1 hover:text-(--primary) transition-colors"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfigId(config.id);
+                        setShowConfig(false);
+                      }}
+                      className="p-1 hover:text-red-500 transition-colors"
+                    >
+                      <Trash size={14} />
+                    </button>
+                  </div>
+                </div>
               ))}
               <button
                 onClick={() => {
-                  setShowConfig(false); // Đóng dropdown menu
-                  setIsConfigModalOpen(true); // Mở Modal tạo mới
+                  setShowConfig(false);
+                  setIsEditMode(false);
+                  setEditConfigData(null);
+                  setIsConfigModalOpen(true);
                 }}
                 className="w-full text-left px-4 py-2.5 text-sm text-(--text) hover:bg-(--primary)/10 rounded-md transition-colors font-medium border-t border-accent mt-2 pt-2"
               >
@@ -174,7 +245,7 @@ const AuthenticatedActions = ({
         )}
       </div>
 
-      {/* Notifications Dropdown - Giữ nguyên click */}
+      {/* Notifications Dropdown */}
       <div className="relative" ref={notificationsRef}>
         <button
           onClick={() => {
@@ -248,7 +319,6 @@ const AuthenticatedActions = ({
         )}
       </div>
 
-      {/* User Account Dropdown - Chế độ HOVER XỊN */}
       <div
         className="relative"
         ref={accountRef}
@@ -262,10 +332,9 @@ const AuthenticatedActions = ({
         onMouseLeave={() => {
           accountTimeoutRef.current = setTimeout(() => {
             setShowAccount(false);
-          }, 300); // 300ms delay để rê chuột mượt mà
+          }, 300);
         }}
       >
-        {/* Invisible Bridge: Giúp rê chuột từ avatar xuống menu không bị mất hover */}
         <div className="absolute w-full h-4 bottom-0 left-0 translate-y-full z-10"></div>
 
         <button className="flex items-center gap-3 py-1 px-2 rounded-full hover:bg-accent/30 transition-all duration-300">
@@ -294,7 +363,7 @@ const AuthenticatedActions = ({
 
         {showAccount && (
           <div className="absolute right-0 mt-2 w-64 bg-(--bg)/95 backdrop-blur-xl border border-accent rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300">
-            {/* Header của menu */}
+            {/* Header of menu */}
             <div className="p-4 bg-accent/20 border-b border-accent">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden shadow-md ring-2 ring-white">
@@ -373,11 +442,42 @@ const AuthenticatedActions = ({
         )}
       </div>
 
+      {/* --- MODAL EDIT & CREATE NEW --- */}
       <ConfigModal
         isOpen={isConfigModalOpen}
         setIsOpen={setIsConfigModalOpen}
-        onSubmit={handleCreateConfig}
+        isEdit={isEditMode}
+        editConfig={editConfigData}
+        onSubmit={handleSubmitConfig}
       />
+
+      {/* --- CONFIRMATION MODAL DELETE --- */}
+      {deleteConfigId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm rounded-2xl bg-(--bg) border border-accent p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-(--text) mb-2">
+              Delete this plan?
+            </h3>
+            <p className="text-sm text-(--text) opacity-70 mb-6">
+              Are you sure you want to delete this plan? All associated data will be permanently deleted.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfigId(null)}
+                className="px-4 py-2 text-sm font-semibold rounded-xl text-(--text) hover:bg-accent transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 text-sm font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 shadow"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -38,6 +38,8 @@ import type { TaskFilters } from "../../components/TaskFilter/TaskFilter";
 import { useToast } from "../../hooks/useToast";
 import { useAuthContext } from "../../contexts/AuthTypes";
 import { useAppStore } from "../../stores/useAppStore";
+import apiClient from "../../services/apiClient";
+import type { Timeline } from "../../types/timeline.types";
 
 /* ===== Decorative SVG Background Pattern ===== */
 const BACKGROUND_PATTERN = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d6cfc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
@@ -46,11 +48,12 @@ const TaskManagement: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [configs, setConfigs] = useState<TetConfig[]>([]);
   const toast = useToast();
-  const [phases, setPhases] = useState<any[]>([]);
-  const storeConfigId = useAppStore((state) => state.configId);
-  const [activeConfigId, setActiveConfigId] = useState<string>(
-    storeConfigId || "",
-  );
+  const [phases, setPhases] = useState<Timeline[]>([]);
+
+  // const [activeConfigId, setActiveConfigId] = useState<string>(
+  //   storeConfigId || "",
+  // );
+  const activeConfigId = useAppStore((state) => state.configId);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [activeColumn, setActiveColumn] = React.useState<TaskStatus>("pending");
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -70,6 +73,7 @@ const TaskManagement: React.FC = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [taskFilters, setTaskFilters] = useState<TaskFilters>(EMPTY_FILTERS);
   const { currentUser } = useAuthContext();
+  const refreshKey = useAppStore((state) => state.refreshKey);
 
   useEffect(() => {
     const fetchConfigs = async () => {
@@ -84,22 +88,22 @@ const TaskManagement: React.FC = () => {
           console.error("Error fetching categories:", error);
         }
 
-        const urlConfigId = searchParams.get("config");
-        const targetConfigId =
-          urlConfigId ||
-          storeConfigId ||
-          (configList.length > 0 ? configList[0].id : null);
+        // const urlConfigId = searchParams.get("config");
+        // const targetConfigId =
+        //   urlConfigId ||
+        //   storeConfigId ||
+        //   (configList.length > 0 ? configList[0].id : null);
 
-        if (targetConfigId) {
-          setActiveConfigId(targetConfigId);
-        }
+        // if (targetConfigId) {
+        //   setActiveConfigId(targetConfigId);
+        // }
       } catch (error) {
         console.error("Lỗi lấy Configs:", error);
       }
     };
 
     fetchConfigs();
-  }, [searchParams]);
+  }, [searchParams, refreshKey]);
 
   useEffect(() => {
     if (!activeConfigId) return;
@@ -123,7 +127,6 @@ const TaskManagement: React.FC = () => {
         }
 
         if (data.owner) {
-          // Owner's user_id is their actual user ID (not the record id)
           memberList.push({
             id: data.owner.id,
             user_id: data.owner.user_id || data.owner.id,
@@ -155,9 +158,9 @@ const TaskManagement: React.FC = () => {
         setPhases(phaseList);
 
         if (phaseList.length > 0) {
-          setActivePhaseId(phaseList[0].id); // automatically select the first phase
+          setActivePhaseId(phaseList[0].id);
         } else {
-          setActivePhaseId(""); //if no phase, clear activePhaseId to prevent loading tasks with invalid phase
+          setActivePhaseId("");
         }
       } catch (error) {
         console.error("Lỗi lấy Phase:", error);
@@ -449,6 +452,12 @@ const TaskManagement: React.FC = () => {
       });
   };
 
+  const hanldeAddPhase = async (newPhase: any) => {
+    const savedPhase = await apiClient.timelinePhases.create(newPhase);
+    setPhases((prev) => [...prev, savedPhase]);
+    setActivePhaseId(savedPhase.id);
+  };
+
   /* ===== Progress & Gamification Logic ===== */
   const progress = useMemo(() => {
     const total = currentTasks.length;
@@ -518,24 +527,8 @@ const TaskManagement: React.FC = () => {
       <CloudMotif className="tet-deco--cloud-2" />
       <TraditionalCake className="tet-deco--cake" variant="chung" />
 
-      <header className="tet-page-header">
+      <header className="tet-page-header h-30 items-start">
         <div className="tet-header-row">
-          <div className="tet-header-left">
-            <div className="plan-selector">
-              <select
-                value={activeConfigId}
-                onChange={(e) => setActiveConfigId(e.target.value)}
-                className="plan-dropdown-select"
-              >
-                {configs.map((config) => (
-                  <option key={config.id} value={config.id}>
-                    {config.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           <div className="tet-collaborators">
             <div className="tet-collaborators__avatars">
               {members.map((member, index) => (
@@ -561,9 +554,9 @@ const TaskManagement: React.FC = () => {
             <span className="tet-collaborators__label">Collaborators</span>
           </div>
 
-          <div className="tet-header-right">
-            <div className="tet-search-box">
-              <Search size={15} className="tet-search-icon" />
+          <div className="tet-header-right ">
+            <div className="tet-search-box h-20 items-start">
+              {/* <Search size={15} className="tet-search-icon items-start" /> */}
               <input
                 type="text"
                 placeholder="Search..."
@@ -574,32 +567,36 @@ const TaskManagement: React.FC = () => {
             </div>
 
             <TaskFilter
+              phases={phases}
               categories={categories}
               filters={taskFilters}
               onFiltersChange={setTaskFilters}
             />
 
             {/* Manage Timeline */}
-            <div className="tet-filter-wrapper">
+            <div className="flex items-start h-20">
               <button
-                className="tet-ghost-btn"
+                className="flex items-center gap-2 px-3 py-2 text-[13px] font-medium transition-all duration-200 border rounded-xl shadow-sm bg-(--bg-glass] border-(--border) text-(--text-muted) hover:text-(--text) hover:bg-(--bg-card)"
                 onClick={() => setIsPhaseModalOpen(true)}
                 title="Manage timeline phases"
               >
-                <Calendar size={15} color="#dc2626" />
-                Manage Timeline
-              </button>
+                {/* Use theme primary color instead of hardcoded #dc2626 */}
+                <Calendar size={15} className="text-(--primary)" />
+                Add timeline
+              </button> 
             </div>
 
-            <button
-              className="tet-primary-btn"
-              onClick={() => {
-                setActiveColumn("pending");
-                setIsModalOpen(true);
-              }}
-            >
-              <Plus size={16} /> Add Task
-            </button>
+            <div className="h-20 items-start">
+              <button
+                className="tet-primary-btn"
+                onClick={() => {
+                  setActiveColumn("pending");
+                  setIsModalOpen(true);
+                }}
+              >
+                <Plus size={16} /> Add Task
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -691,6 +688,7 @@ const TaskManagement: React.FC = () => {
       )}
 
       <AddTaskModal
+        phases={phases}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         status={activeColumn}
@@ -732,7 +730,7 @@ const TaskManagement: React.FC = () => {
       <SharePlanModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        configId={activeConfigId}
+        configId={activeConfigId ?? ""}
         isOwner={isOwner}
       />
 
@@ -740,13 +738,10 @@ const TaskManagement: React.FC = () => {
         isOpen={isPhaseModalOpen}
         onClose={() => setIsPhaseModalOpen(false)}
         phases={phases}
-        configId={activeConfigId}
+        configId={activeConfigId ?? ""}
         activePhaseId={activePhaseId}
         onSelectPhase={setActivePhaseId}
-        onPhaseCreated={(newPhase) => {
-          setPhases((prev) => [...prev, newPhase]);
-          setActivePhaseId(newPhase.id);
-        }}
+        onPhaseCreated={(newPhase) => hanldeAddPhase(newPhase)}
       />
     </div>
   );

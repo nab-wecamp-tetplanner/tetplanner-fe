@@ -172,7 +172,7 @@ const Header = () => {
             setIsRefresh={setIsRefresh}
             notifications={notifications}
             setNotifications={setNotifications}
-            currentUser={currentUser} // Quan trọng: Truyền currentUser từ Context
+            currentUser={currentUser} 
             logout={logout}
           />
         ) : (
