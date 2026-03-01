@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -9,6 +10,9 @@ import {
 } from "recharts";
 import Card from "../Dashboard/Card";
 import { WEEKLY_FINANCE_DATA } from "../../constants/dashboard";
+import dashboardApi from "../../services/dashboardService";
+import { useAppStore } from "../../stores/useAppStore";
+import type { WeeklyFinanceData } from "../../types/dashboard.types";
 
 const CHART_LEGEND_ITEMS = [
   { color: "bg-cyan-400", label: "Income" },
@@ -16,6 +20,33 @@ const CHART_LEGEND_ITEMS = [
 ];
 
 export const IncomeExpenseLineChart = () => {
+  const configId = useAppStore((state) => state.configId);
+  const [data, setData] = useState<WeeklyFinanceData[]>(WEEKLY_FINANCE_DATA);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!configId) return;
+
+    const fetchTrendData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const trendData = await dashboardApi.getSpendingTrend(configId, "week");
+        setData(trendData);
+      } catch (err) {
+        console.error("Failed to fetch spending trend:", err);
+        setError("Failed to load spending trend data");
+        // Fallback to mock data on error
+        setData(WEEKLY_FINANCE_DATA);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrendData();
+  }, [configId]);
+
   return (
     <Card className="flex flex-col gap-2 h-full">
       <div className="flex items-center justify-between mb-2">
@@ -34,10 +65,12 @@ export const IncomeExpenseLineChart = () => {
         </div>
       </div>
 
+      {error && <div className="text-sm text-red-500 mb-2">{error}</div>}
+
       <div className="w-full h-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={WEEKLY_FINANCE_DATA}
+            data={data}
             margin={{ top: 10, right: 10, left: -30, bottom: 0 }}
           >
             <CartesianGrid
