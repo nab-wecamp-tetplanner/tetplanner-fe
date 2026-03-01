@@ -1,0 +1,207 @@
+/* ==========================================
+   VERIFY OTP PAGE — Theme-Aware Styles
+   Inherits: spring-blossom | jade-prosperity
+             morning-lantern | midnight-dragon
+   ========================================== */
+
+/* ===== Page Container ===== */
+.verify-page {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg);
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative background gradient */
+.verify-page::before {
+  content: '';
+  position: absolute;
+  top: -25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gradient-bg-1) 0%, transparent 60%);
+  pointer-events: none;
+  animation: float 7s ease-in-out infinite;
+}
+
+/* ===== Card ===== */
+.verify-card {
+  position: relative;
+  z-index: 1;
+  max-width: 28rem;
+  width: 100%;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  padding: 2rem;
+  box-shadow: 0 8px 32px var(--shadow);
+  text-align: center;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.verify-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 12px 40px var(--shadow-accent);
+}
+
+/* ===== Shield Icon Container ===== */
+.verify-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: var(--gradient-bg-1);
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--border);
+  animation: envelopePulse 3s ease-in-out infinite;
+}
+
+.verify-icon-wrapper svg {
+  width: 2rem;
+  height: 2rem;
+  color: var(--primary);
+}
+
+/* ===== Title ===== */
+.verify-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 0.5rem;
+}
+
+/* ===== Subtitle ===== */
+.verify-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.verify-subtitle .verify-email {
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* ===== Email Input ===== */
+.verify-email-input {
+  width: 100%;
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: var(--text);
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.verify-email-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
+}
+
+/* ===== OTP Input ===== */
+.verify-otp-input {
+  width: 100%;
+  text-align: center;
+  font-size: 1.875rem;
+  letter-spacing: 0.5em;
+  font-weight: 700;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: var(--text-heading);
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.verify-otp-input::placeholder {
+  color: var(--text-subtle);
+  letter-spacing: 0.3em;
+}
+
+.verify-otp-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--shadow-accent);
+}
+
+/* ===== Input Group ===== */
+.verify-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ===== Submit Button ===== */
+.verify-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #ffffff;
+  background: var(--gradient-warm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 16px var(--shadow-accent);
+  transition: all 0.25s ease;
+}
+
+.verify-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px var(--shadow-accent);
+  filter: brightness(1.08);
+}
+
+.verify-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.verify-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ===== Resend Section ===== */
+.verify-resend {
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.verify-resend-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  transition: color 0.2s ease;
+}
+
+.verify-resend-btn:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}

@@ -1,0 +1,89 @@
+/* ===== Floating Sparkles — firefly / dew-drop particles ===== */
+
+.floating-sparkles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.floating-sparkles__dot {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--lantern-core) 0%,
+    var(--blossom-center) 40%,
+    transparent 70%
+  );
+  box-shadow:
+    0 0 4px 1px var(--lantern-core),
+    0 0 8px 2px rgba(251, 191, 36, 0.15);
+  animation:
+    sparkleRise linear infinite,
+    sparklePulse ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Rise from bottom to top with gentle horizontal drift */
+@keyframes sparkleRise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.6);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--sparkle-opacity, 0.5);
+    transform: translateY(-8vh) translateX(calc(var(--sparkle-drift, 20px) * 0.1)) scale(0.8);
+  }
+  50% {
+    transform: translateY(-50vh) translateX(var(--sparkle-drift, 20px)) scale(1);
+    opacity: var(--sparkle-opacity, 0.5);
+  }
+  85% {
+    opacity: calc(var(--sparkle-opacity, 0.5) * 0.4);
+  }
+  100% {
+    transform: translateY(-110vh) translateX(calc(var(--sparkle-drift, 20px) * -0.5)) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* Gentle twinkling / pulsing glow */
+@keyframes sparklePulse {
+  0%, 100% {
+    box-shadow:
+      0 0 3px 1px var(--lantern-core),
+      0 0 6px 2px rgba(251, 191, 36, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 6px 2px var(--lantern-core),
+      0 0 14px 4px rgba(251, 191, 36, 0.25);
+  }
+}
+
+/* Vary pulse speed per particle for organic feel */
+.floating-sparkles__dot:nth-child(odd) {
+  animation-timing-function: linear, ease-in-out;
+}
+
+.floating-sparkles__dot:nth-child(3n) {
+  animation-duration: inherit, 2.5s;
+}
+
+.floating-sparkles__dot:nth-child(5n) {
+  animation-duration: inherit, 3.5s;
+}
+
+.floating-sparkles__dot:nth-child(7n) {
+  animation-duration: inherit, 1.8s;
+}
+
+/* Reduce sparkles on mobile for performance */
+@media (max-width: 768px) {
+  .floating-sparkles__dot:nth-child(n+16) {
+    display: none;
+  }
+}
