@@ -29,7 +29,7 @@ const CustomDonutTooltip = ({
 }: TooltipContentProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white px-2 py-1 rounded-xl shadow-lg border border-slate-100 text-sm">
+      <div className="bg-(--bg-card) px-2 py-1 rounded-xl shadow-lg border border-(--border) text-sm">
         <p className="font-semibold text-slate-800">{payload[0].name}</p>
         <p className="text-slate-500 font-medium">
           {payload[0].payload.percent}

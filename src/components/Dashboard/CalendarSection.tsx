@@ -176,15 +176,15 @@ const CalendarSection = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 w-full max-w-lg">
+    <div className="bg-(--bg-card) rounded-2xl shadow-sm border border-(--border) p-5 w-full max-w-lg backdrop-blur-sm transition-colors duration-500">
       {/* 1. Header: Navigation & Month Title */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold flex items-center gap-2">
-            <Calendar size={18} className="text-blue-600" />
+            <Calendar size={18} className="text-(--primary)" />
             Timeline
           </h3>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-(--text-muted)">
             {currentDate.toLocaleDateString("en-US", {
               month: "long",
               year: "numeric",
@@ -198,7 +198,7 @@ const CalendarSection = () => {
                 new Date(currentDate.setMonth(currentDate.getMonth() - 1)),
               )
             }
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-(--bg)/100 rounded-lg transition-colors"
           >
             <ChevronLeft size={18} />
           </button>
@@ -208,7 +208,7 @@ const CalendarSection = () => {
                 new Date(currentDate.setMonth(currentDate.getMonth() + 1)),
               )
             }
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-(--bg)/100 rounded-lg transition-colors"
           >
             <ChevronRight size={18} />
           </button>
@@ -220,7 +220,7 @@ const CalendarSection = () => {
           <p className="text-center text-sm py-10">Loading tasks...</p>
         )}
         {!loading && events.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground py-10">
+          <p className="text-center text-sm text-(--text-muted) py-10">
             No deadlines this month.
           </p>
         )}
@@ -228,12 +228,14 @@ const CalendarSection = () => {
         {events.map((day, dayIdx) => (
           <div
             key={dayIdx}
-            className="relative pl-4 border-l-2 border-gray-100 pb-2"
+            className="relative pl-4 border-l-2 border-(--border) pb-2"
           >
             {/* 2. Day Label */}
             <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-xl font-bold">{day.date}</span>
-              <span className="text-xs font-bold text-muted-foreground uppercase">
+              <span className="text-xl font-bold text-(--text-heading)">
+                {day.date}
+              </span>
+              <span className="text-xs font-bold text-(--text-muted) uppercase">
                 {day.dayName}
               </span>
             </div>
@@ -257,8 +259,8 @@ const CalendarSection = () => {
                     }
                     className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                       event.completed
-                        ? "bg-blue-500 border-blue-500"
-                        : "border-gray-300 bg-white"
+                        ? "bg-(--primary) border-(--primary)"
+                        : "border-(--border) bg-(--bg-card)"
                     }`}
                   >
                     {event.completed && (
@@ -268,19 +270,19 @@ const CalendarSection = () => {
 
                   <div className="flex-1">
                     <p
-                      className={`text-sm font-semibold transition-all ${event.completed ? "text-gray-400 line-through" : "text-gray-800"}`}
+                      className={`text-sm font-semibold transition-all ${event.completed ? "text-(--text-muted) line-through" : "text-(--text-heading)"}`}
                     >
                       {event.title}
                     </p>
 
                     {/* Subtitle: Subtasks or Price */}
                     {event.isShopping && event.estimatedPrice !== undefined ? (
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-xs text-(--text-muted) mt-0.5">
                         Estimated price: {formatCurrency(event.estimatedPrice)}
                       </p>
                     ) : event.subtasksCount !== undefined &&
                       event.subtasksCount > 0 ? (
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-xs text-(--text-muted) mt-0.5">
                         {event.subtasksCount} subtask
                         {event.subtasksCount !== 1 ? "s" : ""}
                       </p>
@@ -289,15 +291,17 @@ const CalendarSection = () => {
                     {/* Badges Section */}
                     <div className="flex gap-2 mt-1.5">
                       {event.categoryName && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/50 border border-black/5 text-gray-600">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-(--primary)/10 border border-(--primary)/20 text-(--primary)">
                           {event.categoryName}
                         </span>
                       )}
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                          event.completed
-                            ? "bg-gray-200 text-gray-500"
-                            : "bg-white/50 text-gray-700"
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${
+                          event.priority === "high"
+                            ? "bg-red-100 border-red-200 text-red-700"
+                            : event.priority === "medium"
+                              ? "bg-amber-100 border-amber-200 text-amber-700"
+                              : "bg-green-100 border-green-200 text-green-700"
                         }`}
                       >
                         {event.priority}

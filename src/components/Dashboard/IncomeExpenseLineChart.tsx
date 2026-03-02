@@ -127,18 +127,16 @@ export const IncomeExpenseLineChart = () => {
           {CHART_LEGEND_ITEMS.map((item) => (
             <div key={item.label} className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-              <span className="text-xs text-muted-foreground">
-                {item.label}
-              </span>
+              <span className="text-xs text-(--text-muted)">{item.label}</span>
             </div>
           ))}
         </div>
       </div>
 
       {loading && (
-        <div className="text-sm text-muted-foreground mb-2">Loading...</div>
+        <div className="text-sm text-(--text-muted) mb-2">Loading...</div>
       )}
-      {error && <div className="text-sm text-red-500 mb-2">{error}</div>}
+      {error && <div className="text-sm text-(--danger) mb-2">{error}</div>}
 
       <div className="w-full flex-1 ">
         <ResponsiveContainer width="100%" height="100%">
