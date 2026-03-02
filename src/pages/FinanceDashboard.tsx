@@ -663,6 +663,8 @@ export default function FinanceDashboard() {
         phases={phases}
         defaultPhaseId={defaultPhaseId}
         initialData={editingItem || undefined}
+        onQuickAddCategory={() => setIsAddCategoryModalOpen(true)}
+        onQuickAddPhase={() => setIsAddPhaseModalOpen(true)}
       />
 
       <AddCategoryModal

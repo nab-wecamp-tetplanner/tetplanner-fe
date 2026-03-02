@@ -9,6 +9,7 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   Sparkles,
+  Plus,
 } from "lucide-react";
 import type { TransactionType } from "../../pages/Transaction";
 import type { Category } from "../../types/dashboard.types";
@@ -21,6 +22,7 @@ interface AddTransactionModalProps {
   categories: Category[];
   initialData?: TransactionType | null;
   defaultType?: "income" | "expense";
+  onQuickAddCategory?: () => void;
 }
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   isOpen,
@@ -29,6 +31,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   categories,
   initialData,
   defaultType = "expense",
+  onQuickAddCategory,
 }) => {
   const [amount, setAmount] = useState(initialData?.amount.toString() || "");
   const [type, setType] = useState<"income" | "expense">(
@@ -149,9 +152,20 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             <div className="grid grid-cols-2 gap-4">
               {/* Category selector with Chevron */}
               <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-                  <Tag className="w-4 h-4 text-planner-purple" /> Category
-                </label>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+                    <Tag className="w-4 h-4  text-planner-purple" /> Category
+                  </label>
+                  {/* Nút + nhỏ mờ */}
+                  <button
+                    type="button"
+                    onClick={onQuickAddCategory}
+                    className="p-0.5 rounded-full bg-planner-purple/10 hover:bg-planner-purple/20 text-planner-purple/40 hover:text-planner-purple transition-all duration-300"
+                    title="Quick add category"
+                  >
+                    <Plus className="w-2.5 h-2.5" strokeWidth={3} />
+                  </button>
+                </div>
                 <div className="relative">
                   <select
                     value={categoryId}

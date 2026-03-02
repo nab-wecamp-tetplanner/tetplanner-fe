@@ -7,6 +7,7 @@ import {
   Edit2,
   Trash2,
   Plus,
+  Clock,
   ChevronDown,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "../../utils/formatters";
@@ -161,6 +162,20 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground shrink-0">
                 <Calendar className="w-3.5 h-3.5" />
                 {formatDate(item.dueDate)}
+              </div>
+              {/* Status badge - Thêm lại đoạn này */}
+              <div className="hidden md:block shrink-0">
+                {isPurchased ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-100 px-2 py-1 rounded-lg uppercase shadow-sm">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Purchased
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-planner-amber bg-planner-amber-light px-2 py-1 rounded-lg uppercase shadow-sm">
+                    <Clock className="w-3 h-3" />
+                    Pending
+                  </span>
+                )}
               </div>
 
               <span className="font-bold text-sm text-foreground shrink-0 w-28 text-right">
