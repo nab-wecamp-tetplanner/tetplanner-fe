@@ -9,7 +9,6 @@ import {
 import {
   Bell,
   ChevronDown,
-  ChevronUp,
   User as Profile,
   LogOut,
   Palette,

@@ -272,12 +272,14 @@ export const financeApi = {
       const payload: any = {
         // Gửi cả hai để "bảo đảm" dù Backend dùng cái nào cũng trúng
         status: purchased ? "completed" : "pending",
-        purchased: purchased,
+        // purchased: purchased,3s
 
         category_id: currentItem.category || null,
         estimated_price: currentItem.price,
         quantity: currentItem.quantity || 1,
       };
+
+      console.log("Toggling item status - payload:", payload);
 
       const response = await apiClient.patch<{
         todo_item: BackendTodoItem;

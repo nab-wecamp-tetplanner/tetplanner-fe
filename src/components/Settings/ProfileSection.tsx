@@ -83,21 +83,9 @@ const ProfileSection = () => {
       setFormData(updatedUser);
       setCurrentUser(updatedUser); // THÊM DÒNG NÀY để Header cập nhật tên mới
       setIsEditing(false);
-    } catch (err: unknown) {
-      let errorMessage = "Failed to update profile";
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        typeof (err as any).response === "object" &&
-        (err as any).response !== null &&
-        "data" in (err as any).response &&
-        typeof (err as any).response.data === "object" &&
-        (err as any).response.data !== null &&
-        "message" in (err as any).response.data
-      ) {
-        errorMessage = (err as { response: { data: { message: string } } }).response.data.message;
-      }
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.message || "Failed to update profile";
       setError(errorMessage);
     } finally {
       setIsLoading(false);

@@ -12,7 +12,7 @@ import { todoService } from "../../services/todoService";
 import { collaboratorService } from "../../services/collaboratorService";
 import { MOCK_INITIAL_TASKS } from "../../data/mockTasks";
 import "./TaskManagement.css";
-import { Plus, Search, Calendar } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import TaskColumn from "../../components/TaskColumn/TaskColumn";
 import AddTaskModal from "../../components/AddTaskModal/AddTaskModal";
 import TaskDetailModal from "../../components/TaskDetailModal/TaskDetailModal";
@@ -169,8 +169,6 @@ const TaskManagement: React.FC = () => {
 
     fetchPhasesAndMembers();
   }, [activeConfigId, currentUser]);
-
-
 
   // ==========================================
   // Normalize raw API task → Task shape
@@ -540,7 +538,11 @@ const TaskManagement: React.FC = () => {
           <div className="tet-collaborators">
             <div className="tet-collaborators__avatars">
               {members.map((m) => (
-                <div key={m.id} className="tet-collaborators__avatar" title={m.name}>
+                <div
+                  key={m.id}
+                  className="tet-collaborators__avatar"
+                  title={m.name}
+                >
                   {m.avatar ? (
                     <img
                       src={m.avatar}
@@ -596,7 +598,7 @@ const TaskManagement: React.FC = () => {
                 {/* Use theme primary color instead of hardcoded #dc2626 */}
                 <Calendar size={15} className="text-(--primary)" />
                 Add timeline
-              </button> 
+              </button>
             </div>
 
             <div className="h-20 items-start">

@@ -9,7 +9,7 @@ import { AddItemModal } from "../components/Finance/AddItemModal";
 import { AddCategoryModal } from "../components/Finance/AddCategoryModal";
 import { AddPhaseModal } from "../components/Finance/AddPhaseModal";
 import { TimelinePhasesSection } from "../components/Finance/TimelinePhasesSection";
-import { DEFAULT_CATEGORIES } from "../constants/finance";
+// import { DEFAULT_CATEGORIES } from "../constants/finance";
 import financeApi from "../services/financeApi";
 import apiClient from "../services/apiClient";
 import { SuccessModal } from "../components/Finance/SuccessModal";
@@ -303,11 +303,16 @@ export default function FinanceDashboard() {
     try {
       const currentItem = items.find((i) => i.id === itemId);
       if (!currentItem) return;
+      const sanitizedItem = {
+        ...currentItem,
+        price: Number(currentItem.price),
+        quantgegity: Number(currentItem.quantity),
+      };
       const res = await financeApi.toggleItemStatus(
         itemId,
         currentStatus !== "purchased",
         tetConfigId,
-        currentItem,
+        sanitizedItem,
       );
       setItems((prev) => prev.map((i) => (i.id === itemId ? res.item : i)));
       setBudget({ total: res.budget.total, used: res.budget.used });
@@ -608,12 +613,12 @@ export default function FinanceDashboard() {
           // Nếu trống (do đổi tetConfigId chưa có data) thì hiện khung này
           <div className="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6">
             <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed border-border">
-              <p className="text-sm font-medium text-muted-foreground">
+              <div className="text-sm font-medium text-muted-foreground">
                 No categories defined yet.
                 <p className="text-sm font-sans text-muted-foreground/50 mt-1">
                   Start by adding a new category to organize your expenses!
                 </p>
-              </p>
+              </div>
             </div>
           </div>
         )}
@@ -645,7 +650,9 @@ export default function FinanceDashboard() {
 
       <AddItemModal
         // Dùng editingItem mới đúng logic của món đồ mua sắm
-        key={editingItem?.id || (isAddItemModalOpen ? "new" : "closed")}
+        key={
+          editingItem?.id || (isAddItemModalOpen ? "item-new" : "item-closed")
+        }
         isOpen={isAddItemModalOpen || !!editingItem}
         onClose={() => {
           setIsAddItemModalOpen(false);
@@ -660,7 +667,10 @@ export default function FinanceDashboard() {
 
       <AddCategoryModal
         // PHẢI CÓ KEY NÀY: Nó dùng đúng biến editingCategory
-        key={editingCategory?.id || (isAddCategoryModalOpen ? "new" : "closed")}
+        key={
+          editingCategory?.id ||
+          (isAddCategoryModalOpen ? "cat-new" : "cat-closed")
+        }
         isOpen={isAddCategoryModalOpen || !!editingCategory}
         onClose={() => {
           setIsAddCategoryModalOpen(false);
@@ -675,6 +685,10 @@ export default function FinanceDashboard() {
       />
 
       <AddPhaseModal
+        key={
+          editingPhase?.id ||
+          (isAddPhaseModalOpen ? "phase-new" : "phase-closed")
+        }
         isOpen={isAddPhaseModalOpen || !!editingPhase}
         onClose={() => {
           setIsAddPhaseModalOpen(false);
