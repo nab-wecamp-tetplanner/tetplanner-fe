@@ -111,9 +111,9 @@ const TaskManagement: React.FC = () => {
     const fetchCategories = async () => {
       const data = await todoService.getCategories(activeConfigId);
       setCategories(data);
-    }
+    };
     fetchCategories();
-  }, [activeConfigId])
+  }, [activeConfigId]);
 
   useEffect(() => {
     if (!activeConfigId) return;
@@ -157,7 +157,14 @@ const TaskManagement: React.FC = () => {
           }
         }
         setMembers(memberList);
-        console.log("🟢 Members loaded:", memberList.map(m => ({ id: m.id, user_id: m.user_id, name: m.name })));
+        console.log(
+          "🟢 Members loaded:",
+          memberList.map((m) => ({
+            id: m.id,
+            user_id: m.user_id,
+            name: m.name,
+          })),
+        );
       } catch (err) {
         console.error("Lỗi lấy Members:", err);
       }
@@ -209,7 +216,14 @@ const TaskManagement: React.FC = () => {
       assignedToUser = { id: String(raw.assigned_to.id) };
     }
 
-    console.log("🟡 normalizeTask raw.assigned_to:", raw.assigned_to, "raw.assigned_to_user:", raw.assigned_to_user, "=> assignedToUser:", assignedToUser);
+    console.log(
+      "🟡 normalizeTask raw.assigned_to:",
+      raw.assigned_to,
+      "raw.assigned_to_user:",
+      raw.assigned_to_user,
+      "=> assignedToUser:",
+      assignedToUser,
+    );
 
     return {
       ...raw,
@@ -373,15 +387,12 @@ const TaskManagement: React.FC = () => {
 
     try {
       // Gửi API đồng bộ cả 2 trạng thái
-      await todoService.updateTodoItem(taskId, { status: newStatus });
-
-      if (completedSubtasks) {
-        await Promise.all(
-          Object.keys(completedSubtasks).map((name) =>
-            todoService.addOrUpdateSubtask(taskId, { name, done: true }),
-          ),
-        );
-      }
+      await todoService.updateTodoItem(taskId, {
+        status: newStatus,
+        estimated_price: Number(targetTask.estimated_price || 0),
+        category_id: targetTask.category_id || null,
+        quantity: Number(targetTask.quantity || 1),
+      });
     } catch (error) {
       console.error("Error updating task status:", error);
       setTodoItems(backupTasks);
@@ -397,7 +408,10 @@ const TaskManagement: React.FC = () => {
   ) => {
     // API call to create new task
     let newTask: Task;
-    const assignedToId = (taskData as any).assigned_to || taskData.assigned_to_user?.id || undefined;
+    const assignedToId =
+      (taskData as any).assigned_to ||
+      taskData.assigned_to_user?.id ||
+      undefined;
     try {
       const response = await todoService.addTodoItem({
         title: taskData.title,
@@ -415,7 +429,10 @@ const TaskManagement: React.FC = () => {
       newTask = normalizeTask(response);
       // Fallback: if API response didn't include assigned_to, set it from what we sent
       if (!newTask.assigned_to_user && assignedToId) {
-        newTask = { ...newTask, assigned_to_user: { id: String(assignedToId) } };
+        newTask = {
+          ...newTask,
+          assigned_to_user: { id: String(assignedToId) },
+        };
       }
     } catch (error) {
       console.error("Error creating task:", error);

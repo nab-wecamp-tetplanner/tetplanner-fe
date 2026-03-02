@@ -10,6 +10,7 @@ import {
   Clock,
   Calendar,
   ChevronDown,
+  Plus,
 } from "lucide-react";
 import type { ShoppingItem } from "../../types/shopping.types";
 import type { Timeline } from "../../types/timeline.types";
@@ -23,6 +24,8 @@ interface AddItemModalProps {
   phases: Timeline[];
   defaultPhaseId?: string | null;
   initialData?: ShoppingItem;
+  onQuickAddCategory?: () => void;
+  onQuickAddPhase?: () => void;
 }
 
 export const AddItemModal: React.FC<AddItemModalProps> = ({
@@ -33,6 +36,8 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   phases,
   defaultPhaseId,
   initialData,
+  onQuickAddCategory,
+  onQuickAddPhase,
 }) => {
   // KHỞI TẠO STATE TRỰC TIẾP (Bỏ useEffect để tránh lỗi cascading render)
   const [name, setName] = useState(initialData?.name || "");
@@ -137,9 +142,21 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
 
           {/* Category */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Layers className="w-4 h-4 text-planner-purple" /> Category
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Layers className="w-4 h-4  text-planner-purple" /> Category
+              </label>
+              {/* Nút + nhỏ mờ */}
+              <button
+                type="button"
+                onClick={onQuickAddCategory}
+                className="p-0.5 rounded-full bg-planner-purple/10 hover:bg-planner-purple/20 text-planner-purple/40 hover:text-planner-purple transition-all duration-300"
+                title="Quick add category"
+              >
+                <Plus className="w-2.5 h-2.5" strokeWidth={3} />
+              </button>
+            </div>
+
             <div className="relative">
               <select
                 value={category}
@@ -158,9 +175,22 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
 
           {/* Phase */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Clock className="w-4 h-4 text-planner-blue" /> Timeline Phase *
-            </label>
+            {/* Tương tự cho Timeline Phase */}
+            <div className="flex items-center gap-2 px-1">
+              <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+                <Clock className="w-4 h-4 text-planner-blue" /> Timeline Phase *
+              </label>
+
+              <button
+                type="button"
+                onClick={onQuickAddPhase}
+                className="p-0.5 rounded-full bg-planner-blue/10 hover:bg-planner-blue/20 text-planner-blue/40 hover:text-planner-blue transition-all duration-300 translate-y-[1px]"
+                title="Quick add phase"
+              >
+                <Plus className="w-2.5 h-2.5" strokeWidth={4} />
+              </button>
+            </div>
+
             <div className="relative">
               <select
                 value={phase}

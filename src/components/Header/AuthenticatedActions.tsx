@@ -31,7 +31,7 @@ import type { ConfigInfo } from "./Header";
 
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
 import { ConfigModal } from "../ConfigModal";
-import { useLoading} from "../../contexts/LoadingContext";
+import { useLoading } from "../../contexts/LoadingContext";
 import apiClient from "../../services/apiClient";
 import { useAppStore } from "../../stores/useAppStore";
 import type { InvitationResponse } from "../../types/collabration.types";
@@ -161,20 +161,20 @@ const AuthenticatedActions = ({
     setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
   ): Promise<void> => {
     try {
-      showLoading()
+      showLoading();
       await apiClient.notifications.markAllRead();
       setNotifications((prev) => {
         return prev.map((n) => ({
           ...n,
-          is_read: true
-        }))
-      })
-      console.log("NOTI: ", notifications)
+          is_read: true,
+        }));
+      });
+      console.log("NOTI: ", notifications);
     } catch (error) {
       console.error("Failed to mark all as read:", error);
       throw error;
     } finally {
-      hideLoading()
+      hideLoading();
     }
   };
 
@@ -184,7 +184,7 @@ const AuthenticatedActions = ({
     setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
   ): Promise<void> => {
     try {
-      showLoading()
+      showLoading();
       await apiClient.notifications.markAsRead(notificationId);
       setNotifications(
         notifications.map((notif) =>
@@ -195,7 +195,7 @@ const AuthenticatedActions = ({
       console.error("Failed to mark as read:", error);
       throw error;
     } finally {
-      hideLoading()
+      hideLoading();
     }
   };
 
@@ -503,47 +503,48 @@ const AuthenticatedActions = ({
             {/* Danh sách gộp chung */}
             <div className="overflow-y-auto custom-scrollbar flex-1 p-1.5">
               {notifications.length > 0 ? (
-                notifications.slice(0, 10).map((n, idx) =>{ 
+                notifications.slice(0, 10).map((n, idx) => {
                   console.log("EACH NOTI: ", n);
                   return (
-                  <div
-                    key={n.id || idx}
-                    onClick={() =>
-                      !n.is_read &&
-                      markNotificationAsRead(
-                        n.id,
-                        notifications,
-                        setNotifications,
-                      )
-                    }
-                    className={`group relative flex gap-3 p-3 rounded-xl transition-all cursor-pointer mb-1 ${
-                      n.is_read
-                        ? "bg-blue"
-                        : "bg-(--primary)/5 hover:bg-(--primary)/10 shadow-sm"
-                    }`}
-                  >
-                    {!n.is_read && (
-                      <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-(--primary) rounded-full shadow-[0_0_8px_var(--primary)]" />
-                    )}
-                    <div className="flex-1 min-w-0 ml-1">
-                      <div className="flex justify-between items-start">
-                        <span
-                          className={`text-[13px] truncate pr-2 ${!n.is_read ? "font-bold text-(--text)" : "text-(--text-muted)"}`}
-                        >
-                          {n.title}
-                        </span>
-                        <span className="text-[9px] font-bold opacity-30 whitespace-nowrap pt-0.5">
-                          {n.created_at
-                            ? formatTimeAgo(n.created_at)
-                            : "Just now"}
-                        </span>
+                    <div
+                      key={n.id || idx}
+                      onClick={() =>
+                        !n.is_read &&
+                        markNotificationAsRead(
+                          n.id,
+                          notifications,
+                          setNotifications,
+                        )
+                      }
+                      className={`group relative flex gap-3 p-3 rounded-xl transition-all cursor-pointer mb-1 ${
+                        n.is_read
+                          ? "bg-blue"
+                          : "bg-(--primary)/5 hover:bg-(--primary)/10 shadow-sm"
+                      }`}
+                    >
+                      {!n.is_read && (
+                        <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-(--primary) rounded-full shadow-[0_0_8px_var(--primary)]" />
+                      )}
+                      <div className="flex-1 min-w-0 ml-1">
+                        <div className="flex justify-between items-start">
+                          <span
+                            className={`text-[13px] truncate pr-2 ${!n.is_read ? "font-bold text-(--text)" : "text-(--text-muted)"}`}
+                          >
+                            {n.title}
+                          </span>
+                          <span className="text-[9px] font-bold opacity-30 whitespace-nowrap pt-0.5">
+                            {n.created_at
+                              ? formatTimeAgo(n.created_at)
+                              : "Just now"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-(--text-muted) line-clamp-2 mt-0.5">
+                          {n.title || "New activity recorded."}
+                        </p>
                       </div>
-                      <p className="text-[11px] text-(--text-muted) line-clamp-2 mt-0.5">
-                        {n.title || "New activity recorded."}
-                      </p>
                     </div>
-                  </div>
-                )})
+                  );
+                })
               ) : (
                 <div className="py-12 flex flex-col items-center justify-center opacity-30">
                   <Bell size={28} strokeWidth={1.5} className="mb-2" />

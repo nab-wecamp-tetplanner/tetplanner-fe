@@ -32,6 +32,7 @@ import {
   CloudMotif,
   TraditionalCake,
 } from "../components/Decoratives/Decoratives";
+import { AddCategoryModal } from "../components/Finance/AddCategoryModal";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles: Sparkles,
@@ -159,6 +160,27 @@ export default function Transaction() {
   const [modalDefaultType, setModalDefaultType] = useState<
     "income" | "expense"
   >("expense");
+
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+
+  // Hàm xử lý thêm Category ngay tại trang Transaction
+  const handleAddCategory = async (data: any) => {
+    if (!tetConfigId) return;
+    try {
+      const created = await financeApi.addCategory(tetConfigId, {
+        name: data.name,
+        icon: data.icon,
+        color: data.color,
+        allocated_budget: data.allocated || 0,
+      });
+
+      // Cập nhật lại danh sách categories ngay lập tức để Modal Transaction thấy
+      setCategories((prev) => [...prev, created as Category]);
+      setIsAddCategoryModalOpen(false);
+    } catch (err) {
+      console.error("Failed to add category:", err);
+    }
+  };
 
   // Hàm tải danh sách giao dịch (để gọi lại sau khi thêm/sửa/xóa)
   // Cập nhật hàm fetchTxns bên trong component Transaction
@@ -501,6 +523,15 @@ export default function Transaction() {
           categories={categories}
           initialData={editingTransaction}
           defaultType={modalDefaultType}
+          // TRUYỀN HÀM NÀY VÀO ĐỂ KÍCH HOẠT NÚT +
+          onQuickAddCategory={() => setIsAddCategoryModalOpen(true)}
+        />
+
+        <AddCategoryModal
+          key={isAddCategoryModalOpen ? "txn-cat-new" : "txn-cat-closed"}
+          isOpen={isAddCategoryModalOpen}
+          onClose={() => setIsAddCategoryModalOpen(false)}
+          onAdd={handleAddCategory}
         />
       </div>
     </div>
