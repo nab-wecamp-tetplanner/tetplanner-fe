@@ -251,7 +251,9 @@ const TaskDetailModal = ({
         {/* ── Assigned Member ── */}
         {(() => {
           const member = members?.find(
-            (m) => String(m.user_id) === String(task.assigned_to_user?.id),
+            (m) =>
+              String(m.user_id) === String(task.assigned_to_user?.id) ||
+              String(m.id) === String(task.assigned_to_user?.id),
           );
           return member ? (
             <div className="tdm-assigned">
@@ -259,11 +261,17 @@ const TaskDetailModal = ({
                 <User size={13} /> Assigned to
               </span>
               <div className="tdm-assigned__member">
-                <img
-                  src={member.avatar}
-                  alt={member.name}
-                  className="tdm-assigned__avatar"
-                />
+                {member.avatar ? (
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    className="tdm-assigned__avatar"
+                  />
+                ) : (
+                  <span className="tdm-assigned__avatar tdm-assigned__avatar--placeholder">
+                    {member.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
                 <span className="tdm-assigned__name">{member.name}</span>
               </div>
             </div>

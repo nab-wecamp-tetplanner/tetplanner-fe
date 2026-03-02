@@ -15,7 +15,7 @@ export interface Task {
     estimated_price?: number;
     quantity: number;
     purchased: boolean;
-    assigned_to_user?: { id: string } | null;
+    assigned_to_user?: { id: string };
     created_at: string;
     deleted_at?: string;
     tet_config_id?: string;

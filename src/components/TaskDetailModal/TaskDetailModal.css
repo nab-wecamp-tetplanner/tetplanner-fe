@@ -235,6 +235,17 @@
     0 0 0 2px rgba(217,119,6,0.15);
 }
 
+.tdm-assigned__avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  user-select: none;
+}
+
 .tdm-assigned__name {
   font-size: 0.9rem;
   font-weight: 600;
