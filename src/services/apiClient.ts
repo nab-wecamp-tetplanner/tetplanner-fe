@@ -8,6 +8,7 @@ import type { User } from "../types/auth.types";
 import type { Transaction } from "../types/transaction.types";
 import type { Timeline } from "../types/timeline.types";
 import type { Notification } from "../types/notification.type";
+import type { InvitationResponse } from "../types/collabration.types";
 
 interface BackendResponse<T> {
   data: T;
@@ -234,6 +235,20 @@ export class ApiClient {
     },
     create: (data: any) : ApiResponse<any> => {
       return this.post("/timeline-phases", data)
+    }
+  };
+
+
+  // collaborations
+  collaborations = {
+    getMyInvitations: () : ApiResponse<InvitationResponse[]> => {
+      return this.get("/collaborators/my-invitations")
+    },
+    acceptInvitation: (id: string) : ApiResponse<InvitationResponse> => {
+      return this.patch(`/collaborators/${id}/accept`, {});
+    },
+    declineInvitation: (id: string) : ApiResponse<InvitationResponse> => {
+      return this.patch(`/collaborators/${id}/decline`, {});
     }
   };
 
