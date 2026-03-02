@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings as Account, User, Bell, X } from "lucide-react";
+import apiClient from "../services/apiClient";
+import type { User as UserType } from "../types/auth.types";
 import ProfileSection from "../components/Settings/ProfileSection";
 import NotificationSection from "../components/Settings/NotificationSection";
 import AccountSection from "../components/Settings/AccountSection";
@@ -9,6 +11,26 @@ type SettingsTab = "profile" | "account" | "notification";
 const Settings = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [isOpen, setIsOpen] = useState(false);
+  const [userData, setUserData] = useState<UserType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await apiClient.users.getProfile();
+        setUserData(response);
+      } catch (err) {
+        setError("Failed to load profile");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const menuItems = [
     { id: "profile", label: "Profile", icon: User },
@@ -17,11 +39,40 @@ const Settings = () => {
   ] as const;
 
   const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="p-8 flex flex-col justify-center items-center space-y-4">
+          <div className="w-8 h-8 border-4 border-(--primary) border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-stone-400 text-sm font-medium animate-pulse">
+            Loading profile...
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="p-8 flex flex-col justify-center items-center space-y-4">
+          <div className="text-red-600 text-sm font-bold">{error}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-(--primary) text-white rounded-lg text-xs font-bold"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+
+    if (!userData) {
+      return null;
+    }
+
     switch (activeTab) {
       case "profile":
-        return <ProfileSection />;
+        return <ProfileSection userData={userData} setUserData={setUserData} />;
       case "account":
-        return <AccountSection />;
+        return <AccountSection userData={userData} setUserData={setUserData} />;
       case "notification":
         return <NotificationSection />;
       default:
@@ -37,7 +88,7 @@ const Settings = () => {
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-orange-400/10 blur-[100px] rounded-full" />
 
       <div className="max-w-5xl mx-auto px-6 relative z-10">
-        <div className="flex flex-col md:flex-row bg-white/70 backdrop-blur-xl border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] rounded-[2.5rem] overflow-hidden min-h-[650px]">
+        <div className="flex flex-col md:flex-row bg-white/70 backdrop-blur-xl border border-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] rounded-[2.5rem] overflow-hidden min-h-162.5">
           {/* Sidebar: Thiết kế mỏng, trong suốt, icon rực rỡ */}
           <aside
             className={`

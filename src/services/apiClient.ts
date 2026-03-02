@@ -17,7 +17,7 @@ interface BackendResponse<T> {
 }
 
 type ApiResponse<T> = Promise<T>;
-export class ApiClient {
+  export class ApiClient {
   // Auth endpoints
   auth = {
     signup: (data: {
@@ -66,7 +66,6 @@ export class ApiClient {
     },
     updateProfile: (data: {
       name?: string;
-      image_url?: string;
     }): ApiResponse<User> => {
       return this.patch("/users/me", data);
     },
@@ -233,23 +232,22 @@ export class ApiClient {
     getByConfigId: (id: string): ApiResponse<Timeline[]> => {
       return this.get("/timeline-phases/tet-config/" + id);
     },
-    create: (data: any) : ApiResponse<any> => {
-      return this.post("/timeline-phases", data)
-    }
+    create: (data: any): ApiResponse<any> => {
+      return this.post("/timeline-phases", data);
+    },
   };
-
 
   // collaborations
   collaborations = {
-    getMyInvitations: () : ApiResponse<InvitationResponse[]> => {
-      return this.get("/collaborators/my-invitations")
+    getMyInvitations: (): ApiResponse<InvitationResponse[]> => {
+      return this.get("/collaborators/my-invitations");
     },
-    acceptInvitation: (id: string) : ApiResponse<InvitationResponse> => {
+    acceptInvitation: (id: string): ApiResponse<InvitationResponse> => {
       return this.patch(`/collaborators/${id}/accept`, {});
     },
-    declineInvitation: (id: string) : ApiResponse<InvitationResponse> => {
+    declineInvitation: (id: string): ApiResponse<InvitationResponse> => {
       return this.patch(`/collaborators/${id}/decline`, {});
-    }
+    },
   };
 
   // Notification endpoints

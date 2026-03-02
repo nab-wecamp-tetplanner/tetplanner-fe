@@ -54,26 +54,34 @@ const CalendarSection = () => {
     eventIndex: number,
     dayIndex: number,
   ) => {
+    const newStatus = currentCompleted ? "pending" : "completed";
+
+    // Store previous state for rollback
+    const previousEvents = events;
+
+    // Optimistic update: Update UI immediately
+    setEvents((prevEvents) => {
+      const updated = [...prevEvents];
+      const targetDay = { ...updated[dayIndex] };
+      const targetEvents = [...targetDay.events];
+
+      targetEvents[eventIndex] = {
+        ...targetEvents[eventIndex],
+        completed: newStatus === "completed",
+      };
+
+      targetDay.events = targetEvents;
+      updated[dayIndex] = targetDay;
+      return updated;
+    });
+
+    // Make API call in background
     try {
-      const newStatus = currentCompleted ? "pending" : "completed";
       await apiClient.todos.update(todoId, { status: newStatus });
-
-      setEvents((prevEvents) => {
-        const updated = [...prevEvents];
-        const targetDay = { ...updated[dayIndex] };
-        const targetEvents = [...targetDay.events];
-
-        targetEvents[eventIndex] = {
-          ...targetEvents[eventIndex],
-          completed: newStatus === "completed",
-        };
-
-        targetDay.events = targetEvents;
-        updated[dayIndex] = targetDay;
-        return updated;
-      });
     } catch (err) {
       console.error("Failed to update task completion:", err);
+      // Rollback on failure
+      setEvents(previousEvents);
     }
   };
 
@@ -216,103 +224,130 @@ const CalendarSection = () => {
       </div>
 
       <div className="space-y-4 h-87.5 overflow-y-auto pr-2">
-        {loading && (
-          <p className="text-center text-sm py-10">Loading tasks...</p>
-        )}
-        {!loading && events.length === 0 && (
-          <p className="text-center text-sm text-(--text-muted) py-10">
-            No deadlines this month.
-          </p>
-        )}
-
-        {events.map((day, dayIdx) => (
-          <div
-            key={dayIdx}
-            className="relative pl-4 border-l-2 border-(--border) pb-2"
-          >
-            {/* 2. Day Label */}
-            <div className="flex items-baseline gap-2 mb-3">
-              <span className="text-xl font-bold text-(--text-heading)">
-                {day.date}
-              </span>
-              <span className="text-xs font-bold text-(--text-muted) uppercase">
-                {day.dayName}
-              </span>
-            </div>
-
-            {/* 3. Task Cards */}
-            <div className="space-y-2">
-              {day.events.map((event, eventIdx) => (
-                <div
-                  key={event.todoId}
-                  className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${getPriorityStyles(event.priority, event.completed)}`}
-                >
-                  {/* Custom Checkbox */}
-                  <button
-                    onClick={() =>
-                      handleToggleCompletion(
-                        event.todoId,
-                        event.completed,
-                        eventIdx,
-                        dayIdx,
-                      )
-                    }
-                    className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                      event.completed
-                        ? "bg-(--primary) border-(--primary)"
-                        : "border-(--border) bg-(--bg-card)"
-                    }`}
-                  >
-                    {event.completed && (
-                      <Check size={12} className="text-white" strokeWidth={3} />
-                    )}
-                  </button>
-
-                  <div className="flex-1">
-                    <p
-                      className={`text-sm font-semibold transition-all ${event.completed ? "text-(--text-muted) line-through" : "text-(--text-heading)"}`}
-                    >
-                      {event.title}
-                    </p>
-
-                    {/* Subtitle: Subtasks or Price */}
-                    {event.isShopping && event.estimatedPrice !== undefined ? (
-                      <p className="text-xs text-(--text-muted) mt-0.5">
-                        Estimated price: {formatCurrency(event.estimatedPrice)}
-                      </p>
-                    ) : event.subtasksCount !== undefined &&
-                      event.subtasksCount > 0 ? (
-                      <p className="text-xs text-(--text-muted) mt-0.5">
-                        {event.subtasksCount} subtask
-                        {event.subtasksCount !== 1 ? "s" : ""}
-                      </p>
-                    ) : null}
-
-                    {/* Badges Section */}
-                    <div className="flex gap-2 mt-1.5">
-                      {event.categoryName && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-(--primary)/10 border border-(--primary)/20 text-(--primary)">
-                          {event.categoryName}
-                        </span>
-                      )}
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${
-                          event.priority === "high"
-                            ? "bg-red-100 border-red-200 text-red-700"
-                            : event.priority === "medium"
-                              ? "bg-amber-100 border-amber-200 text-amber-700"
-                              : "bg-green-100 border-green-200 text-green-700"
-                        }`}
-                      >
-                        {event.priority}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-full gap-4 py-12">
+            <div className="w-12 h-12 rounded-full border-4 border-(--border) border-t-(--primary) animate-spin"></div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-(--text-heading)">
+                Loading tasks...
+              </p>
+              <p className="text-[11px] text-(--text-muted) mt-1">
+                Fetching your deadlines
+              </p>
             </div>
           </div>
-        ))}
+        ) : events.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
+            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center">
+              <Calendar size={24} className="text-blue-300" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold text-(--text-heading)">
+                No deadlines this month
+              </p>
+              <p className="text-[11px] text-(--text-muted) mt-1">
+                Create tasks to get started
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {!loading &&
+          events.length > 0 &&
+          events.map((day, dayIdx) => (
+            <div
+              key={dayIdx}
+              className="relative pl-4 border-l-2 border-(--border) pb-2"
+            >
+              {/* 2. Day Label */}
+              <div className="flex items-baseline gap-2 mb-3">
+                <span className="text-xl font-bold text-(--text-heading)">
+                  {day.date}
+                </span>
+                <span className="text-xs font-bold text-(--text-muted) uppercase">
+                  {day.dayName}
+                </span>
+              </div>
+
+              {/* 3. Task Cards */}
+              <div className="space-y-2">
+                {day.events.map((event, eventIdx) => (
+                  <div
+                    key={event.todoId}
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${getPriorityStyles(event.priority, event.completed)}`}
+                  >
+                    {/* Custom Checkbox */}
+                    <button
+                      onClick={() =>
+                        handleToggleCompletion(
+                          event.todoId,
+                          event.completed,
+                          eventIdx,
+                          dayIdx,
+                        )
+                      }
+                      className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                        event.completed
+                          ? "bg-(--primary) border-(--primary)"
+                          : "border-(--border) bg-(--bg-card)"
+                      }`}
+                    >
+                      {event.completed && (
+                        <Check
+                          size={12}
+                          className="text-white"
+                          strokeWidth={3}
+                        />
+                      )}
+                    </button>
+
+                    <div className="flex-1">
+                      <p
+                        className={`text-sm font-semibold transition-all ${event.completed ? "text-(--text-muted) line-through" : "text-(--text-heading)"}`}
+                      >
+                        {event.title}
+                      </p>
+
+                      {/* Subtitle: Subtasks or Price */}
+                      {event.isShopping &&
+                      event.estimatedPrice !== undefined ? (
+                        <p className="text-xs text-(--text-muted) mt-0.5">
+                          Estimated price:{" "}
+                          {formatCurrency(event.estimatedPrice)}
+                        </p>
+                      ) : event.subtasksCount !== undefined &&
+                        event.subtasksCount > 0 ? (
+                        <p className="text-xs text-(--text-muted) mt-0.5">
+                          {event.subtasksCount} subtask
+                          {event.subtasksCount !== 1 ? "s" : ""}
+                        </p>
+                      ) : null}
+
+                      {/* Badges Section */}
+                      <div className="flex gap-2 mt-1.5">
+                        {event.categoryName && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-(--primary)/10 border border-(--primary)/20 text-(--primary)">
+                            {event.categoryName}
+                          </span>
+                        )}
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${
+                            event.priority === "high"
+                              ? "bg-red-100 border-red-200 text-red-700"
+                              : event.priority === "medium"
+                                ? "bg-amber-100 border-amber-200 text-amber-700"
+                                : "bg-green-100 border-green-200 text-green-700"
+                          }`}
+                        >
+                          {event.priority}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );

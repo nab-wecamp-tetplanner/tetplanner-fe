@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Camera,
-  Trash2,
   Save,
   User as UserIcon,
   CheckCircle,
@@ -11,26 +10,17 @@ import apiClient from "../../services/apiClient";
 import type { User } from "../../types/auth.types";
 import { useAuthContext } from "../../contexts/AuthTypes";
 
-const ProfileSection = () => {
-  // --- GIỮ NGUYÊN LOGIC ---
-  const [formData, setFormData] = useState<User | null>(null);
+interface ProfileSectionProps {
+  userData: User;
+  setUserData: (user: User) => void;
+}
+
+const ProfileSection = ({ userData, setUserData }: ProfileSectionProps) => {
+  const [formData, setFormData] = useState<User>(userData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const { setCurrentUser } = useAuthContext(); // Lấy hàm từ Context
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await apiClient.users.getProfile();
-        setFormData(response);
-      } catch (err) {
-        setError("Failed to load profile");
-        console.error(err);
-      }
-    };
-    fetchUser();
-  }, []);
+  const { setCurrentUser } = useAuthContext();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -47,7 +37,8 @@ const ProfileSection = () => {
         setError(null);
         const updatedUser = await apiClient.users.uploadAvatar(file);
         setFormData(updatedUser);
-        setCurrentUser(updatedUser);
+        setUserData(updatedUser); // Sync with parent
+        setCurrentUser(updatedUser); // Sync Header
       } catch {
         setError("Failed to upload image");
       } finally {
@@ -56,22 +47,6 @@ const ProfileSection = () => {
     }
   };
 
-  const handleDeleteImage = async () => {
-    if (!formData) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const updatedUser = await apiClient.users.updateProfile({
-        image_url: "",
-      });
-      setFormData(updatedUser);
-      setCurrentUser(updatedUser); // Đồng bộ Header
-    } catch {
-      setError("Failed to delete image"); // Đưa xuống catch mới đúng
-    } finally {
-      setIsLoading(false);
-    }
-  };
   const handleSaveChanges = async () => {
     if (!formData) return;
     try {
@@ -81,7 +56,8 @@ const ProfileSection = () => {
         name: formData.name,
       });
       setFormData(updatedUser);
-      setCurrentUser(updatedUser); // THÊM DÒNG NÀY để Header cập nhật tên mới
+      setUserData(updatedUser); // Sync with parent
+      setCurrentUser(updatedUser); // Sync Header
       setIsEditing(false);
     } catch (err: any) {
       const errorMessage =
@@ -124,10 +100,10 @@ const ProfileSection = () => {
 
       <div className="space-y-8">
         {/* Profile Picture Section - Resize padding, rounded, avatar */}
-        <section className="bg-white p-6 rounded-[1.5rem] border border-stone-100 shadow-lg shadow-stone-200/30">
+        <section className="bg-white p-6 rounded-3xl border border-stone-100 shadow-lg shadow-stone-200/30">
           <div className="flex flex-col md:flex-row md:items-center gap-8">
             <div className="relative group mx-auto md:mx-0">
-              <div className="absolute -inset-1 bg-gradient-to-tr from-(--primary) to-orange-400 rounded-full blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+              <div className="absolute -inset-1 bg-linear-to-tr from-(--primary) to-orange-400 rounded-full blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
               {formData.image_url ? (
                 <img
                   src={formData.image_url}
@@ -135,7 +111,7 @@ const ProfileSection = () => {
                   className="relative w-28 h-28 rounded-full object-cover ring-2 ring-white shadow-xl"
                 />
               ) : (
-                <div className="relative w-28 h-28 text-3xl rounded-full bg-gradient-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center font-black ring-2 ring-white shadow-xl">
+                <div className="relative w-28 h-28 text-3xl rounded-full bg-linear-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center font-black ring-2 ring-white shadow-xl">
                   {formData.name?.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -163,13 +139,6 @@ const ProfileSection = () => {
                     <Camera size={14} /> Change
                   </div>
                 </label>
-                <button
-                  onClick={handleDeleteImage}
-                  disabled={isLoading || !formData.image_url}
-                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition-all disabled:opacity-30 border border-transparent hover:border-red-50"
-                >
-                  <Trash2 size={14} /> Remove
-                </button>
               </div>
             </div>
           </div>
@@ -247,7 +216,7 @@ const ProfileSection = () => {
             <button
               onClick={handleSaveChanges}
               disabled={isLoading}
-              className="flex items-center gap-2 px-8 py-2.5 bg-gradient-to-r from-(--primary) to-orange-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-red-500/10 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-8 py-2.5 bg-linear-to-r from-(--primary) to-orange-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-red-500/10 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
             >
               <Save size={16} /> Save Changes
             </button>

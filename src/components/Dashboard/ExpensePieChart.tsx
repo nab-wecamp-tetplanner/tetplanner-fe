@@ -159,11 +159,42 @@ export const ExpensePieChart = () => {
   if (loading) {
     return (
       <Card className="flex flex-col max-h-fit w-full">
-        <h3 className="text-md text-foreground font-bold">
+        <h3 className="text-sm font-semibold text-(--text-heading)">
           Expenses by category
         </h3>
-        <div className="flex items-center justify-center h-40">
-          <p className="text-slate-500">Loading...</p>
+        <div className="flex flex-col items-center justify-center h-40 gap-3">
+          <div className="w-8 h-8 rounded-full border-3 border-slate-200 border-t-blue-500 animate-spin"></div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-slate-700">
+              Loading expenses...
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Analyzing your spending
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (chartParsedData.length === 0) {
+    return (
+      <Card className="flex flex-col max-h-fit w-full">
+        <h3 className="text-sm font-semibold text-(--text-heading)">
+          Expenses by category
+        </h3>
+        <div className="flex flex-col items-center justify-center h-40 gap-3">
+          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+            <span className="text-2xl">💰</span>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-slate-700">
+              No expense data yet
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Start adding expenses to see categories
+            </p>
+          </div>
         </div>
       </Card>
     );
@@ -171,63 +202,53 @@ export const ExpensePieChart = () => {
 
   return (
     <Card className="flex flex-col max-h-fit w-full">
-      <h3 className="text-md text-foreground font-bold">
+      <h3 className="text-sm font-semibold text-(--text-heading)">
         Expenses by category
       </h3>
 
       <div className="flex flex-col md:flex-row items-center gap-6 flex-1">
         <div className="w-full md:w-1/2 h-40 relative">
-          {chartParsedData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartParsedData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={30}
-                  outerRadius={60}
-                  paddingAngle={1}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {chartParsedData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.hexColor} />
-                  ))}
-                </Pie>
-                <RechartsTooltip content={CustomDonutTooltip} cursor={false} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-slate-500">No expense data available</p>
-            </div>
-          )}
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartParsedData}
+                cx="50%"
+                cy="50%"
+                innerRadius={30}
+                outerRadius={60}
+                paddingAngle={1}
+                dataKey="value"
+                stroke="none"
+              >
+                {chartParsedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.hexColor} />
+                ))}
+              </Pie>
+              <RechartsTooltip content={CustomDonutTooltip} cursor={false} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
         <div className="w-fit md:w-1/2 flex flex-col gap-2">
-          {displayCategories.length > 0 ? (
-            displayCategories.map((cat) => (
-              <div
-                key={cat.id}
-                className="flex justify-between items-center text-[12px] hover:bg-slate-50 p-1 -mx-1 rounded-lg transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full shadow-sm"
-                    style={{ backgroundColor: cat.hexColor }}
-                  />
-                  <span className="font-medium text-foreground text-xs">
-                    {cat.name}
-                  </span>
-                </div>
-                <span className="text-slate-500 font-medium text-xs">
-                  {cat.percent}
+          {displayCategories.map((cat) => (
+            <div
+              key={cat.id}
+              className="flex justify-between items-center text-[12px] hover:bg-slate-50 p-1 -mx-1 rounded-lg transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full shadow-sm"
+                  style={{ backgroundColor: cat.hexColor }}
+                />
+                <span className="font-medium text-(--text-heading) text-xs">
+                  {cat.name}
                 </span>
               </div>
-            ))
-          ) : (
-            <p className="text-slate-500 text-xs">No categories</p>
-          )}
+              <span className="text-slate-500 font-medium text-xs">
+                {cat.percent}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </Card>
