@@ -18,6 +18,7 @@ import {
   Plus,
   Edit3,
   Trash2,
+  FolderKanban,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -168,21 +169,31 @@ const AuthenticatedActions = ({
       {/* Config dropdown */}
       <div className="relative" ref={configRef}>
         <button
-          onClick={() => {
-            setShowNotifications(false);
-            setShowAccount(false);
-            setShowConfig(!showConfig);
-          }}
-          className="w-fit max-w-40 flex items-center gap-2 px-3 py-2 text-sm font-medium text-(--text) border border-accent rounded-lg hover:bg-(--primary)/10 transition-colors"
+          onClick={() => setShowConfig(!showConfig)}
+          className="group flex items-center gap-3 px-4 py-2 bg-(--primary)/2 border border-(--primary)/10 rounded-xl hover:bg-(--primary)/5 hover:border-(--primary)/30 transition-all duration-300 max-w-[180px] shrink-0"
         >
-          <span className="flex-1 truncate">
-            {configs.find((c) => c.id === configId)?.name || "Select your plan"}
-          </span>
+          {/* Icon Plan nhỏ xinh làm điểm nhấn */}
+          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-(--bg) border border-(--primary)/10 shadow-sm group-hover:text-(--primary) transition-colors">
+            <FolderKanban
+              size={14}
+              className="opacity-60 group-hover:opacity-100"
+            />
+          </div>
+
+          {/* Tên Plan: Chặn đứng vụ thụt hàng bằng truncate */}
+          <div className="flex flex-col items-start min-w-0 flex-1">
+            <span className="text-[10px] font-normal text-(--primary) opacity-70 tracking-widest leading-none mb-0.5">
+              Workspace
+            </span>
+            <span className="text-[13px] font-bold text-(--text) truncate w-full leading-none">
+              {configs.find((c) => c.id === configId)?.name || "Select plan"}
+            </span>
+          </div>
+
           <ChevronDown
-            size={16}
-            className={showConfig ? "hidden" : "shrink-0"}
+            size={14}
+            className={`opacity-30 transition-transform duration-300 ${showConfig ? "rotate-180" : ""}`}
           />
-          <ChevronUp size={16} className={showConfig ? "shrink-0" : "hidden"} />
         </button>
 
         {showConfig && (
@@ -295,72 +306,119 @@ const AuthenticatedActions = ({
       {/* Notifications Dropdown */}
       <div className="relative" ref={notificationsRef}>
         <button
-          onClick={() => {
-            setShowConfig(false);
-            setShowAccount(false);
-            setShowNotifications(!showNotifications);
-          }}
-          className="text-(--text) hover:text-(--primary) transition-colors relative translate-y-1 p-1"
+          onClick={() => setShowNotifications(!showNotifications)}
+          className="group relative p-2 rounded-xl hover:bg-accent/20 transition-all duration-300"
         >
-          <Bell className="text-(--text) w-5 h-5" fill="currentColor" />
+          {/* Dùng chuông có fill màu nhẹ khi có thông báo để nhìn "đắt tiền" hơn */}
+          <Bell
+            className={`w-5.5 h-5.5 transition-all ${
+              unreadCount > 0
+                ? "text-(--primary) fill-(--primary)/10"
+                : "text-(--text) opacity-40 group-hover:opacity-100"
+            }`}
+            strokeWidth={2.5}
+          />
+
+          {/* BADGE SỐ MINI: Style "Cart-style" đè góc */}
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-(--bg)"></span>
+            <div className="absolute -top-0.5 -right-0.5 flex items-center justify-center">
+              {/* Hiệu ứng Ping phát sáng phía dưới (Optional cho thêm xịn) */}
+              <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20"></span>
+
+              <div className="relative min-w-[18px] h-[18px] px-1 bg-red-500 border-2 border-(--bg) rounded-full flex items-center justify-center shadow-sm">
+                <span className="text-[9px] font-black text-white leading-none">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              </div>
+            </div>
           )}
         </button>
-
         {showNotifications && (
-          <div className="absolute right-0 mt-2 w-80 bg-(--bg) border border-accent rounded-xl shadow-lg z-50">
-            <div className="px-4 py-3 border-b border-accent flex justify-between items-center">
-              <span className="font-semibold text-(--text)">Notifications</span>
+          <div className="absolute right-0 mt-3 w-80 bg-(--bg)/95 backdrop-blur-xl border border-accent rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+            {/* Header Dropdown */}
+            <div className="px-4 py-3.5 border-b border-accent/40 flex justify-between items-center bg-accent/5">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-(--text)">
+                  Notifications
+                </span>
+                {unreadCount > 0 && (
+                  <span className="px-1.5 py-0.5 bg-(--primary)/10 text-(--primary) text-[10px] font-bold rounded-md">
+                    {unreadCount} new
+                  </span>
+                )}
+              </div>
+
               {unreadCount > 0 && (
                 <button
                   onClick={() =>
                     markAllNotificationsAsRead(notifications, setNotifications)
                   }
-                  className="text-xs text-(--text) hover:opacity-80 transition-opacity"
+                  className="p-1.5 hover:bg-(--bg) rounded-lg text-(--text) opacity-40 hover:opacity-100 hover:text-(--primary) transition-all"
+                  title="Mark all as read"
                 >
-                  <CheckCheck size={16} className="inline-block mr-1" />
+                  <CheckCheck size={16} />
                 </button>
               )}
             </div>
-            <div className="max-h-96 overflow-y-auto p-2">
-              {notifications.slice(0, 15).map((n, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => {
-                    if (!n.isRead)
-                      markNotificationAsRead(
-                        n.id,
-                        notifications,
-                        setNotifications,
-                      );
-                  }}
-                  className={`px-4 py-2.5 cursor-pointer transition-colors text-sm rounded-md ${
-                    n.isRead
-                      ? "bg-transparent text-(--text) opacity-60 hover:bg-(--primary)/10"
-                      : "bg-(--primary)/10 font-semibold text-(--text) hover:bg-(--primary)/20"
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <span>{n.title}</span>
-                    {n.created_at && (
-                      <span className="text-[10px] opacity-70 uppercase tracking-tighter">
-                        {formatTimeAgo(n.created_at)}
-                      </span>
+
+            {/* List thông báo */}
+            <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-1.5">
+              {notifications.length > 0 ? (
+                notifications.slice(0, 10).map((n, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      if (!n.isRead)
+                        markNotificationAsRead(
+                          n.id,
+                          notifications,
+                          setNotifications,
+                        );
+                    }}
+                    className={`group relative flex gap-3 p-3 rounded-xl transition-all cursor-pointer ${
+                      n.isRead
+                        ? "hover:bg-accent/30 opacity-60"
+                        : "bg-(--primary)/5 hover:bg-(--primary)/10 shadow-sm"
+                    }`}
+                  >
+                    {/* Indicator chấm tròn cho tin chưa đọc */}
+                    {!n.isRead && (
+                      <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-(--primary) rounded-full shadow-[0_0_8px_var(--primary)]" />
                     )}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-0.5">
+                        <span
+                          className={`text-[13px] truncate pr-2 ${!n.isRead ? "font-bold text-(--text)" : "text-(--text-muted)"}`}
+                        >
+                          {n.title}
+                        </span>
+                        {n.created_at && (
+                          <span className="text-[9px] font-bold opacity-40 whitespace-nowrap pt-0.5">
+                            {formatTimeAgo(n.created_at)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-(--text-muted) line-clamp-2 leading-relaxed">
+                        {n.message ||
+                          "You have a new update in your workspace."}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-              {notifications.length > 15 && (
-                <button className="w-full px-4 py-2.5 text-xs text-(--primary) hover:bg-(--primary)/10 rounded-md transition-colors">
-                  Load More
-                </button>
-              )}
-              {notifications.length === 0 && (
-                <div className="p-6 text-center text-(--text) opacity-70">
-                  <p className="text-sm">No notifications yet</p>
+                ))
+              ) : (
+                <div className="py-10 flex flex-col items-center justify-center opacity-30">
+                  <Bell size={32} strokeWidth={1} className="mb-2" />
+                  <p className="text-xs font-medium">All caught up!</p>
                 </div>
               )}
+            </div>
+
+            {/* Footer (Tùy chọn) */}
+            <div className="p-2 border-t border-accent/40 bg-accent/5">
+              <button className="w-full py-2 text-[11px] font-bold text-(--text) opacity-50 hover:opacity-100 transition-all">
+                View all notifications
+              </button>
             </div>
           </div>
         )}

@@ -1,6 +1,6 @@
 /* Header.tsx */
 import { NavLink, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
@@ -40,17 +40,17 @@ const Header = () => {
   const configId = useAppStore((state) => state.configId);
   const queryClient = useQueryClient();
 
-  // 1. FETCH CONFIGS BẰNG USEQUERY (Tự động cập nhật khi invalidate)
+  // 1. FETCH CONFIGS
   const { data: configs = [] } = useQuery<ConfigInfo[]>({
     queryKey: ["userConfigs"],
     queryFn: async () => {
       const response = await apiClient.tetConfigs.getMyConfigs();
       return response as ConfigInfo[];
     },
-    enabled: isAuthenticated, // Chỉ chạy khi đã login
+    enabled: isAuthenticated,
   });
 
-  // 2. FETCH NOTIFICATIONS BẰNG USEQUERY
+  // 2. FETCH NOTIFICATIONS
   const { data: notifications = [], refetch: refetchNotifications } = useQuery<
     Notification[]
   >({
@@ -59,39 +59,37 @@ const Header = () => {
     enabled: isAuthenticated,
   });
 
-  // State local cho UI
+  // State local cho UI - CHỈ giữ lại isOpenModal
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const [isEdit, setIsEdit] = useState<boolean>(false);
-  const [editConfig, setEditConfig] = useState<ConfigInfo | null>(null);
 
-  // Đồng bộ hóa config đang edit khi id hoặc list thay đổi
-  useEffect(() => {
-    if (configId && configs.length > 0) {
-      setEditConfig(configs.find((c) => c.id === configId) ?? null);
-    }
-  }, [configId, configs]);
+  // 1. Derived State: Tự động tính toán config đang edit dựa trên list có sẵn
+  // Không dùng State, không dùng useEffect -> Hết lỗi Cascading Render
+  const editConfig = configs.find((c) => c.id === configId) ?? null;
 
-  // Hàm xử lý tạo/sửa config
+  // 2. Xử lý isEdit: Nếu Nhi không có nút bấm "Edit" nào ở Header này,
+  // hãy xoá luôn state isEdit. handleSubmit có thể check dựa trên editConfig.
+  const isEdit = !!editConfig;
+
   const handleSubmit = async (data: {
     year: number;
     name: string;
     total_budget: number;
   }) => {
     try {
-      if (isEdit && configId) {
-        await apiClient.tetConfigs.updateConfig(configId, data);
+      // Dùng editConfig thay vì check state isEdit
+      if (editConfig) {
+        await apiClient.tetConfigs.updateConfig(editConfig.id, data);
         toast.success("Workspace updated!");
       } else {
         await apiClient.tetConfigs.create(data);
         toast.success("New workspace created!");
       }
 
-      // ĐÂY LÀ CHÌA KHÓA: Ép Header load lại data mới mà không cần reload trang
       queryClient.invalidateQueries({ queryKey: ["userConfigs"] });
       setIsOpenModal(false);
     } catch (error) {
       console.error(error);
-      toast.error("Operation failed. Please try again.");
+      toast.error("Operation failed.");
     }
   };
 
@@ -100,16 +98,31 @@ const Header = () => {
       className={`sticky top-0 z-50 flex items-center justify-between px-8 py-4 border-b border-accent transition-colors duration-300 ${
         isAuthenticated ? "bg-(--bg)" : "bg-white"
       }`}
+      style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
       {/* Logo */}
-      <Link to="/" className="flex items-center">
+      <Link to="/" className="flex items-center group shrink-0">
         <img
           src="/logo.svg"
-          alt="Tet Planner Logo"
-          className="w-13 h-13 transition-transform duration-300 hover:scale-110"
+          alt="Logo"
+          className="w-11 h-11 transition-transform group-hover:scale-105"
         />
-        <span className="font-bold text-(--text) text-lg ml-2">
-          Tet Planner
+        <div className="relative">
+          <span
+            className="absolute -top-1 -left-1 text-5xl text-amber-900/10 blur-[2px] italic select-none"
+            style={{ fontFamily: "'Pinyon Script', cursive" }}
+          >
+            Tet
+          </span>
+          <span
+            className="relative text-5xl text-amber-900"
+            style={{ fontFamily: "'Pinyon Script', cursive" }}
+          >
+            Tet
+          </span>
+        </div>
+        <span className="ml-2 mt-4 text-xs font-bold tracking-[0.3em] uppercase text-amber-900/40">
+          Planner
         </span>
       </Link>
 
