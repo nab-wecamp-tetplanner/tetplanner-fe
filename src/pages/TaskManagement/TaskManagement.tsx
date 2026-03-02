@@ -503,10 +503,11 @@ const TaskManagement: React.FC = () => {
 
   /* ===== Progress & Gamification Logic ===== */
   const progress = useMemo(() => {
-    const total = currentTasks.length;
+  const validTasks = currentTasks.filter((t) => t.status !== "cancelled");
+    const total = validTasks.length;
     if (total === 0)
       return { percent: 0, completed: 0, total: 0, allDone: false };
-    const completed = currentTasks.filter(
+    const completed = validTasks.filter(
       (t) => t.status === "completed",
     ).length;
     return {
@@ -767,10 +768,12 @@ const TaskManagement: React.FC = () => {
       )}
 
       {/* Lucky Envelope — appears when all tasks are completed */}
-      <LuckyEnvelope
-        show={progress.allDone && !rewardClaimed}
-        onOpen={() => setIsRewardOpen(true)}
-      />
+      {progress.allDone && (
+        <LuckyEnvelope
+          show={true}
+          onOpen={() => setIsRewardOpen(true)}
+        />
+      )}
 
       {/* Reward Modal */}
       <RewardModal
