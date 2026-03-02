@@ -2,37 +2,32 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Check, Calendar } from "lucide-react";
 import apiClient from "../../services/apiClient";
 import { useAppStore } from "../../stores/useAppStore";
-import type { TodoItem } from "../../types/todo.types";
-import type { Transaction } from "../../types/transaction.types";
 
+// --- Types & Interfaces ---
 type EventPriority = "high" | "medium" | "low";
 
 interface CalendarEvent {
   date: number;
   month: number;
-  day: string;
   dayName: string;
   monthLabel: string;
   events: {
-    type: "task" | "shopping";
     title: string;
     categoryId?: string;
     categoryName?: string;
-    color: string;
-    priority?: EventPriority;
-    completed?: boolean;
-    cost?: number;
-    todoId?: string;
+    priority: EventPriority;
+    completed: boolean;
+    todoId: string;
+    isShopping: boolean;
+    estimatedPrice?: number;
+    subtasksCount?: number;
   }[];
 }
 
-type TodoItemWithCategoryVariants = TodoItem & {
-  category_id?: string;
-  category?: {
-    id?: string;
-    name?: string;
-  } | null;
-};
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    amount,
+  );
 
 const CalendarSection = () => {
   const configId = useAppStore((state) => state.configId);
@@ -41,39 +36,18 @@ const CalendarSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // --- Helpers ---
   const formatDateKey = (date: Date) => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   };
 
-  const normalizePriority = (
-    priority?: TodoItem["priority"],
-  ): EventPriority => {
-    if (priority === "high" || priority === "medium" || priority === "low") {
+  const normalizePriority = (priority?: string): EventPriority => {
+    if (priority === "high" || priority === "medium" || priority === "low")
       return priority;
-    }
-    return "high";
+    return "medium";
   };
 
-  const resolveCategoryFromTodo = (
-    item: TodoItem,
-    categoriesById: Map<string, string>,
-  ) => {
-    const todoItem = item as TodoItemWithCategoryVariants;
-    const categoryId = todoItem.category?.id ?? todoItem.category_id;
-    const embeddedCategoryName = todoItem.category?.name;
-    const categoryNameFromMap = categoryId
-      ? categoriesById.get(String(categoryId))
-      : undefined;
-
-    return {
-      categoryId: categoryId ? String(categoryId) : undefined,
-      categoryName:
-        embeddedCategoryName?.trim() ||
-        categoryNameFromMap?.trim() ||
-        undefined,
-    };
-  };
-
+  // --- Logic: Toggle Task Completion ---
   const handleToggleCompletion = async (
     todoId: string,
     currentCompleted: boolean,
@@ -84,17 +58,18 @@ const CalendarSection = () => {
       const newStatus = currentCompleted ? "pending" : "completed";
       await apiClient.todos.update(todoId, { status: newStatus });
 
-      // Update local state
       setEvents((prevEvents) => {
         const updated = [...prevEvents];
-        updated[dayIndex] = {
-          ...updated[dayIndex],
-          events: [...updated[dayIndex].events],
-        };
-        updated[dayIndex].events[eventIndex] = {
-          ...updated[dayIndex].events[eventIndex],
+        const targetDay = { ...updated[dayIndex] };
+        const targetEvents = [...targetDay.events];
+
+        targetEvents[eventIndex] = {
+          ...targetEvents[eventIndex],
           completed: newStatus === "completed",
         };
+
+        targetDay.events = targetEvents;
+        updated[dayIndex] = targetDay;
         return updated;
       });
     } catch (err) {
@@ -102,6 +77,7 @@ const CalendarSection = () => {
     }
   };
 
+  // --- Data Fetching ---
   useEffect(() => {
     const fetchCalendarData = async () => {
       if (!configId) {
@@ -114,112 +90,68 @@ const CalendarSection = () => {
       setError(null);
 
       try {
-        const [todoItems, transactions, categoriesData] = await Promise.all([
+        // We only fetch Todos and Categories now; Transactions removed for redundancy
+        const [todoItems, categoriesData] = await Promise.all([
           apiClient.todos.getAll({ tetConfigId: configId }),
-          apiClient.transactions.getByConfig(configId),
           apiClient.categories.getByTetConfig(configId),
         ]);
 
         const categoriesById = new Map(
-          categoriesData.map((category) => [
-            String(category.id),
-            category.name,
-          ]),
+          categoriesData.map((c) => [String(c.id), c.name]),
         );
-
         const month = currentDate.getMonth();
         const year = currentDate.getFullYear();
         const groupedByDate = new Map<string, CalendarEvent>();
 
-        const getOrCreateDay = (date: Date): CalendarEvent => {
-          const key = formatDateKey(date);
-          const existing = groupedByDate.get(key);
-          if (existing) {
-            return existing;
-          }
-
-          const created: CalendarEvent = {
-            date: date.getDate(),
-            month: date.getMonth() + 1,
-            day: String(date.getDate()),
-            dayName: date
-              .toLocaleDateString("en-US", { weekday: "short" })
-              .toUpperCase(),
-            monthLabel: date
-              .toLocaleDateString("en-US", { month: "short" })
-              .toUpperCase(),
-            events: [],
-          };
-          groupedByDate.set(key, created);
-          return created;
-        };
-
         todoItems
           .filter((item) => {
-            if (!item.deadline) {
-              return false;
-            }
+            if (!item.deadline) return false;
             const itemDate = new Date(item.deadline);
             return (
               itemDate.getFullYear() === year && itemDate.getMonth() === month
             );
           })
           .forEach((item) => {
-            const itemDate = new Date(item.deadline);
-            const day = getOrCreateDay(itemDate);
-            const { categoryId, categoryName } = resolveCategoryFromTodo(
-              item,
-              categoriesById,
-            );
+            const itemDate = new Date(item.deadline!);
+            const key = formatDateKey(itemDate);
 
+            if (!groupedByDate.has(key)) {
+              groupedByDate.set(key, {
+                date: itemDate.getDate(),
+                month: itemDate.getMonth() + 1,
+                dayName: itemDate
+                  .toLocaleDateString("en-US", { weekday: "short" })
+                  .toUpperCase(),
+                monthLabel: itemDate
+                  .toLocaleDateString("en-US", { month: "short" })
+                  .toUpperCase(),
+                events: [],
+              });
+            }
+
+            const day = groupedByDate.get(key)!;
             day.events.push({
-              type: item.is_shopping ? "shopping" : "task",
+              todoId: item.id,
               title: item.title,
-              categoryId,
-              categoryName,
-              color: item.is_shopping ? "#1ea7ff" : "#5051f9",
               priority: normalizePriority(item.priority),
               completed: item.status === "completed",
-              cost: item.is_shopping
-                ? (item.estimated_price || 0) * (item.quantity || 1)
-                : undefined,
-              todoId: item.id,
+              categoryName:
+                item.category?.name ||
+                categoriesById.get(String(item.category)),
+              isShopping: item.is_shopping,
+              estimatedPrice: item.estimated_price,
+              subtasksCount: item.subtasks
+                ? Object.keys(item.subtasks).length
+                : 0,
             });
           });
 
-        transactions
-          .filter((transaction: Transaction) => {
-            const transactionDate = new Date(transaction.transaction_date);
-            return (
-              transaction.type === "expense" &&
-              transactionDate.getFullYear() === year &&
-              transactionDate.getMonth() === month
-            );
-          })
-          .forEach((transaction: Transaction) => {
-            const transactionDate = new Date(transaction.transaction_date);
-            const day = getOrCreateDay(transactionDate);
-
-            day.events.push({
-              type: "shopping",
-              title: transaction.note || "Expense",
-              color: "#8b5cf6",
-              cost: Number(transaction.amount) || 0,
-            });
-          });
-
-        const sorted = Array.from(groupedByDate.values()).sort((a, b) => {
-          if (a.month === b.month) {
-            return a.date - b.date;
-          }
-          return a.month - b.month;
-        });
-
+        const sorted = Array.from(groupedByDate.values()).sort(
+          (a, b) => a.date - b.date,
+        );
         setEvents(sorted);
-      } catch (fetchError) {
-        setError("Failed to load timeline data");
-        setEvents([]);
-        console.error("Failed to load calendar data:", fetchError);
+      } catch (err) {
+        setError("Failed to load timeline");
       } finally {
         setLoading(false);
       }
@@ -228,40 +160,29 @@ const CalendarSection = () => {
     fetchCalendarData();
   }, [configId, currentDate]);
 
-  const getPriorityColor = (priority?: string) => {
+  // --- Styling Helpers ---
+  const getPriorityStyles = (priority: string, completed: boolean) => {
+    if (completed) return "bg-gray-100 border-gray-200 opacity-60";
     switch (priority) {
       case "high":
-        return "bg-red-50 border-red-200";
+        return "bg-red-50 border-red-100";
       case "medium":
-        return "bg-amber-50 border-amber-200";
+        return "bg-amber-50 border-amber-100";
       case "low":
-        return "bg-green-50 border-green-200";
+        return "bg-green-50 border-green-100";
       default:
-        return "bg-blue-50 border-blue-200";
-    }
-  };
-
-  const getPriorityBadge = (priority?: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800";
-      case "medium":
-        return "bg-amber-100 text-amber-800";
-      case "low":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-blue-50 border-blue-100";
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 overflow-hidden w-full max-w-lg">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 w-full max-w-lg">
+      {/* 1. Header: Navigation & Month Title */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Calendar size={18} />
-            Timeline View
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <Calendar size={18} className="text-blue-600" />
+            Timeline
           </h3>
           <p className="text-xs text-muted-foreground">
             {currentDate.toLocaleDateString("en-US", {
@@ -270,207 +191,124 @@ const CalendarSection = () => {
             })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex gap-1">
           <button
             onClick={() =>
               setCurrentDate(
-                new Date(
-                  currentDate.getFullYear(),
-                  currentDate.getMonth() - 1,
-                  1,
-                ),
+                new Date(currentDate.setMonth(currentDate.getMonth() - 1)),
               )
             }
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg"
           >
-            <ChevronLeft size={18} className="text-muted-foreground" />
+            <ChevronLeft size={18} />
           </button>
           <button
             onClick={() =>
               setCurrentDate(
-                new Date(
-                  currentDate.getFullYear(),
-                  currentDate.getMonth() + 1,
-                  1,
-                ),
+                new Date(currentDate.setMonth(currentDate.getMonth() + 1)),
               )
             }
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg"
           >
-            <ChevronRight size={18} className="text-muted-foreground" />
+            <ChevronRight size={18} />
           </button>
         </div>
       </div>
 
-      {/* Events List */}
-      <div className="space-y-3 max-h-100 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div className="space-y-4 h-[350px] overflow-y-auto pr-2">
         {loading && (
-          <p className="text-sm text-muted-foreground">
-            Loading timeline data...
+          <p className="text-center text-sm py-10">Loading tasks...</p>
+        )}
+        {!loading && events.length === 0 && (
+          <p className="text-center text-sm text-muted-foreground py-10">
+            No deadlines this month.
           </p>
         )}
 
-        {!loading && error && <p className="text-sm text-red-500">{error}</p>}
-
-        {!loading && !error && events.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No events for this month.
-          </p>
-        )}
-
-        {events.map((dayEvents) => {
-          const progressEvents = dayEvents.events.filter(
-            (e) =>
-              (e.type === "task" || e.type === "shopping") &&
-              typeof e.completed === "boolean",
-          );
-          const completedProgressEvents = progressEvents.filter(
-            (e) => e.completed,
-          ).length;
-
-          return (
-            <div
-              key={`${dayEvents.date}-${dayEvents.month}`}
-              className="border rounded-xl p-4 transition-colors bg-gray-50 border-gray-200 hover:border-gray-300"
-            >
-              {/* Day Header */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl font-bold text-foreground">
-                    {dayEvents.date}
-                  </div>
-                  <p className="text-sm font-semibold text-muted-foreground uppercase">
-                    {dayEvents.monthLabel}, {dayEvents.dayName}
-                  </p>
-                </div>
-              </div>
-
-              {/* Budget Progress Bar */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Tasks
-                  </span>
-                  <span className="text-xs font-semibold text-foreground">
-                    {completedProgressEvents}/{progressEvents.length}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="h-2 rounded-full transition-all bg-blue-500"
-                    style={{
-                      width: `${
-                        progressEvents.length > 0
-                          ? (completedProgressEvents / progressEvents.length) *
-                            100
-                          : 0
-                      }%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Events */}
-              <div className="space-y-2">
-                {dayEvents.events.map((event, idx) => {
-                  return (
-                    <div
-                      key={idx}
-                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
-                        event.completed
-                          ? "bg-gray-100 border-gray-300 opacity-60"
-                          : getPriorityColor(event.priority)
-                      }`}
-                    >
-                      {/* Checkbox or Icon */}
-                      <div className="shrink-0 mt-0.5">
-                        <button
-                          type="button"
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${
-                            event.completed
-                              ? "bg-blue-500 border-blue-500"
-                              : "border-gray-400 hover:border-blue-500"
-                          }`}
-                          onClick={() => {
-                            const dayIndex = events.indexOf(dayEvents);
-                            handleToggleCompletion(
-                              event.todoId!,
-                              event.completed!,
-                              idx,
-                              dayIndex,
-                            );
-                          }}
-                          aria-label={
-                            event.completed
-                              ? "Mark as pending"
-                              : "Mark as completed"
-                          }
-                        >
-                          {event.completed && (
-                            <Check size={14} className="text-white" />
-                          )}
-                        </button>
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className={`text-sm font-semibold ${
-                                event.completed
-                                  ? "text-gray-500 line-through"
-                                  : "text-foreground"
-                              }`}
-                            >
-                              {event.title}
-                            </p>
-                            {/* Info line: estimated price or task details */}
-                            {event.type === "shopping" && event.cost && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                ₫{(event.cost / 1000000).toFixed(1)}M
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Badges on the right */}
-                          <div className="shrink-0 flex flex-col gap-1">
-                            {/* Priority Badge */}
-                            {event.priority && (
-                              <span
-                                className={`inline-block px-2 py-1 text-xs font-medium rounded text-center ${
-                                  event.completed
-                                    ? "bg-gray-300 text-gray-600"
-                                    : getPriorityBadge(event.priority)
-                                }`}
-                              >
-                                {event.priority.charAt(0).toUpperCase() +
-                                  event.priority.slice(1)}
-                              </span>
-                            )}
-
-                            {/* Category Badge */}
-                            {event.categoryName && (
-                              <span
-                                className={`inline-block px-2 py-1 text-xs font-medium rounded text-center ${
-                                  event.completed
-                                    ? "bg-gray-300 text-gray-600"
-                                    : getPriorityBadge(event.priority)
-                                }`}
-                              >
-                                {event.categoryName}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+        {events.map((day, dayIdx) => (
+          <div
+            key={dayIdx}
+            className="relative pl-4 border-l-2 border-gray-100 pb-2"
+          >
+            {/* 2. Day Label */}
+            <div className="flex items-baseline gap-2 mb-3">
+              <span className="text-xl font-bold">{day.date}</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase">
+                {day.dayName}
+              </span>
             </div>
-          );
-        })}
+
+            {/* 3. Task Cards */}
+            <div className="space-y-2">
+              {day.events.map((event, eventIdx) => (
+                <div
+                  key={event.todoId}
+                  className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${getPriorityStyles(event.priority, event.completed)}`}
+                >
+                  {/* Custom Checkbox */}
+                  <button
+                    onClick={() =>
+                      handleToggleCompletion(
+                        event.todoId,
+                        event.completed,
+                        eventIdx,
+                        dayIdx,
+                      )
+                    }
+                    className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                      event.completed
+                        ? "bg-blue-500 border-blue-500"
+                        : "border-gray-300 bg-white"
+                    }`}
+                  >
+                    {event.completed && (
+                      <Check size={12} className="text-white" strokeWidth={3} />
+                    )}
+                  </button>
+
+                  <div className="flex-1">
+                    <p
+                      className={`text-sm font-semibold transition-all ${event.completed ? "text-gray-400 line-through" : "text-gray-800"}`}
+                    >
+                      {event.title}
+                    </p>
+
+                    {/* Subtitle: Subtasks or Price */}
+                    {event.isShopping && event.estimatedPrice !== undefined ? (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Estimated price: {formatCurrency(event.estimatedPrice)}
+                      </p>
+                    ) : event.subtasksCount !== undefined &&
+                      event.subtasksCount > 0 ? (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {event.subtasksCount} subtask
+                        {event.subtasksCount !== 1 ? "s" : ""}
+                      </p>
+                    ) : null}
+
+                    {/* Badges Section */}
+                    <div className="flex gap-2 mt-1.5">
+                      {event.categoryName && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/50 border border-black/5 text-gray-600">
+                          {event.categoryName}
+                        </span>
+                      )}
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                          event.completed
+                            ? "bg-gray-200 text-gray-500"
+                            : "bg-white/50 text-gray-700"
+                        }`}
+                      >
+                        {event.priority}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

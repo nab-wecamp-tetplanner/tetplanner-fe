@@ -33,7 +33,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-(--bg) text-(--text) transition-colors duration-500 overflow-hidden font-sans">
+    <div className="relative h-screen bg-(--bg) text-(--text) transition-colors duration-500 overflow-hidden font-sans">
       {/* 1. Background Pattern & Warm Overlay */}
       <div
         className="absolute inset-0 pointer-events-none z-0 tet-deco-element transition-opacity duration-500"
@@ -76,14 +76,14 @@ export default function Dashboard() {
       />
 
       {/* 3. MAIN CONTENT - Đặt relative và z-10 để giữ nguyên màu trắng nổi lên trên nền */}
-      <main className="relative z-10 mx-auto max-w-6xl py-4 flex gap-3 flex-col">
+      <main className="relative z-10 mx-auto max-w-6xl flex gap-3 flex-col px-4 sm:px-6 lg:px-8">
         {/* Top Section: Calendar and Quick Stats */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex flex-col md:flex-row md:items-center mb-4 mt-8 justify-between gap-3">
           <div className="flex flex-col gap-1">
             <p className="text-sm font-bold text-(--primary) uppercase tracking-wide">
               Dashboard
             </p>
-            <h1 className="text-4xl font-serif text-(--text-heading)">
+            <h1 className="text-3xl font-serif text-(--text-heading)">
               Dashboard overview
             </h1>
             <p className="text-(--text-muted) text-sm">
@@ -99,7 +99,7 @@ export default function Dashboard() {
           <CalendarSection />
           <div className="flex flex-col gap-3 w-full">
             {/* <BudgetCardsSection /> */}
-            <div className="h-fit">
+            <div className="h-full">
               <ExpensePieChart />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
