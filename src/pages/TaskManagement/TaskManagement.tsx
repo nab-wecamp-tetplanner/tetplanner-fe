@@ -305,6 +305,13 @@ const TaskManagement: React.FC = () => {
       );
     }
 
+    // timeline filter
+     if (taskFilters.timelines.length > 0) {
+      filtered = filtered.filter((task) =>
+        taskFilters.timelines.includes(task.timeline_phase.id),
+      );
+    }
+
     return filtered;
   }, [todoItems, searchQuery, taskFilters]);
 

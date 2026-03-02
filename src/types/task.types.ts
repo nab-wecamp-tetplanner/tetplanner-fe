@@ -19,7 +19,9 @@ export interface Task {
     created_at: string;
     deleted_at?: string;
     tet_config_id?: string;
-    timeline_phase_id?: string;
+    timeline_phase: {
+        id: string
+    };
     category_id?: string;   
     subtasks?: Record<string, boolean>;
 }
