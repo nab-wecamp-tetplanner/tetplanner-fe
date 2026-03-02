@@ -586,10 +586,21 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {/* Decorative floating circles */}
+        <div className="modal-decor-circle modal-decor-circle--1" />
+        <div className="modal-decor-circle modal-decor-circle--2" />
+        <div className="modal-decor-circle modal-decor-circle--3" />
+
+        <div className="modal-inner">
         <div className="modal-header">
-          <h3 className="modal-title">Add New Task</h3>
+          <div className="modal-header-decor">
+            <h3 className="modal-title">Add New Task</h3>
+            <span className="decor-dot" />
+            <span className="decor-dot" />
+            <span className="decor-dot" />
+          </div>
           <button className="close-button" onClick={onClose} type="button">
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -620,23 +631,29 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     type="button"
                     className={`assignee-picker__item ${assignedTo === member.user_id ? "assignee-picker__item--active" : ""}`}
                     onClick={() =>
-                      setAssignedTo(
-                        assignedTo === member.user_id ? "" : member.user_id,
-                      )
+                      setAssignedTo(assignedTo === member.user_id ? "" : member.user_id)
                     }
                     title={member.name}
                   >
-                    <img
-                      src={member.avatar}
-                      alt={member.name}
-                      className="assignee-picker__avatar"
-                    />
+                    {member.avatar ? (
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="assignee-picker__avatar"
+                      />
+                    ) : (
+                      <div className="assignee-picker__avatar-placeholder">
+                        {member.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <span className="assignee-picker__name">{member.name}</span>
                   </button>
                 ))}
               </div>
             </div>
           )}
+
+          <div className="form-section-divider" />
 
           {/* Timeline Phase & Category */}
           <div className="form-row">
@@ -816,6 +833,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </div>
           </div>
 
+          <div className="form-section-divider" />
+
           {/* Shopping Toggle & Price */}
           <div className="form-group border border-dashed border-gray-300 rounded-lg p-3 bg-gray-50/50">
             <div className="flex items-center justify-between mb-2">
@@ -905,6 +924,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
