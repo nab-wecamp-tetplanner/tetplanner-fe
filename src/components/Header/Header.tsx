@@ -115,7 +115,7 @@ const Header = () => {
             Tet
           </span>
           <span
-            className="relative text-5xl text-amber-900"
+            className="relative text-5xl text-amber-900 italic"
             style={{ fontFamily: "'Pinyon Script', cursive" }}
           >
             Tet
