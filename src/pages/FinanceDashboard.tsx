@@ -119,7 +119,7 @@ export default function FinanceDashboard() {
   const [budget, setBudget] = useState<Budget>({ total: 0, used: 0 });
 
   // Áp dụng chuẩn Category mới
-  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [phases, setPhases] = useState<Timeline[]>([]);
   const [defaultPhaseId, setDefaultPhaseId] = useState<string | null>(null);
@@ -168,6 +168,7 @@ export default function FinanceDashboard() {
   //     return data;
   //   },
   // });
+
   const transformToUICategory = (cat: CategoryResponse): Category => ({
     ...cat,
     allocated: cat.allocated_budget,
@@ -184,6 +185,8 @@ export default function FinanceDashboard() {
 
     const fetchData = async () => {
       try {
+        setCategories([]);
+        setItems([]);
         const configId = tetConfigId;
         const [budgetData, itemsData, categoriesData, phasesData] =
           await Promise.all([
@@ -203,16 +206,18 @@ export default function FinanceDashboard() {
 
         // Map data from API to new Category standard
         if (categoriesData && categoriesData.length > 0) {
-          const mappedCategories: Category[] = categoriesData.map((cat) => ({
-            ...cat, // Giữ lại toàn bộ trường từ API (bao gồm tet_config)
-            color: cat.color || "#10b981",
-            colorClass: `text-${cat.color || "planner-blue"}`,
-            bgClass: `bg-${cat.color || "planner-blue"}/20`,
-            percent: "0%",
-            transactions: [],
-            allocated: cat.allocated_budget, // Alias cho logic cũ
-            isDefault: cat.is_system, // Alias cho logic cũ
-          }));
+          const mappedCategories: Category[] = (categoriesData || []).map(
+            (cat) => ({
+              ...cat, // Giữ lại toàn bộ trường từ API (bao gồm tet_config)
+              color: cat.color || "#10b981",
+              colorClass: `text-${cat.color || "planner-blue"}`,
+              bgClass: `bg-${cat.color || "planner-blue"}/20`,
+              percent: "0%",
+              transactions: [],
+              allocated: cat.allocated_budget, // Alias cho logic cũ
+              isDefault: cat.is_system, // Alias cho logic cũ
+            }),
+          );
           setCategories(mappedCategories);
         }
       } catch (err) {
@@ -591,12 +596,27 @@ export default function FinanceDashboard() {
           onDeletePhase={handleDeletePhase}
         />
 
-        <CategoryCards
-          categorySummaries={categorySummaries}
-          categories={categories}
-          onDeleteCategory={handleDeleteCategory}
-          onEditCategory={setEditingCategory}
-        />
+        {categories.length > 0 ? (
+          // Nếu có dữ liệu thì hiện các Card như cũ
+          <CategoryCards
+            categorySummaries={categorySummaries}
+            categories={categories}
+            onDeleteCategory={handleDeleteCategory}
+            onEditCategory={setEditingCategory}
+          />
+        ) : (
+          // Nếu trống (do đổi tetConfigId chưa có data) thì hiện khung này
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-6 mb-6">
+            <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed border-border">
+              <p className="text-sm font-medium text-muted-foreground">
+                No categories defined yet.
+                <p className="text-sm font-sans text-muted-foreground/50 mt-1">
+                  Start by adding a new category to organize your expenses!
+                </p>
+              </p>
+            </div>
+          </div>
+        )}
 
         <ShoppingList
           items={items}

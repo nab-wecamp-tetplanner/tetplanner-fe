@@ -140,7 +140,7 @@ const TaskManagement: React.FC = () => {
             id: data.owner.id,
             user_id: data.owner.user_id || data.owner.id,
             name: data.owner.name || "Owner",
-            avatar: data.owner.image_url,
+            avatar: data.owner.image_url || "",
           });
         }
         if (data.collaborators) {
@@ -150,7 +150,7 @@ const TaskManagement: React.FC = () => {
                 id: c.id,
                 user_id: c.user_id,
                 name: c.user?.name || "User",
-                avatar: c.user?.image_url,
+                avatar: c.user?.image_url || "",
               });
             }
           }
@@ -178,6 +178,8 @@ const TaskManagement: React.FC = () => {
 
     fetchPhasesAndMembers();
   }, [activeConfigId, currentUser]);
+
+
 
   // ==========================================
   // Normalize raw API task → Task shape
@@ -546,15 +548,20 @@ const TaskManagement: React.FC = () => {
         <div className="tet-header-row">
           <div className="tet-collaborators">
             <div className="tet-collaborators__avatars">
-              {members.map((member, index) => (
-                <img
-                  key={member.id}
-                  src={member.avatar}
-                  alt={member.name}
-                  title={member.name}
-                  className="tet-collaborators__avatar"
-                  style={{ zIndex: members.length - index }}
-                />
+              {members.map((m) => (
+                <div key={m.id} className="tet-collaborators__avatar" title={m.name}>
+                  {m.avatar ? (
+                    <img
+                      src={m.avatar}
+                      alt={m.name}
+                      className="tet-collaborators__avatar-img"
+                    />
+                  ) : (
+                    <span className="tet-collaborators__avatar-placeholder">
+                      {m.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
               ))}
               {isOwner && (
                 <button

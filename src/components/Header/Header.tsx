@@ -98,23 +98,17 @@ const Header = () => {
           alt="Logo"
           className="w-11 h-11 transition-transform group-hover:scale-105"
         />
-        <div className="relative">
+        <div className="flex flex-col ml-2">
           <span
-            className="absolute -top-1 -left-1 text-5xl text-amber-900/10 blur-[2px] italic select-none"
-            style={{ fontFamily: "'Pinyon Script', cursive" }}
+            className="text-xl font-bold tracking-tight text-amber-900 leading-none"
+            style={{ fontFamily: "'Quicksand', sans-serif" }}
           >
-            Tet
+            TetPlanner
           </span>
-          <span
-            className="relative text-5xl text-amber-900"
-            style={{ fontFamily: "'Pinyon Script', cursive" }}
-          >
-            Tet
+          <span className="text-[9px] font-semibold tracking-[0.25em] uppercase text-amber-700/50 leading-none mt-0.5">
+            Plan your perfect Tet✦
           </span>
         </div>
-        <span className="ml-2 mt-4 text-xs font-bold tracking-[0.3em] uppercase text-amber-900/40">
-          Planner
-        </span>
       </Link>
 
       {/* Navigation */}
