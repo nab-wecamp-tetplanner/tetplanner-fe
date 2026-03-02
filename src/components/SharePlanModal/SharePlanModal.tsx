@@ -152,11 +152,22 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                             {owner && (
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <img 
-                                            src={`https://api.dicebear.com/9.x/toon-head/svg?seed=${encodeURIComponent(owner.name || owner.id)}`} 
-                                            alt={`Avatar of ${owner.name}`} 
-                                            style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb' }} 
-                                        />
+                                        {owner.image_url ? (
+                                            <img 
+                                                src={owner.image_url} 
+                                                alt={`Avatar of ${owner.name}`} 
+                                                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #e5e7eb' }} 
+                                            />
+                                        ) : (
+                                            <span style={{
+                                                width: '40px', height: '40px', borderRadius: '50%',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                background: 'linear-gradient(135deg, var(--primary), var(--primary-hover, #b91c1c))',
+                                                color: '#fff', fontSize: '16px', fontWeight: 600, userSelect: 'none'
+                                            }}>
+                                                {(owner.name || 'O').charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
                                         <div>
                                             <div style={{ fontWeight: 500, fontSize: '14px', color: '#111827' }}>
                                                 {owner.name}
@@ -175,11 +186,22 @@ const SharePlanModal: React.FC<SharePlanModalProps> = ({ isOpen, onClose, config
                             {collaborators.map((member) => (
                                 <div key={member.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <img 
-                                            src={member.user?.image_url || `https://api.dicebear.com/9.x/toon-head/svg?seed=${encodeURIComponent(member.user?.name || member.id)}`} 
-                                            alt={`Avatar of ${member.user?.name || 'User'}`} 
-                                            style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb' }} 
-                                        />
+                                        {member.user?.image_url ? (
+                                            <img 
+                                                src={member.user.image_url} 
+                                                alt={`Avatar of ${member.user?.name || 'User'}`} 
+                                                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #e5e7eb' }} 
+                                            />
+                                        ) : (
+                                            <span style={{
+                                                width: '40px', height: '40px', borderRadius: '50%',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                background: 'linear-gradient(135deg, var(--primary), var(--primary-hover, #b91c1c))',
+                                                color: '#fff', fontSize: '16px', fontWeight: 600, userSelect: 'none'
+                                            }}>
+                                                {(member.user?.name || 'U').charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
                                         <div>
                                             <div style={{ fontWeight: 500, fontSize: '14px', color: '#111827' }}>
                                                 {member.user?.name || member.user_id}
