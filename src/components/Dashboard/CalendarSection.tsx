@@ -198,7 +198,7 @@ const CalendarSection = () => {
                 new Date(currentDate.setMonth(currentDate.getMonth() - 1)),
               )
             }
-            className="p-2 hover:bg-(--bg)/100 rounded-lg transition-colors"
+            className="p-2 hover:bg-(--bg) rounded-lg transition-colors"
           >
             <ChevronLeft size={18} />
           </button>
@@ -208,14 +208,14 @@ const CalendarSection = () => {
                 new Date(currentDate.setMonth(currentDate.getMonth() + 1)),
               )
             }
-            className="p-2 hover:bg-(--bg)/100 rounded-lg transition-colors"
+            className="p-2 hover:bg-(--bg) rounded-lg transition-colors"
           >
             <ChevronRight size={18} />
           </button>
         </div>
       </div>
 
-      <div className="space-y-4 h-[350px] overflow-y-auto pr-2">
+      <div className="space-y-4 h-87.5 overflow-y-auto pr-2">
         {loading && (
           <p className="text-center text-sm py-10">Loading tasks...</p>
         )}
