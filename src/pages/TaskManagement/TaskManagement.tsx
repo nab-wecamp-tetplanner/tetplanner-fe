@@ -65,6 +65,7 @@ const TaskManagement: React.FC = () => {
   const [todoItems, setTodoItems] = useState<Task[]>([]);
   const [activePhaseId, setActivePhaseId] = useState<string>("");
   const [isRewardOpen, setIsRewardOpen] = useState(false);
+  const [rewardClaimed, setRewardClaimed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
@@ -750,14 +751,17 @@ const TaskManagement: React.FC = () => {
 
       {/* Lucky Envelope — appears when all tasks are completed */}
       <LuckyEnvelope
-        show={progress.allDone}
+        show={progress.allDone && !rewardClaimed}
         onOpen={() => setIsRewardOpen(true)}
       />
 
       {/* Reward Modal */}
       <RewardModal
         isOpen={isRewardOpen}
-        onClose={() => setIsRewardOpen(false)}
+        onClose={() => {
+          setIsRewardOpen(false);
+          setRewardClaimed(true);
+        }}
         totalTasks={progress.total}
       />
       {/* Share Modal */}

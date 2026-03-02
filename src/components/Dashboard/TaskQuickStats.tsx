@@ -119,21 +119,21 @@ export const TaskQuickStats = () => {
           value={0}
           subtitle={`Loading...`}
           icon={<CheckSquare size={16} />}
-          color="#5051f9"
+          color="#3b82f6"
         />
         <StatsCard
           title="Shopping"
           value={0}
           subtitle={`Loading...`}
           icon={<ShoppingCart size={16} />}
-          color="#1ea7ff"
+          color="#10b981"
         />
         <StatsCard
           title="Budget"
           value={0}
           subtitle={`Loading...`}
           icon={<DollarSign size={16} />}
-          color="#ff614c"
+          color="#f59e0b"
         />
       </div>
     );
@@ -146,7 +146,7 @@ export const TaskQuickStats = () => {
         value={taskStats.completionPercentage}
         subtitle={`${taskStats.completedTasks}/${taskStats.totalTasks} completed`}
         icon={<CheckSquare size={16} />}
-        color="#5051f9"
+        color="#3b82f6"
       />
       <StatsCard
         title="Shopping"
@@ -159,14 +159,14 @@ export const TaskQuickStats = () => {
         }
         subtitle={`${shoppingStats.completedItems} completed`}
         icon={<ShoppingCart size={16} />}
-        color="#1ea7ff"
+        color="#10b981"
       />
       <StatsCard
         title="Budget"
         value={budgetStats.percentageUsed}
         subtitle={`${formatCurrency(budgetStats.used)}/${formatCurrency(budgetStats.total)}VND`}
         icon={<DollarSign size={16} />}
-        color="#ff614c"
+        color="#f59e0b"
       />
     </div>
   );

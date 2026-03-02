@@ -29,7 +29,7 @@ const CustomDonutTooltip = ({
 }: TooltipContentProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white px-2 py-1 rounded-xl shadow-lg border border-slate-100 text-sm">
+      <div className="bg-(--bg-card) px-2 py-1 rounded-xl shadow-lg border border-(--border) text-sm">
         <p className="font-semibold text-slate-800">{payload[0].name}</p>
         <p className="text-slate-500 font-medium">
           {payload[0].payload.percent}
@@ -68,7 +68,6 @@ export const ExpensePieChart = () => {
       }
 
       try {
-        // Fetch all transactions for the config
         const transactions = await transactionApi.getAll(configId);
 
         // Filter only expenses
@@ -77,52 +76,57 @@ export const ExpensePieChart = () => {
         // Group expenses by category and calculate totals
         const expenseByCategory = new Map<
           string,
-          { total: number; items: typeof expenses }
+          { total: number; categoryName: string }
         >();
         let totalExpense = 0;
 
         expenses.forEach((expense) => {
           const categoryId = expense.category?.id || "uncategorized";
+          const categoryName = expense.category?.name || "Uncategorized";
+          const amount =
+            typeof expense.amount === "string"
+              ? parseFloat(expense.amount)
+              : expense.amount;
 
           if (!expenseByCategory.has(categoryId)) {
-            expenseByCategory.set(categoryId, { total: 0, items: [] });
+            expenseByCategory.set(categoryId, {
+              total: 0,
+              categoryName,
+            });
           }
 
           const categoryData = expenseByCategory.get(categoryId)!;
-          categoryData.total += expense.amount;
-          categoryData.items.push(expense);
-          totalExpense += expense.amount;
+          categoryData.total += amount;
+          totalExpense += amount;
         });
 
-        // Convert to chart data with percentages
-        const processedData: CategoryExpense[] = [];
+        const colorPalette = Object.values(CHART_COLORS);
+        const denominator = totalExpense;
 
-        expenseByCategory.forEach((data, categoryId) => {
-          const percentage =
-            totalExpense > 0 ? (data.total / totalExpense) * 100 : 0;
-          const percentageStr =
-            percentage > 0
-              ? `${percentage.toFixed(2).replace(".", ",")}%`
-              : "0,00%";
+        const processedData = Array.from(expenseByCategory.entries()).map(
+          ([categoryId, data], index) => {
+            const percentage =
+              denominator > 0 ? (data.total / denominator) * 100 : 0;
+            const percentageStr =
+              percentage > 0
+                ? `${percentage.toFixed(2).replace(".", ",")}%`
+                : "0,00%";
 
-          // Find matching category in CATEGORY_DATA for styling
-          const categoryInfo = CATEGORY_DATA.find(
-            (cat) => cat.name.toLowerCase() === categoryId.toLowerCase(),
-          );
+            const fallbackColor =
+              colorPalette[index % colorPalette.length] || "#3b82f6";
 
-          processedData.push({
-            id: categoryId,
-            name: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
-            percent: percentageStr,
-            colorClass: categoryInfo?.colorClass || "text-slate-500",
-            bgClass: categoryInfo?.bgClass || "bg-slate-500",
-            icon: categoryInfo?.icon || "📦",
-            value: percentage,
-            hexColor:
-              CHART_COLORS[categoryInfo?.bgClass || "bg-slate-500"] ||
-              "#cbd5e1",
-          });
-        });
+            return {
+              id: categoryId,
+              name: data.categoryName,
+              percent: percentageStr,
+              colorClass: "text-slate-500",
+              bgClass: "bg-slate-500",
+              icon: "",
+              value: percentage,
+              hexColor: fallbackColor,
+            };
+          },
+        );
 
         // Sort by value descending
         processedData.sort((a, b) => b.value - a.value);
@@ -181,8 +185,8 @@ export const ExpensePieChart = () => {
                   cx="50%"
                   cy="50%"
                   innerRadius={30}
-                  outerRadius={70}
-                  paddingAngle={0}
+                  outerRadius={60}
+                  paddingAngle={1}
                   dataKey="value"
                   stroke="none"
                 >
@@ -190,10 +194,7 @@ export const ExpensePieChart = () => {
                     <Cell key={`cell-${index}`} fill={entry.hexColor} />
                   ))}
                 </Pie>
-                <RechartsTooltip
-                  content={CustomDonutTooltip}
-                  cursor={false}
-                />
+                <RechartsTooltip content={CustomDonutTooltip} cursor={false} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -212,10 +213,9 @@ export const ExpensePieChart = () => {
               >
                 <div className="flex items-center gap-2">
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] shadow-sm ${cat.bgClass}`}
-                  >
-                    {cat.icon}
-                  </div>
+                    className="w-3 h-3 rounded-full shadow-sm"
+                    style={{ backgroundColor: cat.hexColor }}
+                  />
                   <span className="font-medium text-foreground text-xs">
                     {cat.name}
                   </span>
