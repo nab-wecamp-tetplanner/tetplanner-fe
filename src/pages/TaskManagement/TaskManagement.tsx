@@ -758,7 +758,10 @@ const TaskManagement: React.FC = () => {
 
       <AddTaskModal
         phases={phases}
+        setPhases={setPhases}
         isOpen={isModalOpen}
+        categories={categories}
+        setCategories={setCategories}
         onClose={() => setIsModalOpen(false)}
         status={activeColumn}
         onSave={handleAddTask}

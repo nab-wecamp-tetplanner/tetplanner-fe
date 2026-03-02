@@ -100,13 +100,13 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
               <p className="mpm-empty">No phases yet. Create one below!</p>
             ) : (
               safePhases.map((p) => {
-                const isActive = p.id === activePhaseId;
+                // const isActive = p.id === activePhaseId;
                 return (
                   <div
                     key={p.id}
-                    className={`mpm-phase ${isActive ? "mpm-phase--active" : ""}`}
+                    className={`mpm-phase `}
                     onClick={() => {
-                      onSelectPhase(p.id);
+                      // onSelectPhase(p.id);
                       onClose();
                     }}
                   >
@@ -119,11 +119,11 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
                         </span>
                       )}
                     </div>
-                    {isActive && (
+                    {/* {isActive && (
                       <div className="mpm-phase__check">
                         <Check size={16} />
                       </div>
-                    )}
+                    )} */}
                   </div>
                 );
               })
