@@ -6,6 +6,7 @@ import { type ManagePhasesModalProps } from "../../types/task.types";
 import { useToast } from "../../hooks/useToast";
 import type { TimelineCreateRequest } from "../../types/timeline.types";
 import { useAppStore } from "../../stores/useAppStore";
+import apiClient from "../../services/apiClient";
 
 const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   isOpen,
@@ -42,9 +43,9 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
         tet_config_id: configId,
       };
 
-      // const res = await todoService.createTimelinePhase(payload);
+      const savedPhase = await apiClient.timelinePhases.create(payload);
       // const newPhase = (res as { data: any }).data;
-      onPhaseCreated(payload);
+      onPhaseCreated(savedPhase);
 
       setName("");
       setStartDate("");

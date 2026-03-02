@@ -137,6 +137,83 @@ select.form-input option {
   color: #292524;
 }
 
+/* ===== Quick Add Features (NEW) ===== */
+.input-with-action {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-quick-add {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  color: #d97706;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-quick-add:hover {
+  background: #d97706;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-quick-add.active {
+  background: #b45309;
+  color: white;
+  transform: rotate(45deg);
+}
+
+.quick-add-field {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  border: 1px dashed #d97706;
+  animation: slideDown 0.25s ease-out;
+}
+
+.form-input-sm {
+  flex: 1;
+  background: white;
+  border: 1px solid #e7e5e4;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input-sm:focus {
+  border-color: #d97706;
+}
+
+.btn-confirm-sm {
+  background: #d97706;
+  color: white;
+  border: none;
+  width: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-confirm-sm:hover {
+  background: #b45309;
+}
+
 /* ===== Subtask Section ===== */
 .subtask-input-group {
   display: flex;
@@ -364,21 +441,6 @@ select.form-input option {
   transition: transform 0.2s ease;
 }
 
-.assignee-picker__avatar--placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover, #b91c1c));
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  user-select: none;
-}
-
-.assignee-picker__item:hover .assignee-picker__avatar {
-  transform: scale(1.08);
-}
-
 .assignee-picker__name {
   font-size: 0.72rem;
   font-weight: 600;
@@ -400,4 +462,9 @@ select.form-input option {
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

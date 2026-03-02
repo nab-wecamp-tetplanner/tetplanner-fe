@@ -61,7 +61,7 @@ export interface ManagePhasesModalProps {
     onClose: () => void;
     phases: any[];
     configId: string;
-    onPhaseCreated: (newPhase: TimelineCreateRequest) => void;
+    onPhaseCreated: (newPhase: TimelinePhase) => void;
     activePhaseId: string;
     onSelectPhase: (phaseId: string) => void;
 }

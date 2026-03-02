@@ -50,8 +50,7 @@ const AppContent = () => {
       />
       <Header />
 
-      {/* Logic Modal của Nhi: Hiện đè lên mọi trang nếu chưa có configId */}
-      {isAuthenticated && !configId && <ConfigSelector />}
+      {/* {isAuthenticated && !configId && <ConfigSelector />}  */}
 
       <Routes>
         {/* Public Route */}
