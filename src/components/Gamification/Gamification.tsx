@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './Gamification.css';
+import horseImg from '../images/horse.png';
 
 /* ============================================================
    Firecracker Confetti — burst on task completion
@@ -83,14 +84,59 @@ interface LuckyEnvelopeProps {
 export const LuckyEnvelope: React.FC<LuckyEnvelopeProps> = ({ show, onOpen }) => {
   if (!show) return null;
 
+  // Generate firework bursts
+  const fireworks = Array.from({ length: 6 }, (_, i) => ({
+    id: i,
+    left: 10 + Math.random() * 80,
+    top: 10 + Math.random() * 60,
+    delay: Math.random() * 2,
+    size: 120 + Math.random() * 100,
+    color1: ['#fbbf24', '#ef4444', '#f97316', '#a855f7', '#3b82f6', '#ec4899'][i],
+    color2: ['#fde68a', '#fca5a5', '#fdba74', '#d8b4fe', '#93c5fd', '#f9a8d4'][i],
+  }));
+
   return (
-    <button className="lucky-envelope" onClick={onOpen} title="Open Lucky Envelope!">
-      <div className="lucky-envelope__body">
-        <span className="lucky-envelope__icon">🧧</span>
-        <span className="lucky-envelope__text">Reward!</span>
+    <>
+      {/* Fireworks overlay */}
+      <div className="fireworks-overlay">
+        {fireworks.map((fw) => (
+          <div
+            key={fw.id}
+            className="firework"
+            style={{
+              left: `${fw.left}%`,
+              top: `${fw.top}%`,
+              animationDelay: `${fw.delay}s`,
+              '--fw-size': `${fw.size}px`,
+              '--fw-color1': fw.color1,
+              '--fw-color2': fw.color2,
+            } as React.CSSProperties}
+          >
+            {Array.from({ length: 12 }, (_, j) => (
+              <div
+                key={j}
+                className="firework__spark"
+                style={{
+                  '--angle': `${j * 30}deg`,
+                  '--fw-color1': fw.color1,
+                  '--fw-color2': fw.color2,
+                } as React.CSSProperties}
+              />
+            ))}
+          </div>
+        ))}
       </div>
-      <div className="lucky-envelope__glow" />
-    </button>
+
+      <button className="lucky-envelope" onClick={onOpen} title="Open Lucky Envelope!">
+        <div className="lucky-envelope__body">
+          <img src={horseImg} alt="Lucky Horse" className="lucky-envelope__icon-img" />
+        </div>
+        <span className="lucky-envelope__title">Bravo!</span>
+        <span className="lucky-envelope__text">You got a reward!</span>
+        <span className="lucky-envelope__cta">Tap to open</span>
+        <div className="lucky-envelope__glow" />
+      </button>
+    </>
   );
 };
 
@@ -104,27 +150,39 @@ interface RewardModalProps {
 }
 
 const LUCKY_MESSAGES = [
-  '🎊 Happy New Year!',
-  '🧧 Wishing you prosperity!',
-  '🎆 May fortune smile upon you!',
-  '🏮 A new year of great luck!',
+  'Wishing you joy and happiness!',
+  'May prosperity follow you!',
+  'Peace and success to you!',
+  'May all your wishes come true!',
+  'Health and vitality!',
+  'Fortune and wealth!',
+  'A year full of laughter!',
+  'Great luck and great gain!',
+  'Smooth sailing ahead!',
+  'Complete happiness!',
+  'Success in all endeavors!',
+  'Instant success upon arrival!',
 ];
 
 export const RewardModal: React.FC<RewardModalProps> = ({ isOpen, onClose, totalTasks }) => {
-  const [flippedCards, setFlippedCards] = useState<Set<number>>(() => new Set());
+  const [flippedCard, setFlippedCard] = useState<number | null>(null);
   const [message, setMessage] = useState('');
+  const [cardMessages, setCardMessages] = useState<string[]>([]);
 
   const handleFlip = useCallback((index: number) => {
-    if (flippedCards.has(index)) return;
-    setFlippedCards((prev) => new Set(prev).add(index));
-    setMessage(LUCKY_MESSAGES[index % LUCKY_MESSAGES.length]);
-  }, [flippedCards]);
+    if (flippedCard !== null) return; // Only allow opening 1 card
+    setFlippedCard(index);
+    setMessage(cardMessages[index]);
+  }, [flippedCard, cardMessages]);
 
-  // Reset when modal opens
+  // Reset and randomize messages when modal opens
   React.useEffect(() => {
     if (isOpen) {
-      setFlippedCards(new Set());
+      setFlippedCard(null);
       setMessage('');
+      // Shuffle and pick 4 random messages
+      const shuffled = [...LUCKY_MESSAGES].sort(() => Math.random() - 0.5);
+      setCardMessages(shuffled.slice(0, 4));
     }
   }, [isOpen]);
 
@@ -147,14 +205,14 @@ export const RewardModal: React.FC<RewardModalProps> = ({ isOpen, onClose, total
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className={`reward-envelope-card ${flippedCards.has(i) ? 'reward-envelope-card--flipped' : ''}`}
+              className={`reward-envelope-card ${flippedCard === i ? 'reward-envelope-card--flipped' : ''} ${flippedCard !== null && flippedCard !== i ? 'reward-envelope-card--disabled' : ''}`}
               onClick={() => handleFlip(i)}
             >
               <div className="reward-envelope-card__front">
-                <span>🧧</span>
+                <img src={horseImg} alt="Lucky Horse" className="reward-envelope-card__icon" />
               </div>
               <div className="reward-envelope-card__back">
-                <span>{LUCKY_MESSAGES[i % LUCKY_MESSAGES.length]}</span>
+                <span>{cardMessages[i]}</span>
               </div>
             </div>
           ))}
@@ -167,7 +225,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({ isOpen, onClose, total
         )}
 
         <button className="reward-modal__done-btn" onClick={onClose}>
-          🎆 Continue Planning
+          Continue Planning
         </button>
       </div>
     </div>

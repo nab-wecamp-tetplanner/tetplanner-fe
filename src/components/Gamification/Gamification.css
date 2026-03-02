@@ -21,24 +21,29 @@
 /* ===== Lucky Envelope ===== */
 .lucky-envelope {
   position: fixed;
-  bottom: 28px;
-  right: 28px;
+  top: 30%;
+  left: 40%;
+  transform: translate(-50%, -50%);
   z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 14px 20px;
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  border: 2px solid rgba(251, 191, 36, 0.5);
-  border-radius: 16px;
+  gap: 8px;
+  padding: 32px 48px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c, #991b1b);
+  border: 3px solid rgba(251, 191, 36, 0.6);
+  border-radius: 24px;
   cursor: pointer;
   animation: envelopePulse 2s ease-in-out infinite, popIn 0.4s ease-out;
   transition: transform 0.2s;
+  box-shadow:
+    0 0 40px rgba(220, 38, 38, 0.3),
+    0 0 80px rgba(251, 191, 36, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .lucky-envelope:hover {
-  transform: scale(1.08);
+  transform: translate(-50%, -50%) scale(1.06);
 }
 
 .lucky-envelope__body {
@@ -48,15 +53,52 @@
 }
 
 .lucky-envelope__icon {
-  font-size: 28px;
+  font-size: 56px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.lucky-envelope__icon-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
+.lucky-envelope__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fef3c7;
+  letter-spacing: 0.04em;
+  font-family: 'Playfair Display', 'Noto Serif', Georgia, serif;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .lucky-envelope__text {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fde68a;
+  letter-spacing: 0.03em;
+}
+
+.lucky-envelope__cta {
+  font-size: 11px;
   font-weight: 700;
-  color: #fef3c7;
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  animation: ctaPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ctaPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 .lucky-envelope__glow {
@@ -69,6 +111,85 @@
 }
 
 /* ===== Reward Modal ===== */
+
+/* ===== Fireworks ===== */
+.fireworks-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+  overflow: hidden;
+}
+
+.firework {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  animation: fireworkLaunch 3s ease-in-out infinite;
+}
+
+@keyframes fireworkLaunch {
+  0% {
+    opacity: 0;
+    transform: translateY(60vh) scale(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0) scale(0);
+  }
+  35% {
+    transform: translateY(0) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(1.2);
+  }
+}
+
+.firework__spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--fw-color1);
+  transform-origin: center;
+  animation: fireworkSpark 3s ease-out infinite;
+  animation-delay: inherit;
+}
+
+@keyframes fireworkSpark {
+  0%, 30% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(0);
+  }
+  35% {
+    opacity: 1;
+    transform: rotate(var(--angle)) translateX(0);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(var(--angle)) translateX(calc(var(--fw-size, 120px) * 0.5));
+    background: var(--fw-color1);
+    box-shadow: 0 0 6px var(--fw-color1), 0 0 12px var(--fw-color2);
+    width: 4px;
+    height: 4px;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(var(--fw-size, 120px)) translateY(30px);
+    background: var(--fw-color2);
+    box-shadow: none;
+    width: 2px;
+    height: 2px;
+  }
+}
+
 .reward-modal-overlay {
   position: fixed;
   inset: 0;
@@ -175,7 +296,15 @@
   background: linear-gradient(145deg, #dc2626, #991b1b);
   border: 2px solid rgba(251, 191, 36, 0.4);
   box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2);
-  font-size: 32px;
+  overflow: hidden;
+}
+
+.reward-envelope-card__icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
 }
 
 .reward-envelope-card__back {
@@ -196,6 +325,14 @@
 
 .reward-envelope-card--flipped .reward-envelope-card__back {
   transform: rotateY(0);
+}
+
+.reward-envelope-card--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(0.5);
+  transform: scale(0.95);
+  transition: all 0.4s ease;
 }
 
 /* ===== Reward Message ===== */
@@ -221,8 +358,8 @@
   display: block;
   width: 100%;
   padding: 14px;
-  background: var(--gradient-warm);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  color: #fff;
   border: none;
   border-radius: 12px;
   font-size: 15px;
