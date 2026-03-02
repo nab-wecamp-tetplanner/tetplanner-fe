@@ -17,7 +17,7 @@ export const dashboardApi = {
     console.log("dashboardApi.getSpendingTrend - raw response:", response);
 
     // Check if response.data exists and is an array
-    const dataArray = response.data?.data || response.data || [];
+    const dataArray = response.data || response.data || [];
     console.log("dashboardApi.getSpendingTrend - dataArray:", dataArray);
 
     if (!Array.isArray(dataArray)) {

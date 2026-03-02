@@ -84,7 +84,7 @@ interface LuckyEnvelopeProps {
   onClose?: () => void;
 }
 
-export const LuckyEnvelope: React.FC<LuckyEnvelopeProps> = ({ show, onOpen, onClose }) => {
+export const LuckyEnvelope: React.FC<LuckyEnvelopeProps> = ({ show, onOpen }) => {
   if (!show) return null;
 
   // Generate firework bursts

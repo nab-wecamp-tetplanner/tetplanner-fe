@@ -21,17 +21,13 @@ import ConfigGuard from "./routes/ConfigGuard";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
 import PlanningOverview from "./pages/TimelineView/PlanningOverview";
 import ConfigSelector from "./components/ConfigSelector/ConfigSelector";
-import { useAuthContext } from "./contexts/AuthTypes";
-import { useAppStore } from "./stores/useAppStore";
+
 
 const queryClient = new QueryClient();
 
 /* App.tsx */
 
-// 1. Tạo một component "ruột" ở đây
 const AppContent = () => {
-  const { configId } = useAppStore();
-  const { isAuthenticated } = useAuthContext(); // Bây giờ dùng ở đây là CHUẨN!
 
   return (
     <>

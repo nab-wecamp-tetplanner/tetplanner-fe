@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { X, Plus, Check, Calendar } from "lucide-react";
+import { X, Plus,  Calendar } from "lucide-react";
 import "./ManagePhasesModal.css";
 import { type ManagePhasesModalProps } from "../../types/task.types";
 import { useToast } from "../../hooks/useToast";
@@ -13,8 +13,6 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   onClose,
   phases = [],
   onPhaseCreated,
-  activePhaseId,
-  onSelectPhase,
 }) => {
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");

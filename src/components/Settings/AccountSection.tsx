@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Save, ShieldCheck } from "lucide-react";
 import apiClient from "../../services/apiClient";
 import { useToast } from "../../hooks/useToast";
-import { useAuthContext } from "../../contexts/AuthTypes";
+// import { useAuthContext } from "../../contexts/AuthTypes";
 import type { User } from "../../types/auth.types";
 
 interface PasswordFormData {
@@ -16,7 +16,7 @@ interface AccountSectionProps {
   setUserData: (user: User) => void;
 }
 
-const AccountSection = ({ userData, setUserData }: AccountSectionProps) => {
+const AccountSection = ({ userData }: AccountSectionProps) => {
   const [passwordData, setPasswordData] = useState<PasswordFormData>({
     currentPassword: "",
     newPassword: "",
@@ -27,7 +27,7 @@ const AccountSection = ({ userData, setUserData }: AccountSectionProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { success, error: showError } = useToast();
-  const { setCurrentUser } = useAuthContext();
+  // const { setCurrentUser } = useAuthContext();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
