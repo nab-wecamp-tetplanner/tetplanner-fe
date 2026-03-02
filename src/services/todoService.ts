@@ -1,3 +1,6 @@
+type ApiResponse<T> = Promise<T>;
+
+import type { Category } from '../types/task.types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import apiClient from './apiClient';
 
@@ -48,7 +51,7 @@ export const todoService = {
         });
     },
 
-    getCategories: () => {
-        return apiClient.get('/categories');
+    getCategories: (configId: string) : ApiResponse<Category[]> => {
+        return apiClient.get('/categories?tet_config_id='+configId);
     }
 }

@@ -22,7 +22,7 @@ const CHART_LEGEND_ITEMS = [
 export const IncomeExpenseLineChart = () => {
   const configId = useAppStore((state) => state.configId);
   const [data, setData] = useState<WeeklyFinanceData[]>(WEEKLY_FINANCE_DATA);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

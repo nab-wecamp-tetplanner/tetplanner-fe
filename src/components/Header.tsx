@@ -38,7 +38,7 @@ const Header = () => {
               className={({ isActive }) =>
                 `px-4 py-2 rounded-lg transition-all duration-300 ${
                   isActive
-                    ? "bg-primary text-white shadow-md" // Thay bg-accent bằng bg-primary và ép text-white
+                    ? "bg-primary text-white shadow-md" 
                     : "text-text-main opacity-70 hover:opacity-100 hover:bg-accent/20"
                 }`
               }
@@ -73,7 +73,6 @@ const Header = () => {
               </div>
               <button
                 onClick={logout}
-                // Ép text-white ở đây để Logout không bị mất chữ
                 className="bg-primary text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 transition-all shadow-sm"
               >
                 Logout

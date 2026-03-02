@@ -61,6 +61,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       String(m.user_id) === String(task.assigned_to_user?.id) ||
       String(m.id) === String(task.assigned_to_user?.id),
   );
+  console.log("🔵 TaskCard render, assigned_to_user:", task.assigned_to_user, "matched member:", assignedMember);
 
   /* ── Subtask progress ── */
   const subtaskEntries = task.subtasks ? Object.entries(task.subtasks) : [];
@@ -225,11 +226,17 @@ const TaskCard: React.FC<TaskCardProps> = ({
         <div className="tet-card__footer">
           {assignedMember ? (
             <div className="tet-card__assignee" title={assignedMember.name}>
-              <img
-                src={assignedMember.avatar}
-                alt={assignedMember.name}
-                className="tet-card__assignee-avatar"
-              />
+              {assignedMember.avatar ? (
+                <img
+                  src={assignedMember.avatar}
+                  alt={assignedMember.name}
+                  className="tet-card__assignee-avatar"
+                />
+              ) : (
+                <span className="tet-card__assignee-avatar tet-card__assignee-avatar--placeholder">
+                  {assignedMember.name.charAt(0).toUpperCase()}
+                </span>
+              )}
               <span className="tet-card__assignee-name">
                 {assignedMember.name}
               </span>

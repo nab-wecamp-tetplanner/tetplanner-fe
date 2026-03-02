@@ -61,7 +61,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res: any = await todoService.getCategories();
+        if (!configId) return;
+        const res: any = await todoService.getCategories(configId);
         const list = res || [];
         setCategories(list);
         if (list.length > 0 && !category_id) {
@@ -194,11 +195,17 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     }
                     title={member.name}
                   >
-                    <img
-                      src={member.avatar}
-                      alt={member.name}
-                      className="assignee-picker__avatar"
-                    />
+                    {member.avatar ? (
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="assignee-picker__avatar"
+                      />
+                    ) : (
+                      <span className="assignee-picker__avatar assignee-picker__avatar--placeholder">
+                        {member.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                     <span className="assignee-picker__name">{member.name}</span>
                   </button>
                 ))}

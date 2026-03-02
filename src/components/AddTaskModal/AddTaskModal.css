@@ -364,6 +364,17 @@ select.form-input option {
   transition: transform 0.2s ease;
 }
 
+.assignee-picker__avatar--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover, #b91c1c));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  user-select: none;
+}
+
 .assignee-picker__item:hover .assignee-picker__avatar {
   transform: scale(1.08);
 }

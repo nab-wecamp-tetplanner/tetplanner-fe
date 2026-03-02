@@ -10,7 +10,7 @@ import type {
 } from "../../types/task.types";
 import { todoService } from "../../services/todoService";
 import { collaboratorService } from "../../services/collaboratorService";
-import { MOCK_INITIAL_TASKS } from "../../data/mockTasks";
+
 import "./TaskManagement.css";
 import { Plus, Calendar } from "lucide-react";
 import TaskColumn from "../../components/TaskColumn/TaskColumn";
@@ -62,7 +62,7 @@ const TaskManagement: React.FC = () => {
     y: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [todoItems, setTodoItems] = useState<Task[]>(MOCK_INITIAL_TASKS);
+  const [todoItems, setTodoItems] = useState<Task[]>([]);
   const [activePhaseId, setActivePhaseId] = useState<string>("");
   const [isRewardOpen, setIsRewardOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,12 +81,12 @@ const TaskManagement: React.FC = () => {
         const configList: any = await todoService.getTetConfigs();
         setConfigs(configList);
 
-        try {
-          const categoriesList: any = await todoService.getCategories();
-          setCategories(categoriesList);
-        } catch (error) {
-          console.error("Error fetching categories:", error);
-        }
+        // try {
+        //   const categoriesList: any = await todoService.getCategories();
+        //   setCategories(categoriesList);
+        // } catch (error) {
+        //   console.error("Error fetching categories:", error);
+        // }
 
         // const urlConfigId = searchParams.get("config");
         // const targetConfigId =
@@ -104,6 +104,15 @@ const TaskManagement: React.FC = () => {
 
     fetchConfigs();
   }, [searchParams, refreshKey]);
+
+  useEffect(() => {
+    if (!activeConfigId) return;
+    const fetchCategories = async () => {
+      const data = await todoService.getCategories(activeConfigId);
+      setCategories(data);
+    }
+    fetchCategories();
+  }, [activeConfigId])
 
   useEffect(() => {
     if (!activeConfigId) return;
@@ -138,7 +147,7 @@ const TaskManagement: React.FC = () => {
           for (const c of data.collaborators) {
             if (c.status === "accepted" || !c.status) {
               memberList.push({
-                id: c.id,
+                id: c.user_id,
                 user_id: c.user_id,
                 name: c.user?.name || "User",
                 avatar: c.user?.image_url || "",
@@ -147,6 +156,7 @@ const TaskManagement: React.FC = () => {
           }
         }
         setMembers(memberList);
+        console.log("🟢 Members loaded:", memberList.map(m => ({ id: m.id, user_id: m.user_id, name: m.name })));
       } catch (err) {
         console.error("Lỗi lấy Members:", err);
       }
@@ -188,6 +198,8 @@ const TaskManagement: React.FC = () => {
       assignedToUser = { id: raw.assigned_to_user };
     } else if (typeof raw.assigned_to === "string" && raw.assigned_to) {
       assignedToUser = { id: raw.assigned_to };
+    } else if (typeof raw.assigned_to === "number" && raw.assigned_to) {
+      assignedToUser = { id: String(raw.assigned_to) };
     } else if (
       raw.assigned_to &&
       typeof raw.assigned_to === "object" &&
@@ -195,6 +207,8 @@ const TaskManagement: React.FC = () => {
     ) {
       assignedToUser = { id: String(raw.assigned_to.id) };
     }
+
+    console.log("🟡 normalizeTask raw.assigned_to:", raw.assigned_to, "raw.assigned_to_user:", raw.assigned_to_user, "=> assignedToUser:", assignedToUser);
 
     return {
       ...raw,
@@ -382,6 +396,7 @@ const TaskManagement: React.FC = () => {
   ) => {
     // API call to create new task
     let newTask: Task;
+    const assignedToId = (taskData as any).assigned_to || taskData.assigned_to_user?.id || undefined;
     try {
       const response = await todoService.addTodoItem({
         title: taskData.title,
@@ -390,13 +405,17 @@ const TaskManagement: React.FC = () => {
         deadline: taskData.deadline,
         is_shopping: taskData.is_shopping,
         estimated_price: taskData.estimated_price,
-        assigned_to: taskData.assigned_to_user?.id || undefined,
+        assigned_to: assignedToId,
         category_id: (taskData as any).category_id,
         subtasks: taskData.subtasks || {},
         tet_config_id: activeConfigId,
         timeline_phase_id: activePhaseId,
       });
       newTask = normalizeTask(response);
+      // Fallback: if API response didn't include assigned_to, set it from what we sent
+      if (!newTask.assigned_to_user && assignedToId) {
+        newTask = { ...newTask, assigned_to_user: { id: String(assignedToId) } };
+      }
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error("Failed to create task. Please try again.");

@@ -21,19 +21,20 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-import {
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-} from "../../services/notificationService";
+// import {
+//   markAllNotificationsAsRead,
+//   markNotificationAsRead,
+// } from "../../services/notificationService";
 import type { Notification } from "../../types/notification.type";
 import type { User } from "../../types/auth.types";
 import type { ConfigInfo } from "./Header";
 
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
 import { ConfigModal } from "../ConfigModal";
-import { useLoading } from "../../contexts/LoadingContext";
+import { useLoading} from "../../contexts/LoadingContext";
 import apiClient from "../../services/apiClient";
 import { useAppStore } from "../../stores/useAppStore";
+import type { InvitationResponse } from "../../types/collabration.types";
 
 interface AuthenticatedActionsProps {
   configs: ConfigInfo[];
@@ -80,7 +81,10 @@ const AuthenticatedActions = ({
   // --- STATE FOR DELETE MODAL ---
   const [deleteConfigId, setDeleteConfigId] = useState<string | null>(null);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // STATE FOR INVITATIONS
+  const [invitations, setInvitations] = useState<InvitationResponse[]>([]);
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const configRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -109,6 +113,91 @@ const AuthenticatedActions = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Trong component AuthenticatedActions
+  useEffect(() => {
+    const fetchInvitations = async () => {
+      try {
+        const response = await apiClient.collaborations.getMyInvitations();
+        // Giả sử API trả về mảng trực tiếp hoặc qua property data
+        setInvitations(response);
+      } catch (error) {
+        console.error("Error fetching invitations:", error);
+      }
+    };
+    fetchInvitations();
+  }, []);
+
+  const handleAcceptInvitation = async (id: string) => {
+    try {
+      showLoading();
+      await apiClient.collaborations.acceptInvitation(id);
+      toast.success("Accepted invitation successfully!");
+      // Cập nhật lại danh sách và refresh data chính
+      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+      setIsRefresh(true);
+    } catch (error) {
+      toast.error("Failed to accept invitation");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleDeclineInvitation = async (id: string) => {
+    try {
+      showLoading();
+      await apiClient.collaborations.declineInvitation(id);
+      toast.success("Declined invitation");
+      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+    } catch (error) {
+      toast.error("Failed to decline invitation");
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const markAllNotificationsAsRead = async (
+    notifications: Notification[],
+    setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
+  ): Promise<void> => {
+    try {
+      showLoading()
+      await apiClient.notifications.markAllRead();
+      setNotifications((prev) => {
+        return prev.map((n) => ({
+          ...n,
+          is_read: true
+        }))
+      })
+      console.log("NOTI: ", notifications)
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
+      throw error;
+    } finally {
+      hideLoading()
+    }
+  };
+
+  const markNotificationAsRead = async (
+    notificationId: string,
+    notifications: Notification[],
+    setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
+  ): Promise<void> => {
+    try {
+      showLoading()
+      await apiClient.notifications.markAsRead(notificationId);
+      setNotifications(
+        notifications.map((notif) =>
+          notif.id === notificationId ? { ...notif, is_read: true } : notif,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
+      throw error;
+    } finally {
+      hideLoading()
+    }
+  };
 
   // HANDLER: SAVE (CREATE OR UPDATE)
   const handleSubmitConfig = async (data: {
@@ -333,90 +422,142 @@ const AuthenticatedActions = ({
           )}
         </button>
         {showNotifications && (
-          <div className="absolute right-0 mt-3 w-80 bg-(--bg)/95 backdrop-blur-xl border border-accent rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-            {/* Header Dropdown */}
-            <div className="px-4 py-3.5 border-b border-accent/40 flex justify-between items-center bg-accent/5">
+          <div className="absolute right-0 mt-3 w-85 bg-(--bg)/95 backdrop-blur-xl border border-accent rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden flex flex-col max-h-[500px]">
+            {/* // INVITATAION  */}
+            <div className="px-4 py-3.5 border-b border-accent/40 bg-accent/5 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-(--text)">
+                  New invitations
+                </span>
+                {/* {(unreadCount > 0 || invitations.length > 0) && (
+                  <span className="px-1.5 py-0.5 bg-(--primary)/10 text-(--primary) text-[10px] font-bold rounded-md">
+                    {unreadCount + invitations.length}
+                  </span>
+                )} */}
+              </div>
+            </div>
+            {invitations.map((inv) => (
+              <div
+                key={inv.id}
+                className="group relative flex gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 mb-1 shadow-sm"
+              >
+                {/* Indicator xanh dương cho Invitation */}
+                <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+
+                <img
+                  src={inv.tet_config.owner.image_url || "/default-avatar.png"}
+                  className="w-10 h-10 rounded-full object-cover border border-accent shadow-sm ml-1"
+                  alt="owner"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] text-(--text) leading-snug">
+                    <span className="font-bold">
+                      {inv.tet_config.owner.name}
+                    </span>{" "}
+                    invited you to collaborate on
+                    <span className="font-bold text-blue-500">
+                      {" "}
+                      "{inv.tet_config.name}"
+                    </span>
+                  </p>
+                  <div className="flex gap-2 mt-2.5">
+                    <button
+                      onClick={() => handleAcceptInvitation(inv.id)}
+                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-[11px] font-bold py-1.5 rounded-lg transition-all active:scale-95"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => handleDeclineInvitation(inv.id)}
+                      className="flex-1 bg-accent/50 hover:bg-red-500/10 hover:text-red-500 text-(--text) text-[11px] font-semibold py-1.5 rounded-lg transition-all"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Header */}
+            <div className="px-4 py-3.5 border-b border-accent/40 bg-accent/5 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-(--text)">
                   Notifications
                 </span>
-                {unreadCount > 0 && (
+                {(unreadCount > 0 || invitations.length > 0) && (
                   <span className="px-1.5 py-0.5 bg-(--primary)/10 text-(--primary) text-[10px] font-bold rounded-md">
-                    {unreadCount} new
+                    {unreadCount + invitations.length}
                   </span>
                 )}
               </div>
-
-              {unreadCount > 0 && (
-                <button
-                  onClick={() =>
-                    markAllNotificationsAsRead(notifications, setNotifications)
-                  }
-                  className="p-1.5 hover:bg-(--bg) rounded-lg text-(--text) opacity-40 hover:opacity-100 hover:text-(--primary) transition-all"
-                  title="Mark all as read"
-                >
-                  <CheckCheck size={16} />
-                </button>
-              )}
+              <button
+                onClick={() =>
+                  markAllNotificationsAsRead(notifications, setNotifications)
+                }
+                className="p-1.5 hover:bg-accent rounded-lg text-(--text) opacity-40 hover:opacity-100 transition-all"
+              >
+                <CheckCheck size={16} />
+              </button>
             </div>
 
-            {/* List thông báo */}
-            <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-1.5">
+            {/* Danh sách gộp chung */}
+            <div className="overflow-y-auto custom-scrollbar flex-1 p-1.5">
               {notifications.length > 0 ? (
-                notifications.slice(0, 10).map((n, idx) => (
+                notifications.slice(0, 10).map((n, idx) =>{ 
+                  console.log("EACH NOTI: ", n);
+                  return (
                   <div
-                    key={idx}
-                    onClick={() => {
-                      if (!n.isRead)
-                        markNotificationAsRead(
-                          n.id,
-                          notifications,
-                          setNotifications,
-                        );
-                    }}
-                    className={`group relative flex gap-3 p-3 rounded-xl transition-all cursor-pointer ${
-                      n.isRead
-                        ? "hover:bg-accent/30 opacity-60"
+                    key={n.id || idx}
+                    onClick={() =>
+                      !n.is_read &&
+                      markNotificationAsRead(
+                        n.id,
+                        notifications,
+                        setNotifications,
+                      )
+                    }
+                    className={`group relative flex gap-3 p-3 rounded-xl transition-all cursor-pointer mb-1 ${
+                      n.is_read
+                        ? "bg-blue"
                         : "bg-(--primary)/5 hover:bg-(--primary)/10 shadow-sm"
                     }`}
                   >
-                    {/* Indicator chấm tròn cho tin chưa đọc */}
-                    {!n.isRead && (
-                      <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-(--primary) rounded-full shadow-[0_0_8px_var(--primary)]" />
+                    {!n.is_read && (
+                      <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-(--primary) rounded-full shadow-[0_0_8px_var(--primary)]" />
                     )}
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-0.5">
+                    <div className="flex-1 min-w-0 ml-1">
+                      <div className="flex justify-between items-start">
                         <span
-                          className={`text-[13px] truncate pr-2 ${!n.isRead ? "font-bold text-(--text)" : "text-(--text-muted)"}`}
+                          className={`text-[13px] truncate pr-2 ${!n.is_read ? "font-bold text-(--text)" : "text-(--text-muted)"}`}
                         >
                           {n.title}
                         </span>
-                        {n.created_at && (
-                          <span className="text-[9px] font-bold opacity-40 whitespace-nowrap pt-0.5">
-                            {formatTimeAgo(n.created_at)}
-                          </span>
-                        )}
+                        <span className="text-[9px] font-bold opacity-30 whitespace-nowrap pt-0.5">
+                          {n.created_at
+                            ? formatTimeAgo(n.created_at)
+                            : "Just now"}
+                        </span>
                       </div>
-                      <p className="text-[11px] text-(--text-muted) line-clamp-2 leading-relaxed">
-                        {n.message ||
-                          "You have a new update in your workspace."}
+                      <p className="text-[11px] text-(--text-muted) line-clamp-2 mt-0.5">
+                        {n.title || "New activity recorded."}
                       </p>
                     </div>
                   </div>
-                ))
+                )})
               ) : (
-                <div className="py-10 flex flex-col items-center justify-center opacity-30">
-                  <Bell size={32} strokeWidth={1} className="mb-2" />
-                  <p className="text-xs font-medium">All caught up!</p>
+                <div className="py-12 flex flex-col items-center justify-center opacity-30">
+                  <Bell size={28} strokeWidth={1.5} className="mb-2" />
+                  <p className="text-[11px] font-bold uppercase tracking-widest">
+                    No notifications
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* Footer (Tùy chọn) */}
-            <div className="p-2 border-t border-accent/40 bg-accent/5">
-              <button className="w-full py-2 text-[11px] font-bold text-(--text) opacity-50 hover:opacity-100 transition-all">
-                View all notifications
+            {/* Footer */}
+            <div className="p-2 border-t border-accent/40 bg-accent/5 shrink-0">
+              <button className="w-full py-2 text-[11px] font-bold text-(--text) opacity-50 hover:opacity-100 transition-all hover:bg-accent/20 rounded-lg">
+                View all activity
               </button>
             </div>
           </div>

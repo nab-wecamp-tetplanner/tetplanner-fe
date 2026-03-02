@@ -1,7 +1,7 @@
 import { useContext } from "react";
 // Dùng import type để fix lỗi ts(1484) verbatimModuleSyntax
-import { AuthContext } from "./AuthContext";
-import type { AuthContextType } from "./AuthContext";
+import { AuthContext } from "./AuthTypes";
+import type { AuthContextType } from "./AuthTypes";
 
 export const useAuthContext = (): AuthContextType => {
   const context = useContext(AuthContext);
