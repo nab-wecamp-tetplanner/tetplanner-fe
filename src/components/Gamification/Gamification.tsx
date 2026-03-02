@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './Gamification.css';
 import horseImg from '../images/horse.png';
+import { X }  from 'lucide-react';
+
 
 /* ============================================================
    Firecracker Confetti — burst on task completion
@@ -79,9 +81,10 @@ export const FirecrackerConfetti: React.FC<FirecrackerConfettiProps> = ({ x, y, 
 interface LuckyEnvelopeProps {
   show: boolean;
   onOpen: () => void;
+  onClose?: () => void;
 }
 
-export const LuckyEnvelope: React.FC<LuckyEnvelopeProps> = ({ show, onOpen }) => {
+export const LuckyEnvelope: React.FC<LuckyEnvelopeProps> = ({ show, onOpen, onClose }) => {
   if (!show) return null;
 
   // Generate firework bursts
@@ -189,6 +192,21 @@ export const RewardModal: React.FC<RewardModalProps> = ({ isOpen, onClose, total
   if (!isOpen) return null;
 
   return (
+    // Cái div bọc ngoài cùng của bạn (nhớ phải có position: relative)
+      <div className="lucky-envelope-wrapper" style={{ position: 'relative' }}>
+        
+        {/* 🔴 NÚT TẮT NẰM Ở ĐÂY */}
+        {onClose && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // Cực kỳ quan trọng: Ngăn không cho click xuyên xuống onOpen
+              onClose();
+            }}
+            className="close-envelope-btn"
+          >
+            <X size={16} />
+          </button>
+        )}
     <div className="reward-modal-overlay" onClick={onClose}>
       <div className="reward-modal" onClick={(e) => e.stopPropagation()}>
         <button className="reward-modal__close" onClick={onClose}>✕</button>
@@ -228,6 +246,7 @@ export const RewardModal: React.FC<RewardModalProps> = ({ isOpen, onClose, total
           Continue Planning
         </button>
       </div>
+    </div>
     </div>
   );
 };
