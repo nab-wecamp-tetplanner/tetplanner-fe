@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAppStore } from "../stores/useAppStore";
-import ConfigSelector from "../components/ConfigSelector/ConfigSelector";
 import { Loader2 } from "lucide-react";
 import apiClient from "../services/apiClient";
 import type { TetConfig } from "../types/tetConfig.types";
 const ConfigGuard = () => {
   const { configId, clearConfig } = useAppStore();
-  const [configs, setConfigs] = useState<TetConfig[]>([]);
+  const [, setConfigs] = useState<TetConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,7 +52,7 @@ const ConfigGuard = () => {
   return <Outlet />; // Render tiếp component con nếu đã có configId hợp lệ
 
   // Nếu chưa chọn hoặc account mới chưa có config hợp lệ -> Hiện màn hình chọn
-  return <ConfigSelector configs={configs} isLoading={isLoading} />;
+  // return <ConfigSelector />;
 };
 
 export default ConfigGuard;

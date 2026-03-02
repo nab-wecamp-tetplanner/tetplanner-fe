@@ -61,7 +61,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res: any = await todoService.getCategories();
+        if (!configId) return;
+        const res: any = await todoService.getCategories(configId);
         const list = res || [];
         setCategories(list);
         if (list.length > 0 && !category_id) {

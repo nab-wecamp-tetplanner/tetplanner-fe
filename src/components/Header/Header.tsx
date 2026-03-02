@@ -40,7 +40,6 @@ const Header = () => {
   const configId = useAppStore((state) => state.configId);
   const queryClient = useQueryClient();
 
-  // 1. FETCH CONFIGS
   const { data: configs = [] } = useQuery<ConfigInfo[]>({
     queryKey: ["userConfigs"],
     queryFn: async () => {
@@ -50,7 +49,6 @@ const Header = () => {
     enabled: isAuthenticated,
   });
 
-  // 2. FETCH NOTIFICATIONS
   const { data: notifications = [], refetch: refetchNotifications } = useQuery<
     Notification[]
   >({
@@ -59,15 +57,9 @@ const Header = () => {
     enabled: isAuthenticated,
   });
 
-  // State local cho UI - CHỈ giữ lại isOpenModal
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-
-  // 1. Derived State: Tự động tính toán config đang edit dựa trên list có sẵn
-  // Không dùng State, không dùng useEffect -> Hết lỗi Cascading Render
   const editConfig = configs.find((c) => c.id === configId) ?? null;
 
-  // 2. Xử lý isEdit: Nếu Nhi không có nút bấm "Edit" nào ở Header này,
-  // hãy xoá luôn state isEdit. handleSubmit có thể check dựa trên editConfig.
   const isEdit = !!editConfig;
 
   const handleSubmit = async (data: {
@@ -76,7 +68,6 @@ const Header = () => {
     total_budget: number;
   }) => {
     try {
-      // Dùng editConfig thay vì check state isEdit
       if (editConfig) {
         await apiClient.tetConfigs.updateConfig(editConfig.id, data);
         toast.success("Workspace updated!");

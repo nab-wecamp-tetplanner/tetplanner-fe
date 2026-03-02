@@ -9,7 +9,6 @@ import {
 import {
   Bell,
   ChevronDown,
-  ChevronUp,
   User as Profile,
   LogOut,
   Palette,
@@ -22,17 +21,17 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-import {
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-} from "../../services/notificationService";
+// import {
+//   markAllNotificationsAsRead,
+//   markNotificationAsRead,
+// } from "../../services/notificationService";
 import type { Notification } from "../../types/notification.type";
 import type { User } from "../../types/auth.types";
 import type { ConfigInfo } from "./Header";
 
 import ThemeSelector from "../ThemeSelector/ThemeSelector";
 import { ConfigModal } from "../ConfigModal";
-import { useLoading } from "../../contexts/LoadingContext";
+import { useLoading} from "../../contexts/LoadingContext";
 import apiClient from "../../services/apiClient";
 import { useAppStore } from "../../stores/useAppStore";
 import type { InvitationResponse } from "../../types/collabration.types";
@@ -85,7 +84,7 @@ const AuthenticatedActions = ({
   // STATE FOR INVITATIONS
   const [invitations, setInvitations] = useState<InvitationResponse[]>([]);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const configRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -154,6 +153,49 @@ const AuthenticatedActions = ({
       toast.error("Failed to decline invitation");
     } finally {
       hideLoading();
+    }
+  };
+
+  const markAllNotificationsAsRead = async (
+    notifications: Notification[],
+    setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
+  ): Promise<void> => {
+    try {
+      showLoading()
+      await apiClient.notifications.markAllRead();
+      setNotifications((prev) => {
+        return prev.map((n) => ({
+          ...n,
+          is_read: true
+        }))
+      })
+      console.log("NOTI: ", notifications)
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
+      throw error;
+    } finally {
+      hideLoading()
+    }
+  };
+
+  const markNotificationAsRead = async (
+    notificationId: string,
+    notifications: Notification[],
+    setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
+  ): Promise<void> => {
+    try {
+      showLoading()
+      await apiClient.notifications.markAsRead(notificationId);
+      setNotifications(
+        notifications.map((notif) =>
+          notif.id === notificationId ? { ...notif, is_read: true } : notif,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
+      throw error;
+    } finally {
+      hideLoading()
     }
   };
 
@@ -381,6 +423,7 @@ const AuthenticatedActions = ({
         </button>
         {showNotifications && (
           <div className="absolute right-0 mt-3 w-85 bg-(--bg)/95 backdrop-blur-xl border border-accent rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden flex flex-col max-h-[500px]">
+            {/* // INVITATAION  */}
             <div className="px-4 py-3.5 border-b border-accent/40 bg-accent/5 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-(--text)">
@@ -392,17 +435,7 @@ const AuthenticatedActions = ({
                   </span>
                 )} */}
               </div>
-              <button
-                onClick={() =>
-                  markAllNotificationsAsRead(notifications, setNotifications)
-                }
-                className="p-1.5 hover:bg-accent rounded-lg text-(--text) opacity-40 hover:opacity-100 transition-all"
-              > 
-                <CheckCheck size={16} />
-              </button>
             </div>
-
-            {/* 1. Hiển thị Invitations trước (như những thông báo ưu tiên) */}
             {invitations.map((inv) => (
               <div
                 key={inv.id}
@@ -469,55 +502,56 @@ const AuthenticatedActions = ({
 
             {/* Danh sách gộp chung */}
             <div className="overflow-y-auto custom-scrollbar flex-1 p-1.5">
-              {/* 2. Tiếp nối là các Notifications thông thường */}
-              {notifications.length > 0
-                ? notifications.slice(0, 10).map((n, idx) => (
-                    <div
-                      key={n.id || idx}
-                      onClick={() =>
-                        !n.isRead &&
-                        markNotificationAsRead(
-                          n.id,
-                          notifications,
-                          setNotifications,
-                        )
-                      }
-                      className={`group relative flex gap-3 p-3 rounded-xl transition-all cursor-pointer mb-1 ${
-                        n.isRead
-                          ? "hover:bg-accent/30 opacity-60"
-                          : "bg-(--primary)/5 hover:bg-(--primary)/10 shadow-sm"
-                      }`}
-                    >
-                      {!n.isRead && (
-                        <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-(--primary) rounded-full shadow-[0_0_8px_var(--primary)]" />
-                      )}
-                      <div className="flex-1 min-w-0 ml-1">
-                        <div className="flex justify-between items-start">
-                          <span
-                            className={`text-[13px] truncate pr-2 ${!n.isRead ? "font-bold text-(--text)" : "text-(--text-muted)"}`}
-                          >
-                            {n.title}
-                          </span>
-                          <span className="text-[9px] font-bold opacity-30 whitespace-nowrap pt-0.5">
-                            {n.created_at
-                              ? formatTimeAgo(n.created_at)
-                              : "Just now"}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-(--text-muted) line-clamp-2 mt-0.5">
-                          {n.title || "New activity recorded."}
-                        </p>
+              {notifications.length > 0 ? (
+                notifications.slice(0, 10).map((n, idx) =>{ 
+                  console.log("EACH NOTI: ", n);
+                  return (
+                  <div
+                    key={n.id || idx}
+                    onClick={() =>
+                      !n.is_read &&
+                      markNotificationAsRead(
+                        n.id,
+                        notifications,
+                        setNotifications,
+                      )
+                    }
+                    className={`group relative flex gap-3 p-3 rounded-xl transition-all cursor-pointer mb-1 ${
+                      n.is_read
+                        ? "bg-blue"
+                        : "bg-(--primary)/5 hover:bg-(--primary)/10 shadow-sm"
+                    }`}
+                  >
+                    {!n.is_read && (
+                      <div className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-(--primary) rounded-full shadow-[0_0_8px_var(--primary)]" />
+                    )}
+                    <div className="flex-1 min-w-0 ml-1">
+                      <div className="flex justify-between items-start">
+                        <span
+                          className={`text-[13px] truncate pr-2 ${!n.is_read ? "font-bold text-(--text)" : "text-(--text-muted)"}`}
+                        >
+                          {n.title}
+                        </span>
+                        <span className="text-[9px] font-bold opacity-30 whitespace-nowrap pt-0.5">
+                          {n.created_at
+                            ? formatTimeAgo(n.created_at)
+                            : "Just now"}
+                        </span>
                       </div>
-                    </div>
-                  ))
-                : invitations.length === 0 && (
-                    <div className="py-12 flex flex-col items-center justify-center opacity-30">
-                      <Bell size={28} strokeWidth={1.5} className="mb-2" />
-                      <p className="text-[11px] font-bold uppercase tracking-widest">
-                        No notifications
+                      <p className="text-[11px] text-(--text-muted) line-clamp-2 mt-0.5">
+                        {n.title || "New activity recorded."}
                       </p>
                     </div>
-                  )}
+                  </div>
+                )})
+              ) : (
+                <div className="py-12 flex flex-col items-center justify-center opacity-30">
+                  <Bell size={28} strokeWidth={1.5} className="mb-2" />
+                  <p className="text-[11px] font-bold uppercase tracking-widest">
+                    No notifications
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Footer */}

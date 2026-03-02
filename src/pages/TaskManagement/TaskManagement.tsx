@@ -12,7 +12,7 @@ import { todoService } from "../../services/todoService";
 import { collaboratorService } from "../../services/collaboratorService";
 import { MOCK_INITIAL_TASKS } from "../../data/mockTasks";
 import "./TaskManagement.css";
-import { Plus, Search, Calendar } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import TaskColumn from "../../components/TaskColumn/TaskColumn";
 import AddTaskModal from "../../components/AddTaskModal/AddTaskModal";
 import TaskDetailModal from "../../components/TaskDetailModal/TaskDetailModal";
@@ -81,12 +81,12 @@ const TaskManagement: React.FC = () => {
         const configList: any = await todoService.getTetConfigs();
         setConfigs(configList);
 
-        try {
-          const categoriesList: any = await todoService.getCategories();
-          setCategories(categoriesList);
-        } catch (error) {
-          console.error("Error fetching categories:", error);
-        }
+        // try {
+        //   const categoriesList: any = await todoService.getCategories();
+        //   setCategories(categoriesList);
+        // } catch (error) {
+        //   console.error("Error fetching categories:", error);
+        // }
 
         // const urlConfigId = searchParams.get("config");
         // const targetConfigId =
@@ -104,6 +104,15 @@ const TaskManagement: React.FC = () => {
 
     fetchConfigs();
   }, [searchParams, refreshKey]);
+
+  useEffect(() => {
+    if (!activeConfigId) return;
+    const fetchCategories = async () => {
+      const data = await todoService.getCategories(activeConfigId);
+      setCategories(data);
+    }
+    fetchCategories();
+  }, [activeConfigId])
 
   useEffect(() => {
     if (!activeConfigId) return;
