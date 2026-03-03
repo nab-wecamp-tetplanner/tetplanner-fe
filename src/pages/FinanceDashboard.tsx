@@ -253,12 +253,13 @@ export default function FinanceDashboard() {
   };
 
   const handleAddItem = async (newItem: Omit<ShoppingItem, "id">) => {
-    if (!tetConfigId || !defaultPhaseId) return;
+    if (!tetConfigId) return;
+    const phaseIdToUse = newItem.timelinePhaseId || defaultPhaseId || undefined;
     try {
       const created = await financeApi.addItem(
         tetConfigId,
         newItem,
-        newItem.timelinePhaseId || defaultPhaseId,
+        phaseIdToUse,
       );
       setItems((prev) => [...prev, created]);
       setSuccessModal({
