@@ -306,7 +306,7 @@ const TaskManagement: React.FC = () => {
     }
 
     // timeline filter
-     if (taskFilters.timelines.length > 0) {
+    if (taskFilters.timelines.length > 0) {
       filtered = filtered.filter((task) =>
         taskFilters.timelines.includes(task.timeline_phase.id),
       );
@@ -511,13 +511,11 @@ const TaskManagement: React.FC = () => {
 
   /* ===== Progress & Gamification Logic ===== */
   const progress = useMemo(() => {
-  const validTasks = currentTasks.filter((t) => t.status !== "cancelled");
+    const validTasks = currentTasks.filter((t) => t.status !== "cancelled");
     const total = validTasks.length;
     if (total === 0)
       return { percent: 0, completed: 0, total: 0, allDone: false };
-    const completed = validTasks.filter(
-      (t) => t.status === "completed",
-    ).length;
+    const completed = validTasks.filter((t) => t.status === "completed").length;
     return {
       percent: Math.round((completed / total) * 100),
       completed,
@@ -549,7 +547,7 @@ const TaskManagement: React.FC = () => {
   useEffect(() => {
     if (progress.allDone && progress.total > 0 && !rewardClaimed) {
       setIsEnvelopeDismissed(false);
-    } else { 
+    } else {
       setIsEnvelopeDismissed(true);
     }
   }, [progress, rewardClaimed]);
