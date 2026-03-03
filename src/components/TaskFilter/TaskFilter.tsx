@@ -76,6 +76,8 @@ const TaskFilter: React.FC<TaskFilterProps> = ({
     const next = filters.timelines.includes(id)
       ? filters.timelines.filter((t) => t !== id)
       : [...filters.timelines, id];
+    console.log("TIMELINE FILTER DATA: ", next);
+    console.log("check data: ", { ...filters, timelines: next });
     onFiltersChange({ ...filters, timelines: next });
   };
 

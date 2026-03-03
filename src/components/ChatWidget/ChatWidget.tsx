@@ -9,8 +9,29 @@ import {
   Wallet,
   Palette,
 } from "lucide-react";
+import MarkdownIt from "markdown-it";
 import api from "../../services/api";
 import "./ChatWidget.css";
+
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  typographer: true,
+});
+
+// Clean up redundant HTML paragraphs and whitespace
+const cleanMarkdownHTML = (html: string): string => {
+  return html
+    .replace(/<p>\s*<\/p>/g, "") // Remove empty paragraphs (including whitespace)
+    .replace(/<p>\s*<br\s*\/?>\s*<\/p>/g, "") // Remove paragraphs with only line breaks
+    .replace(/(<p>)+/g, "<p>") // Remove consecutive opening p tags
+    .replace(/(<\/p>)+/g, "</p>") // Remove consecutive closing p tags
+    .replace(/<\/p>\s*<p>/g, "</p><p>") // Normalize space between paragraphs
+    .replace(/\n\s*\n\s*\n+/g, "\n\n") // Reduce multiple newlines to maximum 2
+    .replace(/^\s+|\s+$/g, "") // Trim leading/trailing whitespace
+    .replace(/<p>\s+/g, "<p>") // Trim leading space inside paragraphs
+    .replace(/\s+<\/p>/g, "</p>"); // Trim trailing space inside paragraphs
+};
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -128,7 +149,12 @@ const ChatWidget: React.FC = () => {
                   />
                 </div>
               )}
-              <div className="cw-msg__bubble">{msg.content}</div>
+              <div
+                className="cw-msg__bubble"
+                dangerouslySetInnerHTML={{
+                  __html: cleanMarkdownHTML(md.render(msg.content)),
+                }}
+              />
             </div>
           ))}
 

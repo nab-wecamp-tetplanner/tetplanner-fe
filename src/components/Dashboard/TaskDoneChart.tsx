@@ -131,6 +131,73 @@ export const TaskDoneChart = () => {
     fetchTaskChartData();
   }, [configId, refreshKey]);
 
+  if (loading) {
+    return (
+      <Card className="flex flex-col gap-2">
+        <h3 className="text-sm font-bold text-(--text-heading)">
+          Task Activity
+        </h3>
+        <div className="flex flex-col items-center justify-center h-40 gap-3">
+          <div className="w-8 h-8 rounded-full border-3 border-(--border) border-t-(--primary) animate-spin"></div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-(--text-heading)">
+              Loading task data...
+            </p>
+            <p className="text-[11px] text-(--text-muted) mt-1">
+              Fetching your activity
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="flex flex-col gap-2">
+        <h3 className="text-sm font-bold text-(--text-heading)">
+          Task Activity
+        </h3>
+        <div className="flex flex-col items-center justify-center h-40 gap-3">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+            <span className="text-xl">⚠️</span>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-(--text-heading)">
+              {error}
+            </p>
+            <p className="text-[11px] text-(--text-muted) mt-1">
+              Please try refreshing the page
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <Card className="flex flex-col gap-2">
+        <h3 className="text-sm font-bold text-(--text-heading)">
+          Task Activity
+        </h3>
+        <div className="flex flex-col items-center justify-center h-40 gap-3">
+          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+            <span className="text-xl">📊</span>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-(--text-heading)">
+              No task data yet
+            </p>
+            <p className="text-[11px] text-(--text-muted) mt-1">
+              Start creating tasks to see activity
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between mb-2">
@@ -143,11 +210,6 @@ export const TaskDoneChart = () => {
           ))}
         </div>
       </div>
-
-      {loading && (
-        <div className="text-sm text-(--text-muted) mb-2">Loading...</div>
-      )}
-      {error && <div className="text-sm text-(--danger) mb-2">{error}</div>}
 
       <div className="w-full h-full">
         <ResponsiveContainer width="100%" height="100%">

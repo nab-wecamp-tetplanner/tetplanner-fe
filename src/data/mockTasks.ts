@@ -1,32 +1,32 @@
-import { type TetConfig, type Task } from "../types/task.types";
+import { type TetConfig } from "../types/task.types";
 
-export const MOCK_INITIAL_TASKS: Task[] = [
-  {
-    id: "task-1",
-    title: "Clean the altar",
-    priority: "high",
-    status: "pending",
-    is_shopping: false,
-    quantity: 1,
-    assigned_to_user: { id: "user-bo" }, // Assigned to Dad
-    created_at: new Date().toISOString(),
-    is_overdue: false,
-    purchased: false,
-  },
-  {
-    id: "task-2",
-    title: "Buy Tet candied fruits",
-    priority: "medium",
-    status: "in_progress",
-    is_shopping: true,
-    estimated_price: 500000,
-    quantity: 1,
-    assigned_to_user: { id: "user-me" }, // Assigned to Mom
-    created_at: new Date().toISOString(),
-    is_overdue: false,
-    purchased: false,
-  },
-];
+// export const MOCK_INITIAL_TASKS: Task[] = [
+//   {
+//     id: "task-1",
+//     title: "Clean the altar",
+//     priority: "high",
+//     status: "pending",
+//     is_shopping: false,
+//     quantity: 1,
+//     assigned_to_user: { id: "user-bo" }, // Assigned to Dad
+//     created_at: new Date().toISOString(),
+//     is_overdue: false,
+//     purchased: false,
+//   },
+//   {
+//     id: "task-2",
+//     title: "Buy Tet candied fruits",
+//     priority: "medium",
+//     status: "in_progress",
+//     is_shopping: true,
+//     estimated_price: 500000,
+//     quantity: 1,
+//     assigned_to_user: { id: "user-me" }, // Assigned to Mom
+//     created_at: new Date().toISOString(),
+//     is_overdue: false,
+//     purchased: false,
+//   },
+// ];
 
 export const MOCK_CONFIGS: TetConfig[] = [
   {

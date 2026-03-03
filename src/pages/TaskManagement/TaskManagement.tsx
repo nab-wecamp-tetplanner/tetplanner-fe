@@ -73,6 +73,7 @@ const TaskManagement: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const [taskFilters, setTaskFilters] = useState<TaskFilters>(EMPTY_FILTERS);
+  const [isEnvelopeDismissed, setIsEnvelopeDismissed] = useState(false);
   const { currentUser } = useAuthContext();
   const refreshKey = useAppStore((state) => state.refreshKey);
 
@@ -304,6 +305,13 @@ const TaskManagement: React.FC = () => {
       );
     }
 
+    // timeline filter
+     if (taskFilters.timelines.length > 0) {
+      filtered = filtered.filter((task) =>
+        taskFilters.timelines.includes(task.timeline_phase.id),
+      );
+    }
+
     return filtered;
   }, [todoItems, searchQuery, taskFilters]);
 
@@ -503,10 +511,11 @@ const TaskManagement: React.FC = () => {
 
   /* ===== Progress & Gamification Logic ===== */
   const progress = useMemo(() => {
-    const total = currentTasks.length;
+  const validTasks = currentTasks.filter((t) => t.status !== "cancelled");
+    const total = validTasks.length;
     if (total === 0)
       return { percent: 0, completed: 0, total: 0, allDone: false };
-    const completed = currentTasks.filter(
+    const completed = validTasks.filter(
       (t) => t.status === "completed",
     ).length;
     return {
@@ -536,6 +545,21 @@ const TaskManagement: React.FC = () => {
 
     return { total, used, percent, isWarning };
   }, [currentTasks, configs, activeConfigId]);
+
+  useEffect(() => {
+    if (progress.allDone && progress.total > 0 && !rewardClaimed) {
+      setIsEnvelopeDismissed(false);
+    } else { 
+      setIsEnvelopeDismissed(true);
+    }
+  }, [progress, rewardClaimed]);
+
+  useEffect(() => {
+    if (!progress.allDone) {
+      setIsEnvelopeDismissed(true);
+      setRewardClaimed(false);
+    }
+  }, [progress.allDone, rewardClaimed]);
 
   const formatVND = (amount: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -741,7 +765,10 @@ const TaskManagement: React.FC = () => {
 
       <AddTaskModal
         phases={phases}
+        setPhases={setPhases}
         isOpen={isModalOpen}
+        categories={categories}
+        setCategories={setCategories}
         onClose={() => setIsModalOpen(false)}
         status={activeColumn}
         onSave={handleAddTask}
@@ -767,10 +794,16 @@ const TaskManagement: React.FC = () => {
       )}
 
       {/* Lucky Envelope — appears when all tasks are completed */}
-      <LuckyEnvelope
-        show={progress.allDone && !rewardClaimed}
-        onOpen={() => setIsRewardOpen(true)}
-      />
+      {progress.allDone && !rewardClaimed && !isEnvelopeDismissed && (
+        <LuckyEnvelope
+          show={true}
+          onOpen={() => {
+            setIsRewardOpen(true);
+            setIsEnvelopeDismissed(true);
+          }}
+          onClose={() => setIsEnvelopeDismissed(true)}
+        />
+      )}
 
       {/* Reward Modal */}
       <RewardModal
