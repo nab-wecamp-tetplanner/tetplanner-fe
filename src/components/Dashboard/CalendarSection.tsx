@@ -34,7 +34,7 @@ const CalendarSection = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   // --- Helpers ---
   const formatDateKey = (date: Date) => {
@@ -144,7 +144,7 @@ const CalendarSection = () => {
               priority: normalizePriority(item.priority),
               completed: item.status === "completed",
               categoryName:
-                item.category?.name ||
+                item.category?.id ||
                 categoriesById.get(String(item.category)),
               isShopping: item.is_shopping,
               estimatedPrice: item.estimated_price,

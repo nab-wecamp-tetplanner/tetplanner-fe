@@ -1,4 +1,4 @@
-import type { TimelineCreateRequest } from "./timeline.types";
+// import type { TimelineCreateRequest } from "./timeline.types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
@@ -19,7 +19,9 @@ export interface Task {
     created_at: string;
     deleted_at?: string;
     tet_config_id?: string;
-    timeline_phase_id?: string;
+    timeline_phase: {
+        id: string
+    };
     category_id?: string;   
     subtasks?: Record<string, boolean>;
 }

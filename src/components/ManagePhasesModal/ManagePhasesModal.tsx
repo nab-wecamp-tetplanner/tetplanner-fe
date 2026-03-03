@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { X, Plus, Check, Calendar } from "lucide-react";
+import { X, Plus,  Calendar } from "lucide-react";
 import "./ManagePhasesModal.css";
 import { type ManagePhasesModalProps } from "../../types/task.types";
 import { useToast } from "../../hooks/useToast";
@@ -13,8 +13,6 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
   onClose,
   phases = [],
   onPhaseCreated,
-  activePhaseId,
-  onSelectPhase,
 }) => {
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -100,13 +98,13 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
               <p className="mpm-empty">No phases yet. Create one below!</p>
             ) : (
               safePhases.map((p) => {
-                const isActive = p.id === activePhaseId;
+                // const isActive = p.id === activePhaseId;
                 return (
                   <div
                     key={p.id}
-                    className={`mpm-phase ${isActive ? "mpm-phase--active" : ""}`}
+                    className={`mpm-phase `}
                     onClick={() => {
-                      onSelectPhase(p.id);
+                      // onSelectPhase(p.id);
                       onClose();
                     }}
                   >
@@ -119,11 +117,11 @@ const ManagePhasesModal: React.FC<ManagePhasesModalProps> = ({
                         </span>
                       )}
                     </div>
-                    {isActive && (
+                    {/* {isActive && (
                       <div className="mpm-phase__check">
                         <Check size={16} />
                       </div>
-                    )}
+                    )} */}
                   </div>
                 );
               })

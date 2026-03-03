@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type {
   Category,
   Member,
@@ -29,8 +29,11 @@ interface AddTaskModalProps {
   onClose: () => void;
   status: TaskStatus;
   onSave: (taskData: any) => void;
+  phases: Timeline[],
+  setPhases: Dispatch<SetStateAction<Timeline[]>>
+  categories: Category[];
+  setCategories: Dispatch<SetStateAction<Category[]>>;
   members?: Member[];
-  phases: Timeline[];
 }
 
 const AddTaskModal: React.FC<AddTaskModalProps> = ({
@@ -38,6 +41,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   onClose,
   status,
   onSave,
+  phases, 
+  setPhases,
+  categories,
+  setCategories,
   members = [],
   phases: initialPhases = [],
 }) => {
@@ -54,11 +61,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
   const [newPhaseStart, setNewPhaseStart] = useState("");
   const [newPhaseEnd, setNewPhaseEnd] = useState("");
-  const [newPhaseOrder, setNewPhaseOrder] = useState<number | "">("");
+  // const [newPhaseOrder, setNewPhaseOrder] = useState<number | "">("");
 
   // Data States
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [phases, setPhases] = useState<Timeline[]>(initialPhases);
+  // const [categories, setCategories] = useState<Category[]>([]);
+  // const [phases, setPhases] = useState<Timeline[]>(initialPhases);
 
   // Quick Add UI States
   const [showAddCategory, setShowAddCategory] = useState(false);

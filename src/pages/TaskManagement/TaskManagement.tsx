@@ -305,6 +305,13 @@ const TaskManagement: React.FC = () => {
       );
     }
 
+    // timeline filter
+     if (taskFilters.timelines.length > 0) {
+      filtered = filtered.filter((task) =>
+        taskFilters.timelines.includes(task.timeline_phase.id),
+      );
+    }
+
     return filtered;
   }, [todoItems, searchQuery, taskFilters]);
 
@@ -758,7 +765,10 @@ const TaskManagement: React.FC = () => {
 
       <AddTaskModal
         phases={phases}
+        setPhases={setPhases}
         isOpen={isModalOpen}
+        categories={categories}
+        setCategories={setCategories}
         onClose={() => setIsModalOpen(false)}
         status={activeColumn}
         onSave={handleAddTask}
